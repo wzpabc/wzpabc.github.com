@@ -138,12 +138,12 @@ ol li {
 
 #main { 
   width: 950px;
-  margin: 20px auto 0 auto;
+  margin: 0 auto 0 auto;
 }
 
 header { 
   width: 950px;
-  height: 105px;
+  height: 90px;
 }
 
 #logo { 
