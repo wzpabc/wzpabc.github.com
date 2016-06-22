@@ -4,7 +4,8 @@
 <head>
 <title>Patrick's Page building!</title>
 <meta name="description" content="website description" />
-<meta name="keywords" content="Patrick s Page F05EB65D-F741-4386-90A3-31B52B349627" />
+<meta name="keywords"
+	content="Patrick s Page F05EB65D-F741-4386-90A3-31B52B349627" />
 <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 <link rel="stylesheet" type="text/css" href="css/style.css" />
 <!-- modernizr enables HTML5 elements and feature detects -->
@@ -62,20 +63,19 @@
 					</ul>
 				</div>
 			</div>
-			<div id="content">
-				 
-			</div>
+			<div id="content"></div>
 		</div>
 		<footer>
 			<p>
-				<a id="_home" href="#" onclick="return LinkChange(this);">home</a> | <a
-				id="_about" href="#" onclick="return LinkChange(this);">about</a> | <a
-				id="_profile" href="#" onclick="return LinkChange(this);">profile</a> | <a 
-				id="_backup" href="#" onclick="return LinkChange(this);">backup</a> | <a
-				id="_contact" href="#" onclick="return LinkChange(this);">contact</a>
+				<a id="_home" href="#" onclick="return LinkChange(this);">home</a> |
+				<a id="_about" href="#" onclick="return LinkChange(this);">about</a>
+				| <a id="_profile" href="#" onclick="return LinkChange(this);">profile</a>
+				| <a id="_backup" href="#" onclick="return LinkChange(this);">backup</a>
+				| <a id="_contact" href="#" onclick="return LinkChange(this);">contact</a>
 			</p>
 			<p>
-				&copy;The People's Republic of China All Rights Reserved. | <a href="#">wzpabc@outlook.com</a>
+				&copy;The People's Republic of China All Rights Reserved. | <a
+					href="#">wzpabc@outlook.com</a>
 			</p>
 		</footer>
 	</div>
@@ -90,17 +90,25 @@
 				fx : "backout",
 				speed : 700
 			});
-			$("#content").load("Template\\home.html", function(response, status, xhr) {
-				$('#content').html(response);
-			});
+
+			$("#content").load("Template\\home.html",
+					function(response, status, xhr) {
+						$('#content').html(response);
+					});
+
+			var s = "images/bg4.jpg";//row是table的当前行
+			$("body").css("background-image", "url(" + s + ")");
+			$("#site_content").css("background", "#F2F2F2");
+			$("#main").css("background", "#F2F2F2");
+			
 		});
 	</script>
 
 	<script type="text/javascript">
 		function LinkChange(v) {
-			var _id = v.id; 
-			var _text = v.innerText; 
-			var _href = "Template\\" + _text + ".html"; 
+			var _id = v.id;
+			var _text = v.innerText;
+			var _href = "Template\\" + _text + ".html";
 			//alert("ID is " + _href);
 			$("#content").load(_href, function(response, status, xhr) {
 				$('#content').html(response);
