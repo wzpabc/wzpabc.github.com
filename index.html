@@ -20,7 +20,14 @@
 					Patrick<a href="#">&amp;Wong .</a>
 				</h1>
 			</div>
-			<nav></nav>
+			<nav><ul class="lavaLampWithImage" id="lava_menu">
+	<li class="current"><a id="_home" href="#"
+		onclick="return LinkChange(this);">Home</a></li>
+	<li><a id="_Rlang" href="#" onclick="return LinkChange(this);">Rlang</a></li>
+	<li><a id="_Java" href="#" onclick="return LinkChange(this);">Java</a></li>
+	<li><a id="_BigData" href="#" onclick="return LinkChange(this);">BigData</a></li>
+	<li><a id="_contact" href="#" onclick="return LinkChange(this);">contact</a></li>
+</ul></nav>
 		</header>
 		<div id="site_content">
 			<ul class="slideshow">
@@ -76,10 +83,7 @@
 					function(response, status, xhr) {
 						$('footer').html(response);
 					});
-			$("nav").load("Template\\header.html",
-					function(response, status, xhr) {
-						$('nav').html(response);
-					});
+		 
 			var s = "images/bg4.jpg";//row是table的当前行
 			$("body").css("background-image", "url(" + s + ")");
 			$("#site_content").css("background", "#F2F2F2");
