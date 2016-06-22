@@ -42,27 +42,7 @@
 				<li><img width="950" height="350" src="images/3.jpg"
 					alt=" Enrich your life today,. yesterday is history.tomorrow is mystery. " /></li>
 			</ul>
-			<div id="sidebar_container">
-				<div class="sidebar">
-					<h3>Latest Ne中ws</h3>
-					<h4>New Website Launched</h4>
-					<h5>January 1st, 2012</h5>
-					<p>
-						2012 sees the redesign of our website. Take a look around and let
-						us know what you think.<br /> <a href="#">Read more</a>
-					</p>
-				</div>
-				<div class="sidebar">
-					<h3>Useful Links</h3>
-					<ul>
-						<li><a href="#">First Link</a></li>
-						<li><a href="#">Another Link</a></li>
-						<li><a href="#">And Another</a></li>
-						<li><a href="#">Last One</a></li>
-					</ul>
-				</div>
-			</div>
-			<div id="content">中文</div>
+		   <div id="ccontent">中文</div>
 		</div>
 		<footer>
 			<p>
@@ -90,9 +70,9 @@
 				speed : 700
 			});
 
-			$("#content").load("Template\\home.html",
+			$("#ccontent").load("Template\\home.html",
 					function(response, status, xhr) {
-						$('#content').html(response);
+						$('#ccontent').html(response);
 					});
 
 			var s = "images/bg4.jpg";//row是table的当前行
@@ -109,8 +89,8 @@
 			var _text = v.innerText;
 			var _href = "Template\\" + _text + ".html";
 			//alert("ID is " + _href);
-			$("#content").load(_href, function(response, status, xhr) {
-				$('#content').html(response);
+			$("#ccontent").load(_href, function(response, status, xhr) {
+				$('#ccontent').html(response);
 			});
 			return false
 		}
