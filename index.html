@@ -16,7 +16,7 @@
 		<header>
 			<div id="logo">
 				<h1>
-					CSS3_<a href="#">B&amp;W2</a>
+					Patrick<a href="#">&amp;Wong .</a>
 				</h1>
 			</div>
 			<nav>
@@ -36,11 +36,11 @@
 			<ul class="slideshow">
 				<li class="show"><img width="950" height="350"
 					src="images/1.jpg"
-					alt="&quot;You can put a caption for your image right here&quot;" /></li>
+					alt=" Genius only means hard-working all one's life. " /></li>
 				<li><img width="950" height="350" src="images/2.jpg"
-					alt="&quot;You can put a description of the image here if you like, or anything else if you want.&quot;" /></li>
+					alt=" Cease to struggle and you cease to live. " /></li>
 				<li><img width="950" height="350" src="images/3.jpg"
-					alt="&quot;You can put a description of the image here if you like, or anything else if you want.&quot;" /></li>
+					alt=" Enrich your life today,. yesterday is history.tomorrow is mystery. " /></li>
 			</ul>
 			<div id="sidebar_container">
 				<div class="sidebar">
@@ -63,28 +63,7 @@
 				</div>
 			</div>
 			<div id="content">
-				<h1>Welcome to CSS3_B&W2</h1>
-				<p>
-					This standards compliant, fixed width website template is released
-					as an 'open source' design (under a <a href="#">Creative
-						Commons Attribution 3.0 Licence</a>), which means that you are free to
-					use it for anything you want (including modifying and amending it).
-					All I ask is that you leave the 'design from css3templates.co.uk'
-					link in the footer of the template.
-				</p>
-				<p>
-					The template uses a lavalamp menu (based on jQuery) from <a
-						href="#/">here</a>. All of the images were shot by me - use as you
-					wish.
-				</p>
-				<h2>Browser Compatibility</h2>
-				<p>This template has been tested in the following browsers:</p>
-				<ul>
-					<li>Internet Explorer 8</li>
-					<li>Internet Explorer 7</li>
-					<li>FireFox 10</li>
-					<li>Google Chrome 17</li>
-				</ul>
+				 
 			</div>
 		</div>
 		<footer>
@@ -110,6 +89,9 @@
 			$("#lava_menu").lavaLamp({
 				fx : "backout",
 				speed : 700
+			});
+			$("#content").load("Template\\home.html", function(response, status, xhr) {
+				$('#content').html(response);
 			});
 		});
 	</script>
