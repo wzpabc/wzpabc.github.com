@@ -209,6 +209,7 @@ header {
 #content { 
   text-align: justify;
   width: 670px;
+  min-height:650px;
   padding: 20px 0 5px 0;
   padding-left:20px;
   margin: 0;

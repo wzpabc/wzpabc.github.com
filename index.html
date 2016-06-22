@@ -41,7 +41,56 @@
 				<li><img width="950" height="350" src="images/3.jpg"
 					alt=" Enrich your life today,. yesterday is history.tomorrow is mystery. " /></li>
 			</ul>
-		   <div id="ccontent">中文</div>
+		   <div id="sidebar_container">
+	<div class="sidebar">
+		<h3>Latest News</h3>
+		<h4>It is comming soon</h4>
+		<h5>January 23st, 2016</h5>
+		<p>
+			This is a website that sharing something about work, ten. and live.</p><p>Take a look around and let us know what you think.<br /> <a href="#">Read more</a>
+		</p>
+	</div>
+	<div class="sidebar">
+		<h3>Useful Links</h3>
+		<ul>
+			<li><a href="https://wzpabc.github.io/">Home</a></li>
+			<li><a href="http://www.sqlservercentral.com/">SQLServerCentral.com</a></li>
+			<li><a href="https://www.sqlintersection.com/#!/">sqlintersection</a></li>
+			<li><a href="http://www.cnblogs.com/fuckcn/">cnblogs</a></li>
+			<li><a href="http://blog.csdn.net/wangzhpwang">csdn</a></li>
+		</ul>
+	</div>
+</div>
+
+<div id="content">
+	<h1>Welcome to Patrick's Page 中文</h1>
+	<p>
+		This standards compliant, fixed width website template is released as
+		an 'open source' design (under a <a href="#">Creative Commons
+			Attribution 3.0 Licence</a>), which means that you are free to use it for
+		anything you want (including modifying and amending it). All I ask is
+		that you leave the 'design from css3templates.co.uk' link in the
+		footer of the template.欢迎
+	</p>
+	<p>
+		The template uses a lavalamp menu (based on jQuery) from <a href="#/">here</a>.
+		All of the images were shot by me - use as you wish.
+	</p>
+	<h2>Skill and hobit</h2>
+	<p>Both working and lift are important:</p>
+	<ul>
+		<li>Basketball</li>
+		<li>Java</li>
+		<li>Linux(Centos)</li>
+		<li>SQL SERVER</li>
+		<li>Oracle</li>
+		<li>Mysql</li>
+		<li>RLang</li>
+		<li>SSPS</li>
+		<li>Hadoop</li>
+
+	</ul>
+</div>
 		</div>
 		<footer>
 			<p>
@@ -69,9 +118,9 @@
 				speed : 700
 			});
 
-			$("#ccontent").load("Template\\home.html",
+			$("#content").load("Template\\home.html",
 					function(response, status, xhr) {
-						$('#ccontent').html(response);
+						$('#content').html(response);
 					});
 
 			var s = "images/bg4.jpg";//row是table的当前行
@@ -88,8 +137,8 @@
 			var _text = v.innerText;
 			var _href = "Template\\" + _text + ".html";
 			//alert("ID is " + _href);
-			$("#ccontent").load(_href, function(response, status, xhr) {
-				$('#ccontent').html(response);
+			$("#content").load(_href, function(response, status, xhr) {
+				$('#content').html(response);
 			});
 			return false
 		}
