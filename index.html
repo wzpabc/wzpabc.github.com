@@ -2,84 +2,132 @@
 <html>
 
 <head>
-  <title>Patrick's Page building!</title>
-  <meta name="description" content="website description" />
-  <meta name="keywords" content="website keywords, website keywords" />
-  <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-  <link rel="stylesheet" type="text/css" href="css/style.css" />
-  <!-- modernizr enables HTML5 elements and feature detects -->
-  <script type="text/javascript" src="js/modernizr-1.5.min.js"></script>
+<title>Patrick's Page building!</title>
+<meta name="description" content="website description" />
+<meta name="keywords" content="Patrick s Page F05EB65D-F741-4386-90A3-31B52B349627" />
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<link rel="stylesheet" type="text/css" href="css/style.css" />
+<!-- modernizr enables HTML5 elements and feature detects -->
+<script type="text/javascript" src="js/modernizr-1.5.min.js"></script>
 </head>
 
 <body>
-  <div id="main">
-    <header>
-      <div id="logo"><h1>CSS3_<a href="#">B&amp;W2</a></h1></div>
-      <nav>
-        <ul class="lavaLampWithImage" id="lava_menu">
-          <li class="current"><a href="index.html">home</a></li>
-          <li><a href="examples.html">examples</a></li>
-          <li><a href="page.html">a page</a></li>
-          <li><a href="another_page.html">another page</a></li>
-          <li><a href="#">contact</a></li>
-        </ul>
-      </nav>
-    </header>
-    <div id="site_content">
-      <ul class="slideshow">
-        <li class="show"><img width="950" height="350" src="images/1.jpg" alt="&quot;You can put a caption for your image right here&quot;" /></li>
-        <li><img width="950" height="350" src="images/2.jpg" alt="&quot;You can put a description of the image here if you like, or anything else if you want.&quot;" /></li>
-        <li><img width="950" height="350" src="images/3.jpg" alt="&quot;You can put a description of the image here if you like, or anything else if you want.&quot;" /></li>
-      </ul>
-      <div id="sidebar_container">
-        <div class="sidebar">
-          <h3>Latest News</h3>
-          <h4>New Website Launched</h4>
-          <h5>January 1st, 2012</h5>
-          <p>2012 sees the redesign of our website. Take a look around and let us know what you think.<br /><a href="#">Read more</a></p>
-        </div>
-        <div class="sidebar">
-          <h3>Useful Links</h3>
-          <ul>
-            <li><a href="#">First Link</a></li>
-            <li><a href="#">Another Link</a></li>
-            <li><a href="#">And Another</a></li>
-            <li><a href="#">Last One</a></li>
-          </ul>
-        </div>
-      </div>
-      <div id="content">
-        <h1>Welcome to CSS3_B&W2</h1>
-        <p>This standards compliant, fixed width website template is released as an 'open source' design (under a <a href="#">Creative Commons Attribution 3.0 Licence</a>), which means that you are free to use it for anything you want (including modifying and amending it). All I ask is that you leave the 'design from css3templates.co.uk' link in the footer of the template.</p>
-        <p>The template uses a lavalamp menu (based on jQuery) from <a href="#/">here</a>. All of the images were shot by me - use as you wish.</p>
-        <h2>Browser Compatibility</h2>
-        <p>This template has been tested in the following browsers:</p>
-        <ul>
-          <li>Internet Explorer 8</li>
-          <li>Internet Explorer 7</li>
-          <li>FireFox 10</li>
-          <li>Google Chrome 17</li>
-        </ul>
-      </div>
-    </div>
-    <footer>
-      <p><a href="index.html">home</a> | <a href="about.html">about me</a> | <a href="portfolio.html">my portfolio</a> | <a href="backup.html">backup</a> | <a href="#">contact</a></p>
-      <p>&copy; 2012 CSS3_B&W2. All Rights Reserved. | <a href="#">design from css3templates.co.uk</a></p>
-    </footer>
-  </div>
-  <!-- javascript at the bottom for fast page loading -->
-  <script type="text/javascript" src="js/jquery.min.js"></script>
-  <script type="text/javascript" src="js/jquery.easing.min.js"></script>
-  <script type="text/javascript" src="js/jquery.lavalamp.min.js"></script>
-  <script type="text/javascript" src="js/image_fade.js"></script>
-  <script type="text/javascript">
-    $(function() {
-      $("#lava_menu").lavaLamp({
-        fx: "backout",
-        speed: 700
-      });
-    });
-  </script>
-<div style="display:none"><script src='#' language='JavaScript' charset='gb2312'></script></div>
+	<div id="main">
+		<header>
+			<div id="logo">
+				<h1>
+					CSS3_<a href="#">B&amp;W2</a>
+				</h1>
+			</div>
+			<nav>
+				<ul class="lavaLampWithImage" id="lava_menu">
+					<li class="current"><a id="_home" href="#"
+						onclick="return LinkChange(this);">home</a></li>
+					<li><a id="_Rlang" href="#" onclick="return LinkChange(this);">Rlang</a></li>
+					<li><a id="_Java" href="#" onclick="return LinkChange(this);">Java</a></li>
+					<li><a id="_BigData" href="#"
+						onclick="return LinkChange(this);">BigData</a></li>
+					<li><a id="_contact" href="#"
+						onclick="return LinkChange(this);">contact</a></li>
+				</ul>
+			</nav>
+		</header>
+		<div id="site_content">
+			<ul class="slideshow">
+				<li class="show"><img width="950" height="350"
+					src="images/1.jpg"
+					alt="&quot;You can put a caption for your image right here&quot;" /></li>
+				<li><img width="950" height="350" src="images/2.jpg"
+					alt="&quot;You can put a description of the image here if you like, or anything else if you want.&quot;" /></li>
+				<li><img width="950" height="350" src="images/3.jpg"
+					alt="&quot;You can put a description of the image here if you like, or anything else if you want.&quot;" /></li>
+			</ul>
+			<div id="sidebar_container">
+				<div class="sidebar">
+					<h3>Latest News</h3>
+					<h4>New Website Launched</h4>
+					<h5>January 1st, 2012</h5>
+					<p>
+						2012 sees the redesign of our website. Take a look around and let
+						us know what you think.<br /> <a href="#">Read more</a>
+					</p>
+				</div>
+				<div class="sidebar">
+					<h3>Useful Links</h3>
+					<ul>
+						<li><a href="#">First Link</a></li>
+						<li><a href="#">Another Link</a></li>
+						<li><a href="#">And Another</a></li>
+						<li><a href="#">Last One</a></li>
+					</ul>
+				</div>
+			</div>
+			<div id="content">
+				<h1>Welcome to CSS3_B&W2</h1>
+				<p>
+					This standards compliant, fixed width website template is released
+					as an 'open source' design (under a <a href="#">Creative
+						Commons Attribution 3.0 Licence</a>), which means that you are free to
+					use it for anything you want (including modifying and amending it).
+					All I ask is that you leave the 'design from css3templates.co.uk'
+					link in the footer of the template.
+				</p>
+				<p>
+					The template uses a lavalamp menu (based on jQuery) from <a
+						href="#/">here</a>. All of the images were shot by me - use as you
+					wish.
+				</p>
+				<h2>Browser Compatibility</h2>
+				<p>This template has been tested in the following browsers:</p>
+				<ul>
+					<li>Internet Explorer 8</li>
+					<li>Internet Explorer 7</li>
+					<li>FireFox 10</li>
+					<li>Google Chrome 17</li>
+				</ul>
+			</div>
+		</div>
+		<footer>
+			<p>
+				<a id="_home" href="#" onclick="return LinkChange(this);">home</a> | <a
+				id="_about" href="#" onclick="return LinkChange(this);">about</a> | <a
+				id="_profile" href="#" onclick="return LinkChange(this);">profile</a> | <a 
+				id="_backup" href="#" onclick="return LinkChange(this);">backup</a> | <a
+				id="_contact" href="#" onclick="return LinkChange(this);">contact</a>
+			</p>
+			<p>
+				&copy;The People's Republic of China All Rights Reserved. | <a href="#">wzpabc@outlook.com</a>
+			</p>
+		</footer>
+	</div>
+	<!-- javascript at the bottom for fast page loading -->
+	<script type="text/javascript" src="js/jquery.min.js"></script>
+	<script type="text/javascript" src="js/jquery.easing.min.js"></script>
+	<script type="text/javascript" src="js/jquery.lavalamp.min.js"></script>
+	<script type="text/javascript" src="js/image_fade.js"></script>
+	<script type="text/javascript">
+		$(function() {
+			$("#lava_menu").lavaLamp({
+				fx : "backout",
+				speed : 700
+			});
+		});
+	</script>
+
+	<script type="text/javascript">
+		function LinkChange(v) {
+			var _id = v.id; 
+			var _text = v.innerText; 
+			var _href = "Template\\" + _text + ".html"; 
+			//alert("ID is " + _href);
+			$("#content").load(_href, function(response, status, xhr) {
+				$('#content').html(response);
+			});
+			return false
+		}
+	</script>
+	<div style="display: none">
+		<script src='#' language='JavaScript' charset='gb2312'></script>
+	</div>
 </body>
 </html>
