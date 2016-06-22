@@ -25,14 +25,14 @@ article, aside, figure, footer, header, hgroup, nav, section {
 }
 
 body { 
-  font: normal .85em arial, sans-serif;
+  font: italic .85em arial, sans-serif;
   background: #F2F2F2;
   color: #444;
   padding-bottom: 40px;
 }
 
 p { 
-  font: normal 1.3em "News Cycle", arial, sans-serif;
+  font: italic 1.3em "News Cycle", arial, sans-serif;
   padding: 0 0 20px 0;
   line-height: 1.5em;
   text-shadow: #FFF 1px 1px ;
@@ -43,7 +43,7 @@ img {
 }
 
 h1, h2, h3, h4, h5, h6 { 
-  font: normal 400% 'Jenna Sue', arial, sans-serif;
+  font: italic 400% 'Jenna Sue', arial, sans-serif;
   color: #222;
   margin: 0 0 15px 0;
   padding: 15px 0 5px 0;
@@ -54,7 +54,7 @@ h1 {
 }
 
 h2 { 
-  font: normal 280% 'Jenna Sue', arial, sans-serif;
+  font: italic 280% 'Jenna Sue', arial, sans-serif;
   color: #222;  
   margin: 0;
   padding: 0 0 8px 0;
@@ -62,13 +62,13 @@ h2 {
 }
 
 h3 { 
-  font: normal 125% 'trebuchet ms', arial, sans-serif;
+  font: italic 125% 'trebuchet ms', arial, sans-serif;
 }
 
 h4, h5, h6 { 
   margin: 0;
   padding: 0 0 5px 0;
-  font: normal 110% arial, sans-serif;
+  font: italic 110% arial, sans-serif;
   color: #999;
   line-height: 1.5em;
 }
@@ -99,7 +99,7 @@ ul {
 }
 
 ul li { 
-  font: normal 1.3em "News Cycle", arial, sans-serif;
+  font: italic 1.3em "News Cycle", arial, sans-serif;
   list-style-type: circle;
   margin: 0 0 0 0; 
   padding: 0 0 4px 5px;
@@ -155,7 +155,7 @@ header {
 }
 
 #logo h1 { 
-  font: normal 440% 'Jenna Sue', arial, sans-serif;
+  font: italic 440% 'Jenna Sue', arial, sans-serif;
   padding: 60px 0 0 0;
   color: #222;
   letter-spacing: -2px;
@@ -230,7 +230,7 @@ header {
 
 footer { 
   width: 950px;
-  font: normal 130% 'News Cycle',  arial, sans-serif;
+  font: italic 130% 'News Cycle',  arial, sans-serif;
   height: 90px;
   padding: 20px 0 5px 0;
   text-align: center; 
@@ -371,7 +371,7 @@ ul img {
  
 #slideshow-caption p {
   padding: 0;
-  font: normal 100% 'News Cycle', arial, sans-serif;
+  font: italic 100% 'News Cycle', arial, sans-serif;
   color: #000;}
 
 nav { 
@@ -406,7 +406,7 @@ nav {
 }
 
 .lavaLampWithImage li a {
-  font: normal 100% 'News Cycle', sans-serif;
+  font: italic 100% 'News Cycle', sans-serif;
   text-shadow:1px 1px #FFF;
   text-decoration: none;
   color: #222;
@@ -414,6 +414,7 @@ nav {
   text-align: center;
   letter-spacing: 0;
   z-index: 10;
+  min-width:60px;
   display: block;
   float: left;
   line-height: 35px;
