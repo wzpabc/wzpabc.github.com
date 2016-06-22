@@ -51,7 +51,7 @@
         #, $category   
         #,'                                                                   '
         #,'</ul>                                                              '
-        )            |Out-File 'home.html' -Encoding utf8         
+        )            |Out-File 'Home.html' -Encoding utf8         
         
           @(
              '<h2>Archive</h2>                                           '
