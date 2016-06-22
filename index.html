@@ -4,7 +4,8 @@
 <head>
 <title>Patrick's Page building!</title>
 <meta name="description" content="website description" />
-<meta name="keywords"	content="Patrick s Page F05EB65D-F741-4386-90A3-31B52B349627" />
+<meta name="keywords"
+	content="Patrick s Page F05EB65D-F741-4386-90A3-31B52B349627" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <link rel="stylesheet" type="text/css" href="css/style.css" />
 <!-- modernizr enables HTML5 elements and feature detects -->
@@ -19,17 +20,7 @@
 					Patrick<a href="#">&amp;Wong .</a>
 				</h1>
 			</div>
-			<nav>
-				<ul class="lavaLampWithImage" id="lava_menu">
-					<li class="current"><a id="_home" href="#" onclick="return LinkChange(this);">home</a></li>
-					<li><a id="_Rlang" href="#" onclick="return LinkChange(this);">Rlang</a></li>
-					<li><a id="_Java" href="#" onclick="return LinkChange(this);">Java</a></li>
-					<li><a id="_BigData" href="#"
-						onclick="return LinkChange(this);">BigData</a></li>
-					<li><a id="_contact" href="#"
-						onclick="return LinkChange(this);">contact</a></li>
-				</ul>
-			</nav>
+			<nav></nav>
 		</header>
 		<div id="site_content">
 			<ul class="slideshow">
@@ -41,44 +32,33 @@
 				<li><img width="950" height="350" src="images/3.jpg"
 					alt=" Enrich your life today,. yesterday is history.tomorrow is mystery. " /></li>
 			</ul>
-		   <div id="sidebar_container">
-	<div class="sidebar">
-		<h3>Latest News</h3>
-		<h4>It is comming soon</h4>
-		<h5>January 23st, 2016</h5>
-		<p>
-			This is a website that sharing something about work, ten. and live.</p><p>Take a look around and let us know what you think.<br /> <a href="#">Read more</a>
-		</p>
-	</div>
-	<div class="sidebar">
-		<h3>Useful Links</h3>
-		<ul>
-			<li><a href="https://wzpabc.github.io/">Home</a></li>
-			<li><a href="http://www.sqlservercentral.com/">SQLServerCentral.com</a></li>
-			<li><a href="https://www.sqlintersection.com/#!/">sqlintersection</a></li>
-			<li><a href="http://www.cnblogs.com/fuckcn/">cnblogs</a></li>
-			<li><a href="http://blog.csdn.net/wangzhpwang">csdn</a></li>
-		</ul>
-	</div>
-</div>
+			<div id="sidebar_container">
+				<div class="sidebar">
+					<h3>Latest News</h3>
+					<h4>It is comming soon</h4>
+					<h5>January 23st, 2016</h5>
+					<p>This is a website that sharing something about work, ten.
+						and live.</p>
+					<p>
+						Take a look around and let us know what you think.<br /> <a
+							href="#">Read more</a>
+					</p>
+				</div>
+				<div class="sidebar">
+					<h3>Useful Links</h3>
+					<ul>
+						<li><a href="https://wzpabc.github.io/">Home</a></li>
+						<li><a href="http://www.sqlservercentral.com/">SQLServerCentral.com</a></li>
+						<li><a href="https://www.sqlintersection.com/#!/">sqlintersection</a></li>
+						<li><a href="http://www.cnblogs.com/fuckcn/">cnblogs</a></li>
+						<li><a href="http://blog.csdn.net/wangzhpwang">csdn</a></li>
+					</ul>
+				</div>
+			</div>
 
-<div id="content">
-	 
-</div>
+			<div id="content"></div>
 		</div>
-		<footer>
-			<p>
-				<a id="_home" href="#" onclick="return LinkChange(this);">home</a> |
-				<a id="_about" href="#" onclick="return LinkChange(this);">about</a>
-				| <a id="_profile" href="#" onclick="return LinkChange(this);">profile</a>
-				| <a id="_backup" href="#" onclick="return LinkChange(this);">backup</a>
-				| <a id="_contact" href="#" onclick="return LinkChange(this);">contact</a>
-			</p>
-			<p>
-				&copy;The People's Republic of China All Rights Reserved. | <a
-					href="#">wzpabc@outlook.com</a>
-			</p>
-		</footer>
+		<footer> </footer>
 	</div>
 	<!-- javascript at the bottom for fast page loading -->
 	<script type="text/javascript" src="js/jquery.min.js"></script>
@@ -96,12 +76,19 @@
 					function(response, status, xhr) {
 						$('#content').html(response);
 					});
-
+			$("footer").load("Template\\footer.html",
+					function(response, status, xhr) {
+						$('footer').html(response);
+					});
+			$("nav").load("Template\\header.html",
+					function(response, status, xhr) {
+						$('nav').html(response);
+					});
 			var s = "images/bg4.jpg";//row是table的当前行
 			$("body").css("background-image", "url(" + s + ")");
 			$("#site_content").css("background", "#F2F2F2");
 			//$("#main").css("background", "#F2F2F2");
-			
+
 		});
 	</script>
 
