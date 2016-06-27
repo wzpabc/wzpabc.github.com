@@ -7,7 +7,7 @@
 <meta name="keywords"
 	content="Patrick s Page F05EB65D-F741-4386-90A3-31B52B349627" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<link rel="shortcut icon" href="images/bullet.png" >
+<link rel="shortcut icon" href="images/bullet.png">
 <link rel="stylesheet" type="text/css" href="css/style.css" />
 <!-- modernizr enables HTML5 elements and feature detects -->
 <script type="text/javascript" src="js/modernizr-1.5.min.js"></script>
@@ -20,15 +20,19 @@
 				<h1>
 					Patrick<a href="#">&amp;Wong .</a>
 				</h1>
-			</div> 
-			<nav><ul class="lavaLampWithImage" id="lava_menu">
-	<li class="current"><a id="_home" href="#"
-		onclick="return LinkChange(this);">Home</a></li>
-	<li><a id="_Rlang" href="#" onclick="return LinkChange(this);">Rlang</a></li>
-	<li><a id="_Java" href="#" onclick="return LinkChange(this);">Java</a></li>
-	<li><a id="_BigData" href="#" onclick="return LinkChange(this);">BigData</a></li>
-	<li><a id="_contact" href="#" onclick="return LinkChange(this);">contact</a></li>
-</ul></nav>
+			</div>
+			<nav>
+				<ul class="lavaLampWithImage" id="lava_menu">
+					<li class="current"><a id="_home" href="#"
+						onclick="return LinkChange(this);">Home</a></li>
+					<li><a id="_Rlang" href="#" onclick="return LinkChange(this);">Rlang</a></li>
+					<li><a id="_Java" href="#" onclick="return LinkChange(this);">Java</a></li>
+					<li><a id="_BigData" href="#"
+						onclick="return LinkChange(this);">BigData</a></li>
+					<li><a id="_contact" href="#"
+						onclick="return LinkChange(this);">contact</a></li>
+				</ul>
+			</nav>
 		</header>
 		<div id="site_content">
 			<ul class="slideshow">
@@ -41,9 +45,7 @@
 					alt=" Enrich your life today,. yesterday is history.tomorrow is mystery. " /></li>
 			</ul>
 			<div id="sidebar_container">
-				<div class="sidebar" id="sidebartop">
-					 
-				</div>
+				<div class="sidebar" id="sidebartop"></div>
 				<div class="sidebar">
 					<h3>Useful Links</h3>
 					<ul>
@@ -67,15 +69,28 @@
 	<script type="text/javascript" src="js/image_fade.js"></script>
 	<script type="text/javascript">
 		$(function() {
+			var Request = new Object();
+			Request = GetRequest();
+			var pag = Request['page'];
+
+			//alert(pag);
+			if (pag != null) {
+				$("#content").load("Template\\" + pag + ".html",
+						function(response, status, xhr) {
+							$('#content').html(response);
+						});
+			} else {
+				$("#content").load("Template\\Home.html",
+						function(response, status, xhr) {
+							$('#content').html(response);
+						});
+			}
+
 			$("#lava_menu").lavaLamp({
 				fx : "backout",
 				speed : 700
 			});
 
-			$("#content").load("Template\\Home.html",
-					function(response, status, xhr) {
-						$('#content').html(response);
-					});
 			$("#sidebartop").load("Template\\sidebartop.html",
 					function(response, status, xhr) {
 						$('#sidebartop').html(response);
@@ -84,7 +99,7 @@
 					function(response, status, xhr) {
 						$('footer').html(response);
 					});
-		 
+
 			var s = "images/bg4.jpg";//row是table的当前行
 			$("body").css("background-image", "url(" + s + ")");
 			$("#site_content").css("background", "#F2F2F2");
@@ -104,16 +119,29 @@
 			});
 			return false
 		}
-		
+
 		function MenuChange(v) {
 			var _id = v.id;
 			var _text = v.innerText;
-			var _href = "Template\\" +_id;
+			var _href = "Template\\" + _id;
 			//alert("ID is " + _href);
 			$("#content").load(_href, function(response, status, xhr) {
 				$('#content').html(response);
 			});
 			return false
+		}
+		function GetRequest() {
+			var url = location.search; //获取url中"?"符后的字串
+			var theRequest = new Object();
+			if (url.indexOf("?") != -1) {
+				var str = url.substr(1);
+				strs = str.split("&");
+				for (var i = 0; i < strs.length; i++) {
+					theRequest[strs[i].split("=")[0]] = unescape(strs[i]
+							.split("=")[1]);
+				}
+			}
+			return theRequest;
 		}
 	</script>
 	<div style="display: none">
