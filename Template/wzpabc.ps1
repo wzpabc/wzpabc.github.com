@@ -77,7 +77,7 @@ Param(
 begin{$str='<meta http-equiv="Content-Type" content="text/html; charset=utf-8">'
 if ($title -ne ''){$str=$str+"<h2>$title</h2><br />"}
 $str="$str `nuploaded by Patrick. $(Get-Date)<br />"
-#if($link -ne ''){$str=$str+”<br />`n<a  href=`"https://wzpabc.github.io/Template/$link`" >https://wzpabc.github.io/Template/$link</a>“}
+if($link -ne ''){$str=$str+"blog>><a  href=`"https://wzpabc.github.io?page=$link`" >wzpabc.github.io?page=$link</a>“}
 
     $str=$str+"<p>"
 }
@@ -90,7 +90,7 @@ Process
 end{
 $str=$str+'</p>';
 
-if($link -ne ''){$str=$str+”<br />`nsource>><a  href=`"https://wzpabc.github.io/Template/$link`" >https://wzpabc.github.io/Template/$link</a>“}
+if($link -ne ''){$str=$str+”<br />`nsource>><a  href=`"https://wzpabc.github.io/Template/$link.html`" >https://wzpabc.github.io/Template/$link.html</a>“}
 $str
 }
 } 
@@ -188,7 +188,7 @@ process{
         "<H2><a id=`"$($row.id).html`" href=`"#`" onclick=`"return MenuChange(this);`">$($row.pagename)</a></H2>"|Out-File $des -Encoding utf8 -Append
         IF(Test-Path $row.source){
             cat $row.source|SELECT -First 3|tohtml  |Out-File $des -Encoding utf8 -Append
-            cat $row.source|tohtml -link "$($row.id).html" -title $($row.pagename)|Out-File "$($row.id).html" -Encoding utf8  
+            cat $row.source|tohtml -link $($row.id) -title $($row.pagename)|Out-File "$($row.id).html" -Encoding utf8  
         }
     }
     
@@ -222,14 +222,14 @@ process{
         "<H2><a id=`"$($row.id).html`" href=`"#`" onclick=`"return MenuChange(this);`">$($row.pagename)</a></H2>"|Out-File $des -Encoding utf8 -Append
         IF(Test-Path $row.source){
             cat $row.source|SELECT -First 3|tohtml  |Out-File $des -Encoding utf8 -Append
-            cat $row.source|tohtml -link "$($row.id).html" -title $($row.pagename)|Out-File "$($row.id).html" -Encoding utf8  
+            cat $row.source|tohtml -link $($row.id) -title $($row.pagename)|Out-File "$($row.id).html" -Encoding utf8  
         }
     }
     
 }
 
 }
-
+##############################################################################
 cd e:\temp
 init-home
 cls

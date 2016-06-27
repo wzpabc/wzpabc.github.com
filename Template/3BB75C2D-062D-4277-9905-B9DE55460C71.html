@@ -1,91 +1,91 @@
 ﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <H2><a id="168923e0-0cc1-4e71-93e5-05dfd530c7fa.html" href="#" onclick="return MenuChange(this);">各种字符串分函数</a></H2>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
-uploaded by Patrick. 06/27/2016 15:31:16<br /><p>--各种字符串分函数<br />
+uploaded by Patrick. 06/27/2016 15:57:46<br /><p>--各种字符串分函数<br />
 <br />
 if exists (select * from dbo.sysobjects where id = object_id(N'[dbo].[f_splitSTR]') and xtype in (N'FN', N'IF', N'TF'))<br />
 </p>
 <H2><a id="93cc9ae7-d145-4bc6-8432-258c1168e996.html" href="#" onclick="return MenuChange(this);">合并列值</a></H2>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
-uploaded by Patrick. 06/27/2016 15:31:16<br /><p>合并列值 <br />
+uploaded by Patrick. 06/27/2016 15:57:46<br /><p>合并列值 <br />
 --*******************************************************************************************<br />
 表结构，数据如下： <br />
 </p>
 <H2><a id="03aeba27-f718-43e6-a57f-2ec18c2842c5.html" href="#" onclick="return MenuChange(this);">Home</a></H2>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
-uploaded by Patrick. 06/27/2016 15:31:16<br /><p>SQL Server 日期算法<br />
+uploaded by Patrick. 06/27/2016 15:57:46<br /><p>SQL Server 日期算法<br />
 <br />
 一周的第一天<br />
 </p>
 <H2><a id="ce9a46b4-f89c-4b63-b0d4-4150b0e7e5d9.html" href="#" onclick="return MenuChange(this);">Rlang</a></H2>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
-uploaded by Patrick. 06/27/2016 15:31:16<br /><p> 时间格式转换问题 <br />
+uploaded by Patrick. 06/27/2016 15:57:46<br /><p> 时间格式转换问题 <br />
 因为新开发的软件需要用一些旧软件生成的一些数据，在时间格式上不统一，只能手工转换，研究了一下午写了三条语句，以前没怎么用过convert函数和case语句，还有"+"操作符在不同上下文环境也会起到不同的作用，把我搞晕了要，不过现在看来是差不多弄好了。 <br />
 <br />
 </p>
 <H2><a id="c8d57037-d173-4b81-b9a1-52d67aac829e.html" href="#" onclick="return MenuChange(this);">Java</a></H2>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
-uploaded by Patrick. 06/27/2016 15:31:16<br /><p>--显示索引消耗的磁盘情况<br />
+uploaded by Patrick. 06/27/2016 15:57:46<br /><p>--显示索引消耗的磁盘情况<br />
 SELECT  CASE InnerTable.index_id<br />
           WHEN 0 THEN 'HEAP'<br />
 </p>
 <H2><a id="8b7397ed-8c23-4d9c-8369-5bd5ea86965e.html" href="#" onclick="return MenuChange(this);">BigData</a></H2>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
-uploaded by Patrick. 06/27/2016 15:31:16<br /><p>select loginame, * from master.dbo.sysprocesses<br />
+uploaded by Patrick. 06/27/2016 15:57:46<br /><p>select loginame, * from master.dbo.sysprocesses<br />
 where spid>50<br />
 order by 1 <br />
 </p>
 <H2><a id="4f6daf49-e3e8-4b15-a6ec-66cb02fb582f.html" href="#" onclick="return MenuChange(this);">取n到m行的值</a></H2>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
-uploaded by Patrick. 06/27/2016 15:31:16<br /><p>取n到m行<br />
+uploaded by Patrick. 06/27/2016 15:57:46<br /><p>取n到m行<br />
 <br />
 1. <br />
 </p>
 <H2><a id="b4ea6cb4-b0b0-46ed-a3ac-6761e2c694ef.html" href="#" onclick="return MenuChange(this);">Home</a></H2>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
-uploaded by Patrick. 06/27/2016 15:31:16<br /><p>构造使用IN子句的动态Transact-SQL方法进行编号查询<br />
+uploaded by Patrick. 06/27/2016 15:57:46<br /><p>构造使用IN子句的动态Transact-SQL方法进行编号查询<br />
 <br />
 --1. 构造使用IN子句的动态Transact-SQL方法进行编号查询<br />
 </p>
 <H2><a id="321adaf5-53c7-4de4-b459-7b8be7ec5ba5.html" href="#" onclick="return MenuChange(this);">去汉字</a></H2>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
-uploaded by Patrick. 06/27/2016 15:31:16<br /><p>declare @s varchar(50)<br />
+uploaded by Patrick. 06/27/2016 15:57:46<br /><p>declare @s varchar(50)<br />
 set @s='Level 1-2,Tower E5,Plaza,No.44 East Chang An Ave.  东长安街44号东方广场东5座1-2层'<br />
 while PATINDEX('%[吖-做]%',@s)>0<br />
 </p>
 <H2><a id="df3696ac-90c3-4129-9a60-b3cb7a247b6b.html" href="#" onclick="return MenuChange(this);">查每个分组前N条记录</a></H2>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
-uploaded by Patrick. 06/27/2016 15:31:16<br /><p>---------------------------------<br />
+uploaded by Patrick. 06/27/2016 15:57:46<br /><p>---------------------------------<br />
 --  Author: liangCK 小梁<br />
 --  Title : 查每个分组前N条记录<br />
 </p>
 <H2><a id="b1e8e448-0097-48f5-a8b3-c0adbc812039.html" href="#" onclick="return MenuChange(this);">查看存储过程依赖的表</a></H2>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
-uploaded by Patrick. 06/27/2016 15:31:16<br /><p>DECLARE @procname NVARCHAR(100) = 'dbo.avnewmanubranchsplit_trend'<br />
+uploaded by Patrick. 06/27/2016 15:57:46<br /><p>DECLARE @procname NVARCHAR(100) = 'dbo.avnewmanubranchsplit_trend'<br />
  SELECT DISTINCT @procname        procname,SCHEMA_NAME(t.[schema_id]) + '.' <br />
         + OBJECT_NAME(referenced_major_id) <br />
 </p>
 <H2><a id="e42c35fb-efcb-47b1-8d37-c883ff9dd7ce.html" href="#" onclick="return MenuChange(this);">动态查询</a></H2>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
-uploaded by Patrick. 06/27/2016 15:31:16<br /><p>--1. 构造使用IN子句的动态Transact-SQL方法进行编号查询<br />
+uploaded by Patrick. 06/27/2016 15:57:46<br /><p>--1. 构造使用IN子句的动态Transact-SQL方法进行编号查询<br />
 <br />
 --a. 要查询的字段类型是数字型<br />
 </p>
 <H2><a id="b3ec2d5c-0201-4eb2-8541-d03fc4db4054.html" href="#" onclick="return MenuChange(this);">查看锁信息</a></H2>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
-uploaded by Patrick. 06/27/2016 15:31:16<br /><p>create   table   #t(req_spid   int,obj_name   sysname)   <br />
+uploaded by Patrick. 06/27/2016 15:57:46<br /><p>create   table   #t(req_spid   int,obj_name   sysname)   <br />
 <br />
     <br />
 </p>
 <H2><a id="2d3d51ac-06ac-4422-b968-d46b39e3bc3a.html" href="#" onclick="return MenuChange(this);">化解字符串不能超过8000的方法</a></H2>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
-uploaded by Patrick. 06/27/2016 15:31:16<br /><p>/*--化解字符串不能超过8000的方法 <br />
+uploaded by Patrick. 06/27/2016 15:57:46<br /><p>/*--化解字符串不能超过8000的方法 <br />
 <br />
 经常有人提到,用动态生成SQL语句的方法处理数据时,处理语句超长,无法处理的问题 <br />
 </p>
 <H2><a id="5d26e930-3d03-4357-bd93-f127fd660d35.html" href="#" onclick="return MenuChange(this);">只有mdf文件的恢复技术</a></H2>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
-uploaded by Patrick. 06/27/2016 15:31:16<br /><p>只有mdf文件的恢复技术 <br />
+uploaded by Patrick. 06/27/2016 15:57:46<br /><p>只有mdf文件的恢复技术 <br />
 <br />
 　　由于种种原因，我们如果当时仅仅备份了mdf文件，那么恢复起来就是一件很麻烦的事情了。 <br />
 </p>

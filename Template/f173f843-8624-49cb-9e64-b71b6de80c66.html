@@ -1,5 +1,5 @@
 ﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>如何写出性能优良的SQL</h2><br /> 
-uploaded by Patrick. 06/27/2016 15:31:19<br /><p>如何写出性能优良的SQL<br />
+uploaded by Patrick. 06/27/2016 15:57:48<br />blog>><a  href="https://wzpabc.github.io?page=f173f843-8624-49cb-9e64-b71b6de80c66" >wzpabc.github.io?page=f173f843-8624-49cb-9e64-b71b6de80c66</a><p>如何写出性能优良的SQL<br />
 （1） 选择最有效率的表名顺序(只在基于规则的优化器中有效)： <br />
 ORACLE的解析器按照从右到左的顺序处理FROM子句中的表名，FROM子句中写在最后的表(基础表 driving table)将被最先处理，在FROM子句中包含多个表的情况下,你必须选择记录条数最少的表作为基础表。如果有3个以上的表连接查询, 那就需要选择交叉表(intersection table)作为基础表, 交叉表是指那个被其他表所引用的表. <br />
 （2） WHERE子句中的连接顺序．： <br />

@@ -1,5 +1,5 @@
 ﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>查看存储过程依赖的表</h2><br /> 
-uploaded by Patrick. 06/27/2016 15:31:16<br /><p>DECLARE @procname NVARCHAR(100) = 'dbo.avnewmanubranchsplit_trend'<br />
+uploaded by Patrick. 06/27/2016 15:57:46<br />blog>><a  href="https://wzpabc.github.io?page=b1e8e448-0097-48f5-a8b3-c0adbc812039" >wzpabc.github.io?page=b1e8e448-0097-48f5-a8b3-c0adbc812039</a><p>DECLARE @procname NVARCHAR(100) = 'dbo.avnewmanubranchsplit_trend'<br />
  SELECT DISTINCT @procname        procname,SCHEMA_NAME(t.[schema_id]) + '.' <br />
         + OBJECT_NAME(referenced_major_id) <br />
         AS tblname,referenced_major_id<br />
