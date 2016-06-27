@@ -1,0 +1,134 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>单个语句快于存储过程的原因分析</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:31:19<br /><p>SQL Server中存储过程比直接运行SQL语句慢的原因 <br />
+ 在很多的资料中都描述说SQLSERVER的存储过程较普通的SQL语句有以下优点： <br />
+1.       存储过程只在创造时进行编译即可，以后每次执行存储过程都不需再重新编译，而我们通常使用的SQL语句每执行一次就编译一次,所以使用存储过程可提高数据库执行速度。 <br />
+2.       经常会遇到复杂的业务逻辑和对数据库的操作，这个时候就会用SP来封装数据库操作。当对数据库进行复杂操作时(如对多个表进行 Update,Insert,Query,Delete时），可将此复杂操作用存储过程封装起来与数据库提供的事务处理结合一起使用。可以极大的提高数据 库的使用效率，减少程序的执行时间，这一点在较大数据量的数据库的操作中是非常重要的。在代码上看，SQL语句和程序代码语句的分离，可以提高程序代码的 可读性。<br />
+3.       存储过程可以设置参数，可以根据传入参数的不同重复使用同一个存储过程，从而高效的提高代码的优化率和可读性。<br />
+4.       安全性高,可设定只有某此用户才具有对指定存储过程的使用权存储过程的种类：<br />
+A.       系统存储过程：以sp_开头,用来进行系统的各项设定.取得信息.相关管理工作,如 sp_help就是取得指定对象的相关信息。<br />
+B.       扩展存储过程 以XP_开头,用来调用操作系统提供的功能<br />
+exec master..xp_cmdshell 'ping 10.8.16.1'<br />
+C.       用户自定义的存储过程,这是我们所指的存储过程常用格式<br />
+    模版：Create procedure procedue_name [@parameter data_type][output] <br />
+    [with]{recompile|encryption} as sql_statement<br />
+    解释：output：表示此参数是可传回的<br />
+with {recompile|encryption} recompile:表示每次执行此存储过程时都重新编译一次;encryption:所创建的存储过程的内容会被加密。<br />
+ <br />
+   但是最近我们项目组中有人写了一个存储过程,其计算时间为1个小时47分钟,而有的时候运行时间都超过了两个小时,同事描述说如果将存储过程中的语句拿出来直接运行也就10分钟左右就运行完毕，我没当回事，但是今天我自己写的存储过程也遇到了这个问题，在查找资料后原因终于找到了原因，原来是Parameter sniffing问题。<br />
+    下面看我是如何将运行一个小时以上的存储过程优化成在一分钟之内完成的：<br />
+原存储过程<br />
+CREATE PROCEDURE [dbo].[pro_ImAnalysis_daily]<br />
+@THEDATE VARCHAR(30)<br />
+AS<br />
+BEGIN<br />
+    IF @THEDATE IS NULL<br />
+    BEGIN<br />
+       SET @THEDATE=CONVERT(VARCHAR(30),GETDATE()-1,112);<br />
+    END<br />
+ <br />
+ <br />
+    DELETE FROM RPT_IM_USERINFO_DAILY WHERE THEDATE=@THEDATE;<br />
+ <br />
+    INSERT RPT_IM_USERINFO_DAILY (THEDATE,ALLUSER,NEWUSER)<br />
+    SELECT AA.THEDATE,ALLUSER,NEWUSER<br />
+    FROM <br />
+    ( ( SELECT THEDATE,COUNT(DISTINCT USERID) ALLUSER<br />
+       FROM FACT<br />
+       WHERE THEDATE=@THEDATE<br />
+        GROUP BY THEDATE<br />
+       ) AA<br />
+       LEFT JOIN<br />
+       (SELECT THEDATE,COUNT(DISTINCT USERID) NEWUSER<br />
+        FROM FACT T1<br />
+        WHERE NOT EXISTS(<br />
+                         SELECT 1 <br />
+                         FROM FACT T2<br />
+                         WHERE T2.THEDATE<@THEDATE<br />
+                             AND T1.USERID=T2.USERID)<br />
+              AND T1.THEDATE=@THEDATE<br />
+        GROUP BY THEDATE<br />
+        ) BB<br />
+       ON AA.THEDATE=BB.THEDATE);<br />
+GO<br />
+每日执行:exec pro_ImAnalysis_daily @thedate=null<br />
+耗时：1小时47分~2小时13分<br />
+经 过查找资料，原因如下(由于源文是一篇英文，有些地方写的我不是特别清楚，原文见http://groups.google.com/group /microsoft.public.sqlserver.server/msg/ad37d8aec76e2b8f?hl=en&lr=& amp;ie=UTF-8&oe=UTF-8)：<br />
+    在SQL Server中有一个叫做 “Parameter sniffing”的特性。SQL Server在存储过程执行之前都会制定一个执行计划。在上面的例子中，SQL在编译的时候并不知道@thedate的值是多少，所以它在执行执行计划的时候就要进行大量的猜测。假设传递给@thedate的参数大部分都是非空字符串，而FACT表中有40%的thedate字段都是null，那么SQL Server就会选择全表扫描而不是索引扫描来对参数@thedate制定执行计划。全表扫描是在参数为空或为0的时候最好的执行计划。但是全表扫描严重影响了性能。<br />
+    假设你第一次使用了Exec pro_ImAnalysis_daily @thedate=’20080312’那么SQL Server就会使用20080312这个值作为下次参数@thedate的执行计划的参考值，而不会进行全表扫描了，但是如果使用@thedate=null,则下次执行计划就要根据全表扫描进行了。<br />
+    有两种方式能够避免出现“Parameter sniffing”问题：<br />
+(1)通过使用declare声明的变量来代替参数：使用set @variable=@thedate的方式，将出现@thedate的sql语句全部用@variable来代替。<br />
+(2) 将受影响的sql语句隐藏起来，比如：<br />
+a)      将受影响的sql语句放到某个子存储过程中，比如我们在@thedate设置成为今天后再调用一个字存储过程将@thedate作为参数传入就可以了。<br />
+b)      使用sp_executesql来执行受影响的sql。执行计划不会被执行，除非sp_executesql语句执行完。<br />
+c)      使用动态sql（”EXEC(@sql)”来执行受影响的sql。<br />
+采用（1）的方法改造例子中的存储过程，如下：<br />
+    ALTER PROCEDURE [dbo].[pro_ImAnalysis_daily]<br />
+@var_thedate VARCHAR(30)<br />
+ <br />
+AS<br />
+BEGIN<br />
+    declare @THEDATE VARCHAR(30)<br />
+    IF @var_thedate IS NULL<br />
+    BEGIN<br />
+       SET @var_thedate=CONVERT(VARCHAR(30),GETDATE()-1,112);<br />
+    END<br />
+ <br />
+ <br />
+    SET @THEDATE=@var_thedate;<br />
+    DELETE FROM RPT_IM_USERINFO_DAILY WHERE THEDATE=@THEDATE;<br />
+ <br />
+   INSERT RPT_IM_USERINFO_DAILY (THEDATE,ALLUSER,NEWUSER)<br />
+    SELECT AA.THEDATE,ALLUSER,NEWUSER<br />
+    FROM <br />
+    ( ( SELECT THEDATE,COUNT(DISTINCT USERID) ALLUSER<br />
+       FROM FACT<br />
+       WHERE THEDATE=@THEDATE<br />
+        GROUP BY THEDATE<br />
+       ) AA<br />
+       LEFT JOIN<br />
+       (SELECT THEDATE,COUNT(DISTINCT USERID) NEWUSER<br />
+        FROM FACT T1<br />
+        WHERE NOT EXISTS(<br />
+                         SELECT 1 <br />
+                         FROM FACT T2<br />
+                         WHERE T2.THEDATE<@THEDATE<br />
+                             AND T1.USERID=T2.USERID)<br />
+              AND T1.THEDATE=@THEDATE<br />
+        GROUP BY THEDATE<br />
+        ) BB<br />
+       ON AA.THEDATE=BB.THEDATE);<br />
+GO<br />
+ <br />
+测试执行速度为10分钟，我又检查了一下这个SQL，发现这个SQL有问题，这个SQL使用了not exists，在一个大表里面使用not exists是不太明智的，所以，我又对这个sql进行了改进，改成如下：<br />
+    ALTER PROCEDURE [dbo].[pro_ImAnalysis_daily]<br />
+@var_thedate VARCHAR(30)<br />
+ <br />
+AS<br />
+BEGIN<br />
+    declare @THEDATE VARCHAR(30)<br />
+    IF @var_thedate IS NULL<br />
+    BEGIN<br />
+       SET @var_thedate=CONVERT(VARCHAR(30),GETDATE()-1,112);<br />
+    END<br />
+ <br />
+ <br />
+    SET @THEDATE=@var_thedate;<br />
+    DELETE FROM RPT_IM_USERINFO_DAILY WHERE THEDATE=@THEDATE;<br />
+ <br />
+    INSERT RPT_IM_USERINFO_DAILY(THEDATE,ALLUSER,NEWUSER)<br />
+    select @thedate as thedate,<br />
+           count(distinct case when today>0 then userid else null end) as alluser,<br />
+           count(distinct case when dates=0 then userid else null end) as newuser<br />
+    from <br />
+    (<br />
+       select userid,<br />
+              count(CASE WHEN thedate>=@thedate then null else thedate end) as dates,<br />
+              count(case when thedate=@thedate then thedate else null end) as today<br />
+       from   FACT<br />
+       group by userid<br />
+    )as fact<br />
+GO<br />
+测试结果为30ms以下。<br />
+<br />
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/08641834-24b0-426f-9977-3f7c00065a7c.html" >https://wzpabc.github.io/Template/08641834-24b0-426f-9977-3f7c00065a7c.html</a>

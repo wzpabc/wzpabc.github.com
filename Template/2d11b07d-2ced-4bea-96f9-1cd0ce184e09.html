@@ -1,5 +1,5 @@
 ﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>批量删除表</h2><br /> 
-uploaded by Patrick. 06/27/2016 15:17:41<br /><p>--删除外键约束<br />
+uploaded by Patrick. 06/27/2016 15:31:17<br /><p>--删除外键约束<br />
 DECLARE c1 cursor for <br />
     select 'alter table ['+ object_name(parent_obj) + '] drop constraint ['+name+']; '<br />
     from sysobjects <br />

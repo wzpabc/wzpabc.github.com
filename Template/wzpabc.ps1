@@ -103,7 +103,7 @@ function insert-doc
         [ValidateSet('Mysql','Basketball','SQL SERVER','RLang','Java','SSPS','Oracle','Hadoop','Linux(Centos)','BigData')]
         [System.String]$category,
         [Parameter(Position=2)]
-        [ValidateSet( 'Home','Java','BigData','Rlang')]
+        [ValidateSet( 'Home','Java','BigData','Rlang','txt')]
         [System.String]$menu,
         [Parameter(Position=0)]
         [System.String]$source,
@@ -151,7 +151,9 @@ function insert-doc
         elseif($menu -eq 'Java'){
              $menuid='07815809-720D-4D3C-B609-3FFD563628F7'
         }
-        elseif($menu -eq 'BigData'){
+         elseif($menu -eq 'txt'){
+             $menuid='5F0006FB-E19B-4E17-8E87-EE612467AFE8'
+        }elseif($menu -eq 'BigData'){
              $menuid='8F76841D-7738-4DE3-B4DF-70F993BF2160'
         }
         elseif($menu -eq 'Rlang'){
@@ -173,7 +175,7 @@ function insert-doc
 
 
 function init-menu{
-param( [ValidateSet(  'Java','BigData','Rlang')]
+param( [ValidateSet(  'Java','BigData','Rlang','txt')]
 [System.String]$menu)
 begin{
     $sql="SELECT m.menuname,p.id,p.pagename,p.source FROM menu AS m INNER JOIN pages AS p ON p.mid = m.id WHERE p.mid NOT IN ('E0DBED43-24F1-45D1-BB6A-7DFFFC9688D9',  '73AF1B8F-7BEB-407E-81E9-F467351B2E5E',  '7C53387A-EEBF-467A-8010-0F97B2D5B1E3',  '6CD8CD82-B8E2-4B80-BAED-27D3B9E7907C',  '1830E27A-EAE1-4C9E-B1F9-E8690F709C36',  '7F97E5A1-D59B-4C28-8C5F-4A62EEDC3148') and m.menuname='$menu' ORDER BY m.menuname  "
@@ -231,10 +233,10 @@ process{
 cd e:\temp
 init-home
 cls
-ls *.sql -Recurse |%{insert-doc -category $_.Directory.Name -pagename $_.BaseName -source $_.FullName -menu BigData}
-ls *.sql -Recurse |SELECT -First 3|%{insert-doc -category $_.Directory.Name -pagename $_.BaseName -source $_.FullName -menu Java}
-ls *.sql -Recurse |SELECT -First 3|%{insert-doc -category $_.Directory.Name -pagename $_.BaseName -source $_.FullName -menu Rlang}
-cls 
+ls *.sql -Recurse |%{insert-doc -category $_.Directory.Name -pagename $_.BaseName -source $_.FullName -menu txt}
+#ls *.sql -Recurse |SELECT -First 3|%{insert-doc -category $_.Directory.Name -pagename $_.BaseName -source $_.FullName -menu Java}
+#ls *.sql  |SELECT -First 3|%{insert-doc -category $_.Directory.Name -pagename $_.BaseName -source $_.FullName -menu Rlang}
+cls a
 cd "C:\Users\Patrick\git\wzpabc.github.com\Template"
 init-home
 init-menu -menu Java
@@ -252,5 +254,4 @@ init-CATETORY -category SSPS
 init-CATETORY -category RLang
 init-CATETORY -category 'SQL SERVER'
 init-CATETORY -category Java;
-
  

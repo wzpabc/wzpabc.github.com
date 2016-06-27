@@ -1,5 +1,5 @@
 ﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>取n到m行的值</h2><br /> 
-uploaded by Patrick. 06/27/2016 15:17:40<br /><p>取n到m行<br />
+uploaded by Patrick. 06/27/2016 15:31:16<br /><p>取n到m行<br />
 <br />
 1. <br />
 select top (n-m+1) * from tablename where id not in (select top n id from tablename order by id asc/*|desc*/) <br />

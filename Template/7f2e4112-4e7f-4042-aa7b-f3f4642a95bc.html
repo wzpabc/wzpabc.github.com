@@ -1,0 +1,74 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>SQL SERVER 数据库实用SQL语句</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:31:20<br /><p>【SQL SERVER 数据库实用SQL语句】 <br />
+<br />
+<br />
+--查看指定表的外键约束<br />
+select * from sysobjects where parent_obj in(<br />
+select id from sysobjects where name='表名')<br />
+and xtype='PK'<br />
+--查看所有表<br />
+select * from sysobjects where xtype='PK'<br />
+--删除列中含数字的<br />
+delete news where patindex('%[0-9]%',title)>0<br />
+--删除删去 字段 title值重复的行，且只保留 id 较小的这个<br />
+delete news where exists(select 1 from news t where t.title=news.title and t.id<news.id)<br />
+--查看数据库信息<br />
+select  * from sys.databases where name='master'<br />
+1.按姓氏笔画排序: <br />
+Select * From TableName Order By CustomerName Collate Chinese_PRC_Stroke_ci_as <br />
+<br />
+2.分页SQL语句 <br />
+select * from(select (row_number() OVER (ORDER BY tab.ID Desc)) as rownum,tab.* from 表名 As tab) As t where rownum between 起始位置 And 结束位置 <br />
+<br />
+3.获取当前数据库中的所有用户表 <br />
+select * from sysobjects where xtype='U' and category=0 <br />
+<br />
+4.获取某一个表的所有字段 <br />
+select name from syscolumns where id=object_id('表名') <br />
+<br />
+5.查看与某一个表相关的视图、存储过程、函数 <br />
+select a.* from sysobjects a, syscomments b where a.id = b.id and b.text like '%表名%' <br />
+<br />
+6.查看当前数据库中所有存储过程 <br />
+select name as 存储过程名称 from sysobjects where xtype='P' <br />
+<br />
+7.查询用户创建的所有数据库 <br />
+select * from master..sysdatabases D where sid not in(select sid from master..syslogins where name='sa') <br />
+或者 <br />
+select dbid, name AS DB_NAME from master..sysdatabases where sid <> 0x01 <br />
+<br />
+8.查询某一个表的字段和数据类型 <br />
+select column_name,data_type from information_schema.columns <br />
+where table_name = '表名' <br />
+<br />
+9.使用事务 <br />
+在使用一些对数据库表的临时的SQL语句操作时，可以采用SQL SERVER事务处理，防止对数据操作后发现误操作问题 <br />
+开始事务 <br />
+Begin tran <br />
+  Insert Into TableName Values(…) <br />
+SQL语句操作不正常，则回滚事务。 <br />
+回滚事务 <br />
+Rollback tran <br />
+SQL语句操作正常，则提交事务，数据提交至数据库。 <br />
+提交事务 <br />
+Commit tran <br />
+10. 按全文匹配方式查询 <br />
+字段名 LIKE N'%[^a-zA-Z0-9]China[^a-zA-Z0-9]%' <br />
+OR 字段名 LIKE N'%[^a-zA-Z0-9]China' <br />
+OR 字段名 LIKE N'China[^a-zA-Z0-9]%' <br />
+OR 字段名 LIKE N'China <br />
+<br />
+11．计算执行SQL语句查询时间 <br />
+declare @d datetime <br />
+set @d=getdate() <br />
+select * from SYS_ColumnProperties select [语句执行花费时间(毫秒)]=datediff(ms,@d,getdate()) <br />
+<br />
+12、说明：几个高级查询运算词 <br />
+A： UNION 运算符 <br />
+UNION 运算符通过组合其他两个结果表（例如 TABLE1 和 TABLE2）并消去表中任何重复行而派生出一个结果表。当 ALL 随 UNION 一起使用时（即 UNION ALL），不消除重复行。两种情况下，派生表的每一行不是来自 TABLE1 就是来自 TABLE2。 <br />
+B： EXCEPT 运算符 <br />
+EXCEPT 运算符通过包括所有在 TABLE1 中但不在 TABLE2 中的行并消除所有重复行而派生出一个结果表。当 ALL 随 EXCEPT 一起使用时 (EXCEPT ALL)，不消除重复行。 <br />
+C： INTERSECT 运算符 <br />
+INTERSECT 运算符通过只包括 TABLE1 和 TABLE2 中都有的行并消除所有重复行而派生出一个结果表。当 ALL 随 INTERSECT 一起使用时 (INTERSECT ALL)，不消除重复行。 <br />
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/7f2e4112-4e7f-4042-aa7b-f3f4642a95bc.html" >https://wzpabc.github.io/Template/7f2e4112-4e7f-4042-aa7b-f3f4642a95bc.html</a>

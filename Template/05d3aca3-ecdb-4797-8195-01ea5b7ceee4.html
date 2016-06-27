@@ -1,0 +1,72 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>经典算法</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:31:19<br /><p>--> 测试数据：[tbla]<br />
+go<br />
+if object_id('[tbla]') is not null <br />
+drop table [tbla]<br />
+go<br />
+create table [tbla](<br />
+[name] varchar(3),<br />
+[date] datetime,<br />
+[num] int<br />
+)<br />
+go<br />
+insert [tbla]<br />
+select 'abc','20100501',20 union all<br />
+select 'abc','20100507',120 union all<br />
+select 'abc','20100505',30 union all<br />
+select 'dbd','20100510',50<br />
+--> 测试数据：[tblb]<br />
+go<br />
+if object_id('[tblb]') is not null <br />
+drop table [tblb]<br />
+go<br />
+create table [tblb](<br />
+[date] datetime<br />
+)<br />
+go<br />
+insert [tblb]<br />
+select '20100505' union all<br />
+select '20100506' union all<br />
+select '20100509'<br />
+drop table #t<br />
+create table #t(<br />
+[name] varchar(3),<br />
+[date] datetime,<br />
+[num] int<br />
+)<br />
+--我理解为你的参数是表名<br />
+go<br />
+if OBJECT_ID('fun_tracy')is not null<br />
+drop proc fun_tracy<br />
+go<br />
+create proc fun_tracy @tablename varchar(10)<br />
+as<br />
+declare @str varchar(max)<br />
+set @str='insert'+@tablename+'<br />
+select name,bdate,num from (<br />
+select ROW_NUMBER()over(partition by name,[date] <br />
+order by abs(datediff(dd,[date],bdate)) asc) as id,* from(<br />
+select a.name,a.[date],b.[date] as bdate,a.num  from [tbla] a<br />
+cross join [tblb] b)c)d where id=1<br />
+union all<br />
+select *,num=0 from(<br />
+select distinct name,tblb.[date] from tbla<br />
+cross join tblb)a'<br />
+exec(@str)<br />
+<br />
+select * from #t order by name,num desc<br />
+/*<br />
+name	date	num<br />
+abc	2010-05-06 00:00:00.000	120<br />
+abc	2010-05-05 00:00:00.000	30<br />
+abc	2010-05-05 00:00:00.000	20<br />
+abc	2010-05-05 00:00:00.000	0<br />
+abc	2010-05-06 00:00:00.000	0<br />
+abc	2010-05-09 00:00:00.000	0<br />
+dbd	2010-05-09 00:00:00.000	50<br />
+dbd	2010-05-05 00:00:00.000	0<br />
+dbd	2010-05-06 00:00:00.000	0<br />
+dbd	2010-05-09 00:00:00.000	0<br />
+*/<br />
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/05d3aca3-ecdb-4797-8195-01ea5b7ceee4.html" >https://wzpabc.github.io/Template/05d3aca3-ecdb-4797-8195-01ea5b7ceee4.html</a>

@@ -1,0 +1,36 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>行列转换一例</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:31:19<br /><p>GO<br />
+IF OBJECT_ID('TBL')IS NOT NULL<br />
+DROP TABLE TBL<br />
+GO<br />
+CREATE TABLE TBL(<br />
+编码 VARCHAR(10),<br />
+名称 VARCHAR(10),<br />
+颜色 VARCHAR(10),<br />
+S INT ,<br />
+M INT ,<br />
+L INT,<br />
+XL INT ,<br />
+XXL INT <br />
+)<br />
+GO<br />
+INSERT TBL<br />
+SELECT '100000','牛仔裤','蓝色',1,1,1,1,0 UNION ALL<br />
+SELECT '100001','衬衣','白色',1,0,0,0,1<br />
+select * from tbl<br />
+<br />
+SELECT * FROM(<br />
+select  * from tbl <br />
+unpivot ([数量] for [尺码] in([S],[M],[L],[XL],[XXL]))b)A<br />
+WHERE [数量]<>0<br />
+/*<br />
+编码	名称	颜色	数量	尺码<br />
+100000	牛仔裤	蓝色	1	S<br />
+100000	牛仔裤	蓝色	1	M<br />
+100000	牛仔裤	蓝色	1	L<br />
+100000	牛仔裤	蓝色	1	XL<br />
+100001	衬衣	白色	1	S<br />
+100001	衬衣	白色	1	XXL<br />
+*/<br />
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/d02e76ec-6534-40ad-930a-7ea30d5af2d4.html" >https://wzpabc.github.io/Template/d02e76ec-6534-40ad-930a-7ea30d5af2d4.html</a>

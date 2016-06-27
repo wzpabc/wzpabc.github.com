@@ -1,0 +1,68 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>如何批量替换ntext</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:31:20<br /><p><br />
+update 表名 <br />
+set text类型字段名=replace(convert(varchar(8000),text类型字段名),'要替换的字符','替换成的值')<br />
+update 表名 <br />
+set text类型字段名=replace(convert(varchar(8000),text类型字段名),'要替换的字符','替换成的值')<br />
+<br />
+1.update ntext: <br />
+(1)varchar和nvarchar类型是支持replace，所以如果你的text/ntext不超过8000/4000可以先转换成前面两种类型再使用replace。<br />
+update 表名 <br />
+set text类型字段名=replace(convert(varchar(8000),text类型字段名),'要替换的字符','替换成的值')<br />
+update 表名 <br />
+set ntext类型字段名=replace(convert(nvarchar(4000),ntext类型字段名),'要替换的字符','替换成的值')<br />
+(2)如果text/ntext超过8000/4000,看如下例子<br />
+declare @pos int <br />
+declare @len int <br />
+declare @str nvarchar(4000) <br />
+declare @des nvarchar(4000) <br />
+declare @count int <br />
+set @des ='<requested_amount+1>'--要替换成的值set @len=len(@des) <br />
+set @str= '<requested_amount>'--要替换的字符set @count=0--统计次数.WHILE 1=1 <br />
+BEGIN <br />
+select @pos=patINDEX('%'+@des+'%',propxmldata) - 1 <br />
+from 表名 <br />
+where 条件IF @pos>=0 <br />
+begin <br />
+DECLARE @ptrval binary(16) <br />
+SELECT @ptrval = TEXTPTR(字段名) <br />
+from 表名 <br />
+where 条件 <br />
+UPDATETEXT 表名.字段名 @ptrval @pos @len @str <br />
+set @count=@count+1 <br />
+end <br />
+ELSE <br />
+break; <br />
+ENDselect @count<br />
+<br />
+2.alter column语句有局限性,比如不允许修改text、image、ntext 或 timestamp 列. <br />
+以下提供一个修改ntext列的例子:Alter Table tbl Add newcol ntext null <br />
+go <br />
+update tbl set newcol=col <br />
+go <br />
+EXEC sp_rename 'tbl.col', 'oldcol', 'COLUMN' <br />
+go <br />
+EXEC sp_rename 'tbl.newcol', 'col', 'COLUMN' <br />
+go <br />
+alter table tbl drop column oldcol <br />
+go<br />
+<br />
+以上通过新增一列替换旧的列方法实现了将一个不允许为空的ntext修改为允许为空的ntext列(注意:以上的go不能缺少).修改表结构之后,由于视图所依赖的基础对象的更改，视图的持久元数据会过期,需要刷新视图,通过sp_refreshview (可以通过sp_depends 找处相关的视图,再通过sp_refreshview逐个刷新). <br />
+另外可以也可以通过一下存储过程进行刷新所有视图:<br />
+PRINT 'Refreshing all views...'DECLARE @vName sysnameDECLARE refresh_cursor CURSOR FOR <br />
+SELECT Name from sysobjects WHERE xtype = 'V' <br />
+order by crdate <br />
+FOR READ ONLY <br />
+OPEN refresh_cursorFETCH NEXT FROM refresh_cursor <br />
+INTO @vName <br />
+WHILE @@FETCH_STATUS <> -1 <br />
+BEGIN <br />
+exec sp_refreshview @vName <br />
+PRINT '视图' + @vName + ' refreshed' <br />
+FETCH NEXT FROM refresh_cursor <br />
+INTO @vName <br />
+END <br />
+CLOSE refresh_cursor <br />
+DEALLOCATE refresh_cursor<br />
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/969fa5c1-1565-4226-9aa4-e964601690cd.html" >https://wzpabc.github.io/Template/969fa5c1-1565-4226-9aa4-e964601690cd.html</a>

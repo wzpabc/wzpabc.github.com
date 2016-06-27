@@ -1,0 +1,61 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>递归实现累计求和</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:31:19<br /><p>--> 测试数据：[tbl]<br />
+go<br />
+if object_id('[tbl]') is not null <br />
+drop table [tbl]<br />
+go<br />
+create table [tbl](<br />
+[name] varchar(1),<br />
+[date] varchar(5),<br />
+[num] int<br />
+)<br />
+go<br />
+insert [tbl]<br />
+select 'a','1-1号',1 union all<br />
+select 'b','1-2号',4 union all<br />
+select 'a','1-3号',8 union all<br />
+select 'a','1-4号',5 union all<br />
+select 'b','1-5号',6 union all<br />
+select 'b','1-6号',9<br />
+<br />
+;with t<br />
+as(<br />
+select ROW_NUMBER()over(partition by name<br />
+order by [date]) as id,<br />
+*,num  as total from tbl<br />
+),<br />
+m as(<br />
+select id,name,[date],num,total from t where id=1<br />
+union all<br />
+select a.id,a.name,a.[date],a.num,b.total+a.num from t a<br />
+inner join m b on a.id=b.id+1 and a.name=b.name<br />
+)<br />
+select name,[date],num,total from m order by name<br />
+<br />
+/*<br />
+name	date	num	total<br />
+a	1-3号	8	8<br />
+a	1-4号	5	13<br />
+a	1-1号	1	14<br />
+b	1-2号	4	4<br />
+b	1-5号	6	10<br />
+b	1-6号	9	19<br />
+*/<br />
+-------------------------------------------------------<br />
+<br />
+<br />
+--> 测试数据：[tbl]<br />
+if object_id('[tbl]') is not null drop table [tbl]<br />
+create table [tbl]([ID] int,[借方] int,[贷方] int)<br />
+insert [tbl]<br />
+select 1,10,0 union all<br />
+select 2,0,4  union all<br />
+select 3,0,2  union all<br />
+select 4,1,0<br />
+<br />
+SELECT <br />
+ID,借方,贷方,<br />
+[余额]=(SELECT SUM(借方-贷方) FROM tbl WHERE ID<=a.ID)<br />
+FROM tbl AS a<br />
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/cccae6fe-a79e-4854-a8d3-99a8f3ded70b.html" >https://wzpabc.github.io/Template/cccae6fe-a79e-4854-a8d3-99a8f3ded70b.html</a>

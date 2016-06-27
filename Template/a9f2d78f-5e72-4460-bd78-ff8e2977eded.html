@@ -1,0 +1,95 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>SQL Server nested loop join 效率试验 </h2><br /> 
+uploaded by Patrick. 06/27/2016 15:31:20<br /><p>从很多网页上都看到,SQL Server有三种Join的算法, <br />
+nested loop join, merge join, hash join. <br />
+其中最常用的就是nested loop join.<br />
+<br />
+在介绍nested loop join的很多文章里,都提到如果两个表做nested loop join,<br />
+取行数较小的表作为外循环表,行数较多的表作为内循环表, join的效率会比较高.<br />
+<br />
+其中之一的原因是如果内循环表做join的列上有合适的索引的话,那么外循环的每<br />
+一条输入数据可以做索引的seek,这样就不会把整个的内循环表读一遍,尤其是内<br />
+循环表比较大的话,节省的成本更高. 但是如果内外循环表都没有合适的索引,这<br />
+样做join,为什么效率也比较高呢?<br />
+<br />
+举个例子,外循环表有10行数据,内循环表有1000行数据,按照nested loop join <br />
+的算法,外循环表中取一条,和内循环表的所有数据匹配一遍,输出匹配的数据行.<br />
+ 这样就是要进行10*1000=10000次的匹配; 如果反过来,外循环1000行,内循环<br />
+10行,那么外循环表中取一条数据,内循环表中遍历10行数据,总计也<br />
+是1000*10=10000次. 粗看来都一样啊..为什么都说外循环表小的话,效率高呢? <br />
+ 做个试验看看吧.<br />
+[sql] view plaincopy<br />
+<br />
+    use tempdb  <br />
+    go  <br />
+    --创建两个表,测试nested loop join的效率  <br />
+    CREATE TABLE TempA (string VARCHAR(1000))  <br />
+    go  <br />
+    CREATE TABLE TempB (string VARCHAR(1000))  <br />
+    go  <br />
+    --插入数据, 让表TempA中的数据刚好存在1页里  <br />
+    INSERT  INTO TempA SELECT REPLICATE('a' , 1000)  <br />
+    INSERT  INTO TempA SELECT REPLICATE('b' , 1000)  <br />
+    INSERT  INTO TempA SELECT REPLICATE('c' , 1000)  <br />
+    INSERT  INTO TempA SELECT REPLICATE('d' , 1000)  <br />
+    INSERT  INTO TempA SELECT REPLICATE('e' , 1000)  <br />
+    INSERT  INTO TempA SELECT REPLICATE('f' , 1000)  <br />
+    INSERT  INTO TempA SELECT REPLICATE('g' , 1000)  <br />
+      <br />
+    --往TempB中插入数据,让TempB的数据是TempA的100倍  <br />
+    insert into TempB select * from TempA  <br />
+    go 100  <br />
+    --检验一下表TempA 和 TempB的大小  <br />
+    set statistics io on  <br />
+    select * from TempA  <br />
+    select * from TempB  <br />
+    --返回的结果如下:  <br />
+    /*  <br />
+    Table'TempA'. Scan count 1, logical reads 1  <br />
+    Table'TempB'. Scan count 1, logical reads 100  <br />
+    */  <br />
+    --由此可以看出表TempA有7行,存储在1个页; TempB有700行,存储在100个页里.  <br />
+      <br />
+    --执行以下查询,将TempA作为外循环表,TempB作为内循环表,看看执行的成本如何  <br />
+    SELECT *FROM TempA a INNER LOOP JOIN TempB b  <br />
+    ONa.string = b.string OPTION (FORCE order)  <br />
+    /*  <br />
+    Table'TempB'. Scan count 1, logical reads 700  <br />
+    Table'TempA'. Scan count 1, logical reads 1  <br />
+    */  <br />
+<br />
+从结果可以看出从TempA读了1个页,从TempB读了700个页,合计701个逻辑读, <br />
+也就是说外循环的表,做一次全表读,有多少页就有多少逻辑读; 内循环的表,<br />
+对应外循环表的每1条记录,都要读一次全表读,即7乘以100,700个逻辑读.<br />
+<br />
+如果按照这个规律,调换内外循环表的位置,得到的逻辑读应该是 <br />
+TempB的一次全表读, 100个逻辑读加上700行乘以TempA的全表读(1页),<br />
+就是700个逻辑读,合计是800个逻辑读.<br />
+<br />
+试验一下看看结果:<br />
+<br />
+[sql] view plaincopy<br />
+<br />
+    --对调一下join的顺序,再看看执行成本:  <br />
+    SELECT *FROM tempb b INNER LOOP JOIN tempa a  <br />
+    ONa.string = b.string OPTION(FORCE ORDER)   <br />
+    /*  <br />
+    Table'TempA'. Scan count 1, logical reads 700  <br />
+    Table'TempB'. Scan count 1, logical reads 100  <br />
+    */  <br />
+<br />
+<br />
+果不其然,和预计的一样.<br />
+<br />
+所以在这种假定的情况下,外循环表较小的话,join的成本更低.<br />
+实验的表结构比较特殊,如果往一般情况推演一下,可以做出这样的假设:<br />
+<br />
+    假设表X有a页,平均每页有b行,表Y有c页,平均每页有d行.<br />
+    则以表X为外循环,表Y为内循环,则nested loop join的成本是 a+(a*b*c), <br />
+而已表Y为外循环,表X为内循环,则nested loop join的成本是 c+(c*d*a)<br />
+    比较两种方式的成本大小可以将两个代数式相减,再根据abcd不同的情<br />
+况的出相应的结论.希望各位可以自行推理一番..<br />
+<br />
+/*摘自：http://blog.csdn.net/lucky7_2000/article/details/6600448*/<br />
+<br />
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/a9f2d78f-5e72-4460-bd78-ff8e2977eded.html" >https://wzpabc.github.io/Template/a9f2d78f-5e72-4460-bd78-ff8e2977eded.html</a>

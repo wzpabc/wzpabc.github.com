@@ -1,0 +1,46 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>高难度行列互换</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:31:20<br /><p>create table pds<br />
+(姓名 varchar(8), <br />
+ 内容 varchar(5), <br />
+ 开始日期 date, <br />
+ 结束日期 date<br />
+)<br />
+<br />
+insert into pds<br />
+select '张三', 'AAA', '2012/3/1', '2010/3/3' union all<br />
+select '李四', 'BBB', '2012/3/5', '2012/3/6' union all<br />
+select '王五', 'CCC', '2012/3/4', '2012/3/7' union all<br />
+select '张三', 'ddd', '2012/3/8', '2012/3/8' union all<br />
+select '王五', 'eee', '2012/3/2', '2012/3/3'<br />
+<br />
+<br />
+declare @sql varchar(6000),@t varchar(2000)<br />
+<br />
+select @t=stuff(<br />
+(select ','+d from<br />
+(select '['+cast(dateadd(d,number,(select min(开始日期) from pds)) as varchar)+']' d<br />
+from master.dbo.spt_values <br />
+where [type]='P' and number<=<br />
+(select datediff(d,min(开始日期),max(开始日期)) from pds)) t<br />
+for xml path('')),1,1,'')<br />
+<br />
+select @sql=<br />
+'with t5 as<br />
+(select t3.da,t3.姓名,isnull(t4.内容,'''') 内容<br />
+from<br />
+(select t1.姓名,t2.da from<br />
+(select distinct 姓名 from pds) t1<br />
+cross join<br />
+(select dateadd(d,number,(select min(开始日期) from pds)) da<br />
+from master.dbo.spt_values <br />
+where [type]=''P'' and number<=<br />
+(select datediff(d,min(开始日期),max(开始日期)) from pds)<br />
+) t2) t3<br />
+left join pds t4 on t3.姓名=t4.姓名 and t3.da=t4.开始日期<br />
+)<br />
+select 姓名,'+@t+<br />
+'from t5 pivot(max(内容) for da in('+@t+')) t6'<br />
+<br />
+exec(@sql)<br />
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/e067a051-d10f-4ad0-938c-c359d00b565e.html" >https://wzpabc.github.io/Template/e067a051-d10f-4ad0-938c-c359d00b565e.html</a>

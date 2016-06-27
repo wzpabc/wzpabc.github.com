@@ -1,0 +1,54 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>全文索引Contains用法</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:31:20<br /><p>mssql全文检索CONTAINS的用法.<br />
+2011-06-10 12:53<br />
+<br />
+全文索引——CONTAINS 语法 <br />
+我们通常在 WHERE 子句中使用 CONTAINS ，就象这样：SELECT * FROM table_name WHERE CONTAINS(fullText_column,'search contents')。 <br />
+<br />
+我们通过例子来学习，假设有表 students，其中的 address 是全文本检索的列。 <br />
+1. 查询住址在北京的学生 <br />
+SELECT student_id,student_name <br />
+FROM students <br />
+WHERE CONTAINS( address, 'beijing' ) <br />
+remark: beijing是一个单词，要用单引号括起来。 <br />
+<br />
+2. 查询住址在河北省的学生 <br />
+SELECT student_id,student_name <br />
+FROM students <br />
+WHERE CONTAINS( address, '"HEIBEI province"' ) <br />
+remark: HEBEI province是一个词组，在单引号里还要用双引号括起来。 <br />
+<br />
+3. 查询住址在河北省或北京的学生 <br />
+SELECT student_id,student_name <br />
+FROM students <br />
+WHERE CONTAINS( address, '"HEIBEI province" OR beijing' ) <br />
+remark: 可以指定逻辑操作符(包括 AND ，AND NOT，OR )。 <br />
+<br />
+4. 查询有 '南京路' 字样的地址 <br />
+SELECT student_id,student_name <br />
+FROM students <br />
+WHERE CONTAINS( address, 'nanjing NEAR road' ) <br />
+remark: 上面的查询将返回包含 'nanjing road'，'nanjing east road'，'nanjing west road' 等字样的地址。 <br />
+A NEAR B，就表示条件： A 靠近 B。 <br />
+<br />
+5. 查询以 '湖' 开头的地址 <br />
+SELECT student_id,student_name <br />
+FROM students <br />
+WHERE CONTAINS( address, '"hu*"' ) <br />
+remark: 上面的查询将返回包含 'hubei'，'hunan' 等字样的地址。 <br />
+记住是 *，不是 %。 <br />
+<br />
+6. 类似加权的查询 <br />
+SELECT student_id,student_name <br />
+FROM students <br />
+WHERE CONTAINS( address, 'ISABOUT (city weight (.8), county wright (.4))' ) <br />
+remark: ISABOUT 是这种查询的关键字，weight 指定了一个介于 0~1之间的数，类似系数(我的理解)。表示不同条件有不同的侧重。 <br />
+<br />
+7. 单词的多态查询 <br />
+SELECT student_id,student_name <br />
+FROM students <br />
+WHERE CONTAINS( address, 'FORMSOF (INFLECTIONAL,street)' ) <br />
+remark: 查询将返回包含 'street'，'streets'等字样的地址。 <br />
+对于动词将返回它的不同的时态，如：dry，将返回 dry，dried，drying 等等。<br />
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/d54ea5bb-53f7-4783-a738-9f4ac6aa0208.html" >https://wzpabc.github.io/Template/d54ea5bb-53f7-4783-a738-9f4ac6aa0208.html</a>

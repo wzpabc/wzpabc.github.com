@@ -1,0 +1,72 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>一个蛋疼的问题</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:31:19<br /><p>go<br />
+if object_id('tbl')is not null<br />
+drop table tbl<br />
+go<br />
+create table tbl(<br />
+begindate datetime,<br />
+enddate datetime<br />
+)<br />
+go<br />
+insert tbl<br />
+select '2012-01-01 09:00:00','2012-01-01 19:00:00' union all<br />
+select '2012-01-02 09:00:00','2012-01-03 19:00:00' union all<br />
+select '2012-01-04 06:00:00','2012-01-04 23:00:00' union all<br />
+select '2012-01-05 06:00:00','2012-01-06 23:00:00' union all<br />
+select '2012-01-06 23:00:00','2012-01-07 23:00:00' union all--<br />
+select '2012-01-08 06:00:00','2012-01-09 06:00:00' union all<br />
+select '2012-01-20 23:00:00','2012-01-22 06:00:00' union all<br />
+select '2012-01-09 06:00:00','2012-01-09 19:00:00' union all<br />
+select '2012-01-10 06:00:00','2012-01-11 19:00:00' union all<br />
+select '2012-01-13 23:00:00','2012-01-14 19:00:00' union all<br />
+select '2012-01-15 09:00:00','2012-01-15 22:00:00' union all<br />
+select '2012-01-16 09:00:00','2012-01-17 22:00:00' union all<br />
+select '2012-01-18 09:00:00','2012-01-19 06:00:00'<br />
+select *,<br />
+case<br />
+when (DATEPART(HH,begindate) between 8 and 20) and (DATEPART(HH,enddate) between 8 and 20)<br />
+then (DATEDIFF(HH,begindate,enddate)-DATEDIFF(DD,begindate,enddate)*12)<br />
+when (DATEPART(HH,begindate) between 0 and 7) and (DATEPART(HH,enddate) between 8 and 20)<br />
+then (DATEDIFF(HH,convert(varchar(10),begindate,120)+' 08:00:00',enddate)-DATEDIFF(DD,begindate,enddate)*12)<br />
+when (DATEPART(HH,begindate) between 8 and 20) and (DATEPART(HH,enddate) between 21 and 23)<br />
+then (DATEDIFF(HH,begindate,convert(varchar(10),enddate,120)+' 20:00:00'))-(DATEDIFF(DD,begindate,enddate)*12)<br />
+when (DATEPART(HH,begindate) between 0 and 7) and (DATEPART(HH,enddate) between 0 and 7)<br />
+then (DATEDIFF(HH,convert(varchar(10),begindate,120)+' 08:00:00',convert(varchar(10),enddate,120)+' 20:00:00'))<br />
+-((DATEDIFF(DD,begindate,enddate)+1)*12)<br />
+when (DATEPART(HH,begindate) between 0 and 7) and (DATEPART(HH,enddate) between 21 and 23)<br />
+then (DATEDIFF(HH,convert(varchar(10),begindate,120)+' 08:00:00',convert(varchar(10),enddate,120)+' 20:00:00'))<br />
+-(DATEDIFF(DD,begindate,enddate)*12)<br />
+when (DATEPART(HH,begindate) between 21and 23) and (DATEPART(HH,enddate) between 21 and 23)<br />
+then (DATEDIFF(HH,dateadd(dd,1,convert(varchar(10),begindate,120)+' 08:00:00'),convert(varchar(10),enddate,120)+' 20:00:00'))<br />
+-((DATEDIFF(DD,begindate,enddate)-1)*12)<br />
+when (DATEPART(HH,begindate) between 8 and 20 and (DATEPART(HH,enddate) between 0 and 8))<br />
+then DATEDIFF(HH,begindate,dateadd(dd,-1,convert(varchar(10),enddate,120)+' 20:00:00'))<br />
+-((DATEDIFF(DD,begindate,enddate)-1)*12)<br />
+when (DATEPART(HH,begindate) between 21 and 23 and (DATEPART(HH,enddate) between 8 and 20))<br />
+then (DATEDIFF(HH,dateadd(dd,1,convert(varchar(10),begindate,120)+' 08:00:00'),enddate))<br />
+-((DATEDIFF(DD,begindate,enddate)-1)*12)<br />
+when (DATEPART(HH,begindate) between 21 and 23 and (DATEPART(HH,enddate) between 0 and 7))<br />
+then DATEDIFF(HH,dateadd(dd,1,convert(varchar(10),begindate,120)+' 08:00:00'),<br />
+dateadd(dd,-1,convert(varchar(10),enddate,120)+' 20:00:00'))<br />
+-((DATEDIFF(DD,begindate,enddate)-2)*12)<br />
+else 0 end as haoshi<br />
+from tbl<br />
+<br />
+/*<br />
+begindate	enddate	haoshi<br />
+2012-01-01 09:00:00.000	2012-01-01 19:00:00.000	10<br />
+2012-01-02 09:00:00.000	2012-01-03 19:00:00.000	22<br />
+2012-01-04 06:00:00.000	2012-01-04 23:00:00.000	12<br />
+2012-01-05 06:00:00.000	2012-01-06 23:00:00.000	24<br />
+2012-01-06 23:00:00.000	2012-01-07 23:00:00.000	12<br />
+2012-01-08 06:00:00.000	2012-01-09 06:00:00.000	12<br />
+2012-01-20 23:00:00.000	2012-01-22 06:00:00.000	12<br />
+2012-01-09 06:00:00.000	2012-01-09 19:00:00.000	11<br />
+2012-01-10 06:00:00.000	2012-01-11 19:00:00.000	23<br />
+2012-01-13 23:00:00.000	2012-01-14 19:00:00.000	11<br />
+2012-01-15 09:00:00.000	2012-01-15 22:00:00.000	11<br />
+2012-01-16 09:00:00.000	2012-01-17 22:00:00.000	23<br />
+2012-01-18 09:00:00.000	2012-01-19 06:00:00.000	11<br />
+*/<br />
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/ad1b3fe7-e740-473d-be88-680ce6dc7e26.html" >https://wzpabc.github.io/Template/ad1b3fe7-e740-473d-be88-680ce6dc7e26.html</a>

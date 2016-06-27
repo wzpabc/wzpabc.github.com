@@ -1,0 +1,21 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>累计求差</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:31:19<br /><p>create table #aa (id int,cp varchar(10),qty int,totalqty int)<br />
+insert into #aa values(1,'a',100,130)<br />
+insert into #aa values(2,'a',20,130)<br />
+insert into #aa values(4,'b',20,130)<br />
+insert into #aa values(5,'a',20,130)<br />
+<br />
+select a.id,a.cp,a.qty,a.totalqty,(max(a.totalqty)-sum(b.qty)) as ys<br />
+from #aa a left join #aa b on a.cp=b.cp and a.id>=B.id <br />
+group by a.id,a.cp,a.qty,a.totalqty<br />
+order by cp<br />
+<br />
+/*<br />
+id	cp	qty	totalqty	ys<br />
+1	a	100	130	30<br />
+2	a	20	130	10<br />
+5	a	20	130	-10<br />
+4	b	20	130	110<br />
+*/<br />
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/5a09748d-6f82-4d83-9b29-1fd284d2a43f.html" >https://wzpabc.github.io/Template/5a09748d-6f82-4d83-9b29-1fd284d2a43f.html</a>

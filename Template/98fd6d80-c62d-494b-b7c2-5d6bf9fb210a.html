@@ -1,0 +1,72 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>查询独立的日期</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:31:19<br /><p>GO<br />
+IF OBJECT_ID('A')IS NOT NULL<br />
+DROP TABLE  A<br />
+GO<br />
+CREATE TABLE  A(<br />
+交易团代码 VARCHAR(5),<br />
+交易团名称 NVARCHAR(10),<br />
+公司名称 NVARCHAR(50),<br />
+companydm1 VARCHAR(12)<br />
+)<br />
+GO<br />
+IF OBJECT_ID('B')IS NOT NULL<br />
+DROP TABLE  B<br />
+GO<br />
+--如何实现查询表里面时间独立的行（日期加1或者减1后在该表里依然不存在）<br />
+<br />
+--> 测试数据：[tb]<br />
+go<br />
+if object_id('[tb]') is not null <br />
+drop table [tb]<br />
+go<br />
+create table [tb](<br />
+[ID] int,<br />
+[badge] int,<br />
+[name] varchar(6),<br />
+[date] datetime<br />
+)<br />
+go<br />
+insert [tb]<br />
+select 1,10066,'张立英','2011-08-01' union all<br />
+select 2,10066,'张立英','2011-08-02' union all<br />
+select 3,10066,'张立英','2011-08-03' union all<br />
+select 4,10066,'张立英','2011-08-04' union all<br />
+select 5,10066,'张立英','2011-08-05' union all<br />
+select 6,10066,'张立英','2011-08-06' union all<br />
+select 7,10066,'张立英','2011-08-07' union all<br />
+select 8,10066,'张立英','2011-08-08' union all<br />
+select 9,10066,'张立英','2011-08-09' union all<br />
+select 10,10066,'张立英','2011-08-10' union all<br />
+select 11,10070,'戴开忠','2011-08-07' union all<br />
+select 12,10070,'戴开忠','2011-08-13' union all<br />
+select 13,10070,'戴开忠','2011-08-14' union all<br />
+select 14,10070,'戴开忠','2011-08-15' union all<br />
+select 15,10070,'戴开忠','2011-08-16' union all<br />
+select 16,10070,'戴开忠','2011-08-17' union all<br />
+select 17,10070,'戴开忠','2011-08-18' union all<br />
+select 18,10075,'成定才','2011-08-06' union all<br />
+select 22,10109,'吴伦秀','2011-08-01' union all<br />
+select 24,10109,'吴伦秀','2011-08-13' union all<br />
+select 25,10109,'吴伦秀','2011-08-14' union all<br />
+select 26,10109,'吴伦秀','2011-08-16'<br />
+<br />
+<br />
+select *<br />
+from tb t<br />
+where not exists <br />
+(select 1 from tb where badge=t.badge and <br />
+datediff(dd,t.[date],[date])=1)<br />
+<br />
+/*<br />
+ID	badge	name	date<br />
+10	10066	张立英	2011-08-10 00:00:00.000<br />
+11	10070	戴开忠	2011-08-07 00:00:00.000<br />
+17	10070	戴开忠	2011-08-18 00:00:00.000<br />
+18	10075	成定才	2011-08-06 00:00:00.000<br />
+22	10109	吴伦秀	2011-08-01 00:00:00.000<br />
+25	10109	吴伦秀	2011-08-14 00:00:00.000<br />
+26	10109	吴伦秀	2011-08-16 00:00:00.000<br />
+*/<br />
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/98fd6d80-c62d-494b-b7c2-5d6bf9fb210a.html" >https://wzpabc.github.io/Template/98fd6d80-c62d-494b-b7c2-5d6bf9fb210a.html</a>

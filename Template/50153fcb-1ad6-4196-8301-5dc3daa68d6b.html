@@ -1,0 +1,43 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>经典递归问题</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:31:19<br /><p>--> 测试数据：[tbl]<br />
+go<br />
+if object_id('[tbl]') is not null <br />
+drop table [tbl]<br />
+go<br />
+create table [tbl](<br />
+[母料编号] varchar(3),<br />
+[子料编号] varchar(3),<br />
+[数量] int<br />
+)<br />
+go<br />
+insert [tbl]<br />
+select 'a01','b01',2 union all<br />
+select 'a01','b02',1 union all<br />
+select 'b01','c01',2 union all<br />
+select 'b01','c02',1 union all<br />
+select 'c01','d01',2<br />
+<br />
+;with t <br />
+as<br />
+( select 1 '层数',母料编号,子料编号,数量,数量 '累计数量' <br />
+from tbl a<br />
+where not exists(<br />
+select 1 from tbl b where b.子料编号=a.母料编号)<br />
+union all<br />
+select t.层数+1,c.母料编号,c.子料编号,<br />
+c.数量,c.数量*t.累计数量<br />
+from tbl c inner join t <br />
+on c.母料编号=t.子料编号<br />
+)<br />
+select * from t<br />
+<br />
+/*<br />
+层数	母料编号	子料编号	数量	累计数量<br />
+1	a01	b01	2	2<br />
+1	a01	b02	1	1<br />
+2	b01	c01	2	4<br />
+2	b01	c02	1	2<br />
+3	c01	d01	2	8<br />
+*/<br />
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/50153fcb-1ad6-4196-8301-5dc3daa68d6b.html" >https://wzpabc.github.io/Template/50153fcb-1ad6-4196-8301-5dc3daa68d6b.html</a>

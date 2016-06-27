@@ -1,0 +1,62 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>先进先出的一个例子</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:31:19<br /><p>create table djjx<br />
+(<br />
+djbh varchar(20), --单据编号 key<br />
+spid varchar(20), --商品ID<br />
+shl int --数量<br />
+)<br />
+--其中二行数据:<br />
+insert into djjx values('dj0001','sp0001',300)<br />
+insert into djjx values('dj0001','sp0002',100)<br />
+--表二:<br />
+create table sphwph  <br />
+(<br />
+spid varchar(20), --商品ID key<br />
+hw varchar(20), --货位 key<br />
+ph varchar(20), --批号 key<br />
+shl int --数量<br />
+)<br />
+其中几行数据:<br />
+insert into sphwph values('sp0001','hw0001','ph001',50)<br />
+insert into sphwph values('sp0001','hw0001','ph002',40)<br />
+insert into sphwph values('sp0001','hw0002','ph002',90)<br />
+insert into sphwph values('sp0001','hw0003','ph003',500)<br />
+insert into sphwph values('sp0001','hw0004','ph005',1000)<br />
+insert into sphwph values('sp0002','hw0001','ph006',90)<br />
+insert into sphwph values('sp0002','hw0002','ph009',100)<br />
+/*<br />
+求得到如下结果或一张临时表:<br />
+djbh	spid	hw	ph	shl<br />
+dj0001 sp0001 hw001	ph001	50<br />
+dj0001 sp0001 hw001	ph002	40<br />
+dj0001 sp0001 hw002	ph002	90<br />
+dj0001 sp0001 hw003	ph003	120<br />
+dj0001 sp0002 hw001	ph006	90<br />
+dj0001 sp0002 hw002	ph009	10   <br />
+*/<br />
+;with t<br />
+as(<br />
+select id=row_number()over(partition by a.spid order by getdate()),<br />
+a.djbh,a.spid,a.shl as total,b.hw,b.ph,b.shl <br />
+from djjx a inner join sphwph b on a.spid=b.spid<br />
+),<br />
+m as(<br />
+select id,djbh,spid,(total-shl) as total,hw,ph,shl from t where id=1<br />
+union all<br />
+select a.id,a.djbh,a.spid,b.total-a.shl,a.hw,a.ph,a.shl from t a<br />
+inner join m b on a.id=b.id+1 and a.spid=b.spid<br />
+)<br />
+select djbh,spid,hw,ph,<br />
+case when total<0 then shl-ABS(total) else shl end as shl <br />
+from m where case when total<0 then shl-ABS(total) else shl end>0 order by spid,id<br />
+/*<br />
+djbh	spid	hw	ph	shl<br />
+dj0001	sp0001	hw0001	ph001	50<br />
+dj0001	sp0001	hw0001	ph002	40<br />
+dj0001	sp0001	hw0002	ph002	90<br />
+dj0001	sp0001	hw0003	ph003	120<br />
+dj0001	sp0002	hw0001	ph006	90<br />
+dj0001	sp0002	hw0002	ph009	10<br />
+*/<br />
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/0715f3ff-5263-4e1e-ad8b-5209c72097d8.html" >https://wzpabc.github.io/Template/0715f3ff-5263-4e1e-ad8b-5209c72097d8.html</a>

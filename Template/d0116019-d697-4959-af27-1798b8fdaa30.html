@@ -1,5 +1,5 @@
 ﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>利用触发器实现标识列连续</h2><br /> 
-uploaded by Patrick. 06/27/2016 15:17:40<br /><p>利用触发器实现标识列连续。(支持批量插入) <br />
+uploaded by Patrick. 06/27/2016 15:31:16<br /><p>利用触发器实现标识列连续。(支持批量插入) <br />
 if exists (select * from dbo.sysobjects where id = object_id(N'[dbo].[ttt]') and OBJECTPROPERTY(id, N'IsUserTable') = 1)<br />
 drop table [dbo].[ttt]<br />
 GO<br />

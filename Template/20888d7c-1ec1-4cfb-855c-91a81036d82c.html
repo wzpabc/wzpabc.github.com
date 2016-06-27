@@ -1,0 +1,44 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>行列转换with  rollup的用法</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:31:19<br /><p>--> 测试数据：[tbl]<br />
+if object_id('[tbl]') is not null drop table [tbl]<br />
+create table [tbl]([xrq] datetime,[rgl] int,[jcmc] varchar(12))<br />
+insert [tbl]<br />
+select '2012-04-01',4182,'51路' union all<br />
+select '2012-04-01',598,'机2(7)' union all<br />
+select '2012-04-01',2520,'711路' union all<br />
+select '2012-04-02',258,'宝山社区罗罗' union all<br />
+select '2012-04-02',5092,'淞安专线' union all<br />
+select '2012-04-02',504,'1211路' union all<br />
+select '2012-04-02',778,'302路' union all<br />
+select '2012-04-03',2515,'彭罗专线' union all<br />
+select '2012-04-03',3852,'51路' union all<br />
+select '2012-04-03',148,'机2(7)' union all<br />
+select '2012-04-03',1930,'711路' union all<br />
+select '2012-04-03',50,'特约二'<br />
+<br />
+<br />
+<br />
+declare @str varchar(max)<br />
+set @str=''<br />
+select @str=@str+',['+replace(convert(varchar(10),[xrq],120),'-','')+']'+<br />
+'=sum(case when [xrq]='+quotename(replace(convert(varchar(10),[xrq],120),'-','')<br />
+,'''')+' then [rgl] else 0 end)'<br />
+from tbl group by replace(convert(varchar(10),[xrq],120),'-',''),[xrq]<br />
+exec('select isnull([jcmc],''竖向求和'') as xrq'+@str<br />
++',sum(rgl) as [横向和] from [tbl] group by [jcmc] with rollup')<br />
+<br />
+/*<br />
+xrq	20120401	20120402	20120403	横向和<br />
+1211路	0	504	0	504<br />
+302路	0	778	0	778<br />
+51路	4182	0	3852	8034<br />
+711路	2520	0	1930	4450<br />
+宝山社区罗罗	0	258	0	258<br />
+机2(7)	598	0	148	746<br />
+彭罗专线	0	0	2515	2515<br />
+淞安专线	0	5092	0	5092<br />
+特约二	0	0	50	50<br />
+竖向求和	7300	6632	8495	22427<br />
+*/<br />
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/20888d7c-1ec1-4cfb-855c-91a81036d82c.html" >https://wzpabc.github.io/Template/20888d7c-1ec1-4cfb-855c-91a81036d82c.html</a>

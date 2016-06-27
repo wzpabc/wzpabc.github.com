@@ -1,0 +1,152 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>如何使用“最小缺失数”实现日期的自动补全</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:31:19<br /><p>--如何用"最小缺失数"实现日期的自动补全<br />
+-->生成测试数据:<br />
+GO<br />
+IF OBJECT_ID('TBL')IS NOT NULL<br />
+DROP TABLE TBL<br />
+GO<br />
+CREATE TABLE TBL(<br />
+日期 DATE,<br />
+备注 VARCHAR(100)<br />
+)<br />
+GO<br />
+INSERT TBL<br />
+SELECT '2012-03-02','B' UNION ALL<br />
+SELECT '2012-03-05','C' UNION ALL<br />
+SELECT '2012-03-06','D' UNION ALL<br />
+SELECT '2012-03-07','E' UNION ALL<br />
+SELECT '2012-03-09','F' UNION ALL<br />
+SELECT '2012-03-11','G' UNION ALL<br />
+SELECT '2012-03-12','H' UNION ALL<br />
+SELECT '2012-03-13','I' UNION ALL<br />
+SELECT '2012-03-15','J' UNION ALL<br />
+SELECT '2012-03-19','K' UNION ALL<br />
+SELECT '2012-03-20','L'<br />
+<br />
+<br />
+GO<br />
+IF OBJECT_ID('P_SP')IS NOT NULL<br />
+DROP PROC P_SP<br />
+GO<br />
+CREATE PROC P_SP @ENDTIME DATE<br />
+AS<br />
+DECLARE @SQL VARCHAR(100)<br />
+SET @SQL='SELECT * FROM TBL ORDER BY 日期'<br />
+DECLARE @MINMISS DATE<br />
+SET @MINMISS=(<br />
+SELECT COALESCE(DATEADD(DD,1,MIN(A.日期)),<br />
+'2012-03-01') AS MISSING<br />
+FROM TBL A<br />
+WHERE NOT EXISTS(<br />
+SELECT * FROM TBL B <br />
+WHERE B.日期=DATEADD(DD,1,A.日期))<br />
+AND EXISTS (<br />
+SELECT 1 FROM TBL WHERE 日期='2012-03-01'))<br />
+PRINT @MINMISS<br />
+WHILE @MINMISS<=@ENDTIME<br />
+BEGIN<br />
+INSERT TBL(日期) VALUES(@MINMISS)<br />
+SELECT @MINMISS=(<br />
+SELECT DATEADD(DD,1,MIN(A.日期))<br />
+FROM TBL A<br />
+WHERE NOT EXISTS(<br />
+SELECT * FROM TBL B <br />
+WHERE B.日期=DATEADD(DD,1,A.日期))<br />
+)<br />
+END<br />
+EXEC(@SQL)<br />
+<br />
+EXEC P_SP '2012-03-20'<br />
+<br />
+/*<br />
+日期	备注<br />
+2012-03-01	NULL<br />
+2012-03-02	B<br />
+2012-03-03	NULL<br />
+2012-03-04	NULL<br />
+2012-03-05	C<br />
+2012-03-06	D<br />
+2012-03-07	E<br />
+2012-03-08	NULL<br />
+2012-03-09	F<br />
+2012-03-10	NULL<br />
+2012-03-11	G<br />
+2012-03-12	H<br />
+2012-03-13	I<br />
+2012-03-14	NULL<br />
+2012-03-15	J<br />
+2012-03-16	NULL<br />
+2012-03-17	NULL<br />
+2012-03-18	NULL<br />
+2012-03-19	K<br />
+2012-03-20	L<br />
+*/<br />
+<br />
+--------------------------------------------------<br />
+--------------------------------------------------<br />
+-->生成测试数据:<br />
+GO<br />
+IF OBJECT_ID('TBL')IS NOT NULL<br />
+DROP TABLE TBL<br />
+GO<br />
+CREATE TABLE TBL(<br />
+日期 DATE<br />
+)<br />
+GO<br />
+INSERT TBL<br />
+SELECT '2012-03-01' UNION ALL<br />
+SELECT '2012-03-31'<br />
+<br />
+<br />
+--利用递归实现输出三月份的所有日期：<br />
+go<br />
+declare @date date<br />
+select @date=MAX(日期) from tbl<br />
+;with t<br />
+as(<br />
+select * from tbl<br />
+union all<br />
+select dateadd(dd,1,a.日期) from t a<br />
+where not exists(select * from tbl b<br />
+where b.日期=DATEADD(DD,1,a.日期)<br />
+)<br />
+and a.日期<@date<br />
+)<br />
+select *from t order by 日期<br />
+<br />
+/*<br />
+日期<br />
+2012-03-01<br />
+2012-03-02<br />
+2012-03-03<br />
+2012-03-04<br />
+2012-03-05<br />
+2012-03-06<br />
+2012-03-07<br />
+2012-03-08<br />
+2012-03-09<br />
+2012-03-10<br />
+2012-03-11<br />
+2012-03-12<br />
+2012-03-13<br />
+2012-03-14<br />
+2012-03-15<br />
+2012-03-16<br />
+2012-03-17<br />
+2012-03-18<br />
+2012-03-19<br />
+2012-03-20<br />
+2012-03-21<br />
+2012-03-22<br />
+2012-03-23<br />
+2012-03-24<br />
+2012-03-25<br />
+2012-03-26<br />
+2012-03-27<br />
+2012-03-28<br />
+2012-03-29<br />
+2012-03-30<br />
+2012-03-31<br />
+*/<br />
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/e9c7838a-e517-4ff6-9904-596afab24cc7.html" >https://wzpabc.github.io/Template/e9c7838a-e517-4ff6-9904-596afab24cc7.html</a>

@@ -1,0 +1,45 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>登录时间差</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:31:20<br /><p>go<br />
+if object_id('tbl')is not null<br />
+drop table tbl<br />
+go<br />
+create table tbl(<br />
+userid varchar(5),<br />
+logindate datetime<br />
+)<br />
+go<br />
+insert tbl<br />
+select '1001','2012-04-16 08:23:16' union all<br />
+select '1001','2012-04-16 12:34:00' union all<br />
+select '1001','2012-04-16 14:17:16' union all<br />
+select '1001','2012-04-17 08:23:16' union all<br />
+select '1002','2012-04-15 08:23:16' union all<br />
+select '1002','2012-04-16 12:34:00' union all<br />
+select '1002','2012-04-16 14:17:16' union all<br />
+select '1002','2012-04-16 23:56:12'<br />
+--2005<br />
+;with t<br />
+as(<br />
+select *,<br />
+row_num=ROW_NUMBER()over(partition by userid order by logindate asc)<br />
+from tbl<br />
+)<br />
+select a.userid,a.logindate,<br />
+datediff(HH,isnull(b.logindate,a.logindate),a.logindate) as [hours]<br />
+from t a<br />
+left join t b on a.userid=b.userid and a.row_num=b.row_num+1<br />
+where a.userid='1001'<br />
+<br />
+--2000<br />
+select *,isnull(DATEDIFF(HH,(select top 1 b.logindate from tbl b <br />
+where b.logindate<a.logindate and b.userid=a.userid),a.logindate),0) as [hours]<br />
+from tbl a where userid='1001'<br />
+/*<br />
+userid	logindate	hours<br />
+1001	2012-04-16 08:23:16.000	0<br />
+1001	2012-04-16 12:34:00.000	4<br />
+1001	2012-04-16 14:17:16.000	2<br />
+1001	2012-04-17 08:23:16.000	18<br />
+*/<br />
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/aad845b6-a48e-4e25-80ca-ac142bd0e757.html" >https://wzpabc.github.io/Template/aad845b6-a48e-4e25-80ca-ac142bd0e757.html</a>

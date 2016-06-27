@@ -1,0 +1,92 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>BOM循环</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:31:19<br /><p>if object_id('[tb]') is not null drop table [tb]<br />
+create table [tb] (id int,name varchar(1),pid int)<br />
+insert into [tb]<br />
+select 1,'A',0 union all<br />
+select 2,'B',1 union all<br />
+select 3,'D',1 union all<br />
+select 4,'C',2 union all<br />
+select 5,'D',2 union all<br />
+select 6,'A',4 union all<br />
+select 7,'E',5 union all<br />
+select 8,'F',5<br />
+GO<br />
+;with cte<br />
+as<br />
+(<br />
+    select   *,[path]=cast([name]+'->' as varchar(100)) ,[level] = 1 from tb where pid = 0<br />
+    union all<br />
+    select a.*,  cast(c.[path]+a.[name]+'->' as varchar(100)),[level]+1 from cte c ,tb a where a.pid = c.id<br />
+)<br />
+select <br />
+* <br />
+from cte<br />
+where len([path]) > 6 and right([path],3) = left([path],3)<br />
+/*<br />
+id          name pid         path           level<br />
+----------- ---- ----------- -------------- -----<br />
+6           A    4           A->B->C->A->     4<br />
+<br />
+(1 行受影响)<br />
+*/<br />
+<br />
+------------------------------------------------------------------------<br />
+-- Author : happyflystone  <br />
+-- Date   : 2010-04-06 <br />
+-- Version: Microsoft SQL Server 2005 - 9.00.2047.00 (Intel X86) <br />
+--          Apr 14 2006 01:12:25 <br />
+--          Copyright (c) 1988-2005 Microsoft Corporation<br />
+--          Standard Edition on Windows NT 5.2 (Build 3790: Service Pack 2)<br />
+--      <br />
+------------------------------------------------------------------------<br />
+<br />
+-- Test Data: ta<br />
+IF OBJECT_ID('[tb]') IS NOT NULL <br />
+    DROP TABLE [tb]<br />
+Go<br />
+CREATE TABLE tb([cid] NVARCHAR(1),[pid] NVARCHAR(1))<br />
+Go<br />
+INSERT INTO tb<br />
+    SELECT 'A','B' UNION ALL<br />
+    SELECT 'A','D' UNION ALL<br />
+    SELECT 'B','C' UNION ALL<br />
+    SELECT 'B','D' UNION ALL<br />
+    SELECT 'C','A' UNION ALL<br />
+    SELECT 'D','E' UNION ALL<br />
+    SELECT 'D','F' <br />
+GO<br />
+--Start<br />
+;with cte<br />
+as<br />
+(<br />
+    select   *,[path]=cast([cid]+'->' as varchar(100)) ,[level] = 1 <br />
+    from (select distinct cid,cast('' as nvarchar(1))  as pid from tb union  select distinct pid ,'' from tb) b <br />
+    union all<br />
+    select a.*,cast(a.[cid]+'->'+c.[path] as varchar(100)),[level]+1 <br />
+    from cte c ,tb a <br />
+    where a.pid = c.cid and charindex(a.[cid]+'->',c.[path])=0<br />
+)<br />
+select <br />
+[path]+cid+'->'<br />
+from cte<br />
+where exists(select 2 from tb where cid+'->' = right([path],3) and pid+'->' = left([path],3))-- = left([path],3)<br />
+<br />
+<br />
+--Result:<br />
+/*<br />
+--------------<br />
+A->B->C->A-><br />
+C->A->B->C-><br />
+B->C->A->B-><br />
+<br />
+(3 行受影响)<br />
+<br />
+*/<br />
+--End <br />
+<br />
+<br />
+<br />
+<br />
+本文来自CSDN博客，转载请标明出处：http://blog.csdn.net/htl258/archive/2010/04/06/5456223.aspx<br />
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/36048d20-d909-48e1-b066-230dead0ef61.html" >https://wzpabc.github.io/Template/36048d20-d909-48e1-b066-230dead0ef61.html</a>

@@ -1,0 +1,13 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>删除系统内所有用户表</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:31:19<br /><p>--删除所有用户表：<br />
+--select * from sysobjects where xtype='U' and category=0<br />
+use master<br />
+declare @str varchar(max)<br />
+set @str=''<br />
+select @str=@str+' drop table '+quotename(name,'')+';'<br />
+from sysobjects where xtype='U' and category=0 <br />
+--and name not in('table','user','return','order','客户信息')<br />
+print @str<br />
+exec(@str)<br />
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/82c0d470-eaba-49b3-8f60-843c16fc033f.html" >https://wzpabc.github.io/Template/82c0d470-eaba-49b3-8f60-843c16fc033f.html</a>

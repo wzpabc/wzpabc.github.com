@@ -1,0 +1,60 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>如何使用case when 进行排序</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:31:19<br /><p>-->生成测试数据:<br />
+GO<br />
+IF OBJECT_ID('TBL')IS NOT NULL<br />
+DROP TABLE TBL<br />
+GO<br />
+CREATE TABLE TBL(<br />
+日期 DATE,<br />
+备注 VARCHAR(100)<br />
+)<br />
+GO<br />
+INSERT TBL<br />
+SELECT '2012-03-02','B' UNION ALL<br />
+SELECT '2012-03-05','C' UNION ALL<br />
+SELECT '2012-03-06','D' UNION ALL<br />
+SELECT '2012-03-07','E' UNION ALL<br />
+SELECT '2012-03-09','F' UNION ALL<br />
+SELECT '2012-03-11','G' UNION ALL<br />
+SELECT '2012-03-12','H' UNION ALL<br />
+SELECT '2012-03-13','I' UNION ALL<br />
+SELECT '2012-03-15','J' UNION ALL<br />
+SELECT '2012-03-19','K' UNION ALL<br />
+SELECT '2012-03-20','L'<br />
+<br />
+<br />
+--不使用union all<br />
+;with t<br />
+as(<br />
+select *,case when 日期>=getdate() then 1 else 0 end as A<br />
+from tbl<br />
+)<br />
+<br />
+select 日期,备注 from t<br />
+order by a,(case when a=1 then 日期 end),<br />
+(case when a=0 then 日期 end) desc<br />
+<br />
+/*<br />
+日期	备注<br />
+2012-03-09	F<br />
+2012-03-07	E<br />
+2012-03-06	D<br />
+2012-03-05	C<br />
+2012-03-02	B<br />
+2012-03-11	G<br />
+2012-03-12	H<br />
+2012-03-13	I<br />
+2012-03-15	J<br />
+2012-03-19	K<br />
+2012-03-20	L<br />
+*/<br />
+<br />
+<br />
+declrae @str varchar(100)<br />
+set @str=''<br />
+select @str=@str+','+ltrim(id) from tbla<br />
+select * from tblb<br />
+where id in(select id from tbla)<br />
+order by charindex(','+ltrim(id),@str)<br />
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/e53c5652-b64d-4f3a-8470-0ba21e7c9744.html" >https://wzpabc.github.io/Template/e53c5652-b64d-4f3a-8470-0ba21e7c9744.html</a>

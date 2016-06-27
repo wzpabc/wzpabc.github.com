@@ -1,5 +1,5 @@
 ﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>循环数据库压缩日志文件</h2><br /> 
-uploaded by Patrick. 06/27/2016 15:17:42<br /><p>--循环数据库压缩日志文件(假设日志文件fileid=2)<br />
+uploaded by Patrick. 06/27/2016 15:31:18<br /><p>--循环数据库压缩日志文件(假设日志文件fileid=2)<br />
 create table #db(id int identity(1,1),name varchar(80),dbsize int,mdfsize int,ldfsize int)<br />
 insert into #db<br />
 	select a.name,SUM(b.size)*8/1024 as 'dbsize[MB]',<br />

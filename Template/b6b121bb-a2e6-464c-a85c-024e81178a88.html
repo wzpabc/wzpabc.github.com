@@ -1,0 +1,66 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>变态的行列转换</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:31:19<br /><p>--> 测试数据：[tbl]<br />
+go<br />
+if object_id('[tbl]') is not null <br />
+drop table [tbl]<br />
+go<br />
+create table [tbl](<br />
+[id] int,<br />
+[createtime] datetime,<br />
+[xiaoshoushu] int<br />
+)<br />
+go<br />
+insert [tbl]<br />
+select 1,'2012-03-09 01:01:00.000',1 union all<br />
+select 2,'2012-03-09 01:02:00.000',2 union all<br />
+select 3,'2012-03-09 02:15:00.000',3 union all<br />
+select 4,'2012-03-09 03:01:00.000',5 union all<br />
+select 5,'2012-03-09 03:15:00.000',1 union all<br />
+select 6,'2012-03-09 05:15:00.000',3 union all<br />
+select 7,'2012-03-09 05:35:00.000',4 union all<br />
+select 8,'2012-03-09 05:45:00.000',3 union all<br />
+select 1,'2012-03-09 01:01:00.000',1 union all<br />
+select 2,'2012-03-09 01:02:00.000',2 union all<br />
+select 3,'2012-03-09 18:15:00.000',3 union all<br />
+select 4,'2012-03-09 03:01:00.000',5 union all<br />
+select 5,'2012-03-09 03:15:00.000',1 union all<br />
+select 6,'2012-03-09 05:15:00.000',3 union all<br />
+select 7,'2012-03-09 19:35:00.000',4 union all<br />
+select 8,'2012-03-09 12:45:00.000',3 union all<br />
+select 1,'2012-03-09 07:01:00.000',1 union all<br />
+select 2,'2012-03-09 06:02:00.000',2 union all<br />
+select 3,'2012-03-09 02:15:00.000',3 union all<br />
+select 4,'2012-03-09 11:01:00.000',5 union all<br />
+select 5,'2012-03-09 23:15:00.000',1 union all<br />
+select 6,'2012-03-09 22:15:00.000',3 union all<br />
+select 7,'2012-03-09 1:35:00.000',4 union all<br />
+select 8,'2012-03-09 00:45:00.000',3<br />
+<br />
+create table #tbl(<br />
+[id] int,<br />
+[createtime] datetime,<br />
+[xiaoshoushu] int,<br />
+[hour] int<br />
+)<br />
+select * from #tbl<br />
+insert #tbl<br />
+select *,case when DATEPART(MM,[createtime])=0 then <br />
+DATEPART(HH,[createtime]) else DATEPART(HH,[createtime])+1 <br />
+end as [hour] from tbl<br />
+<br />
+declare @hour int<br />
+declare @str varchar(max)<br />
+set @str=''<br />
+select @str=@str+','+'['+CAST([hour]-1 as varchar)+'点到'+CAST([hour] as varchar)+'点]'+<br />
+'=sum(case when [hour]='+cast([hour] as varchar)+' then [xiaoshoushu] else 0 end)'<br />
+from #tbl group by [hour]<br />
+set @str='select convert(varchar(10),[createtime],120) as [createtime]'<br />
++@str+' from #tbl group by convert(varchar(10),[createtime],120)'<br />
+print @str<br />
+exec(@str)<br />
+/*<br />
+createtime	0点到1点	1点到2点	2点到3点	3点到4点	5点到6点	6点到7点	7点到8点	11点到12点	12点到13点	18点到19点	19点到20点	22点到23点	23点到24点<br />
+2012-03-09	3	10	6	12	13	2	1	5	3	3	4	3	1<br />
+*/<br />
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/b6b121bb-a2e6-464c-a85c-024e81178a88.html" >https://wzpabc.github.io/Template/b6b121bb-a2e6-464c-a85c-024e81178a88.html</a>

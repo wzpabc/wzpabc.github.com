@@ -1,0 +1,121 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>下一个生日还有多少天</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:31:19<br /><p>/*<br />
+6、编写一个函数func_calcdays，计算下一个生日还有多少天，函数<br />
+   带两个输入参数（生日和当前日期），一个返回值（天数）。<br />
+*/<br />
+go<br />
+if object_id('func_calcdays')is not null<br />
+drop function func_calcdays<br />
+go<br />
+create function func_calcdays( <br />
+       @birthday as datetime , @currentdate as datetime ) <br />
+returns int <br />
+as <br />
+begin <br />
+declare @currentage int,@nextbirthday datetime,@days int<br />
+if month(@currentdate)>month(@birthday)<br />
+--当前月份大于生日所在月份,表示生日已经过了<br />
+begin<br />
+select @currentage=datediff(yy,@birthday,@currentdate)<br />
+select @nextbirthday=dateadd(yy,(@currentage+1),@birthday)<br />
+select @days=datediff(dd,@currentdate,@nextbirthday)<br />
+end<br />
+else <br />
+if month(@currentdate)<month(@birthday)<br />
+--当前月份小于生日所在月份,生日还没过,生一个生日是去年<br />
+begin<br />
+select @currentage=datediff(yy,@birthday,@currentdate)<br />
+select @nextbirthday=dateadd(yy,@currentage,@birthday)<br />
+select @days=datediff(dd,@currentdate,@nextbirthday)<br />
+end<br />
+else <br />
+--当前月份等于生日所在月份<br />
+if day(@birthday)>day(@currentdate)--生日日期大于当前日期,生日还没过,且就在当前这一个月<br />
+begin<br />
+select @days=day(@birthday)-day(@currentdate)<br />
+end <br />
+else--生日日期小于当前日期,生日已经过了,且就在当前这一个月<br />
+begin<br />
+select @currentage=datediff(yy,@birthday,@currentdate)<br />
+select @nextbirthday=dateadd(yy,(@currentage+1),@birthday)<br />
+select @days=datediff(dd,@currentdate,@nextbirthday)<br />
+end<br />
+return @days<br />
+end<br />
+<br />
+--调用函数<br />
+select dbo . func_calcdays ( '1990-11-23' , getdate ())<br />
+<br />
+/*<br />
+6、编写一个函数func_calcdays，计算下一个生日还有多少天，函数<br />
+   带两个输入参数（生日和当前日期），一个返回值（天数）。<br />
+*/<br />
+<br />
+create function func_calcdays(@birth datetime,@curr datetime)<br />
+returns int<br />
+as<br />
+begin<br />
+declare @nextbirth datetime,@days int<br />
+if(month(@curr)>month(@birth))--生日已过<br />
+begin<br />
+select @nextbirth=dateadd(year,datediff(year,@birth,@curr)+1,@birth);<br />
+select @days= datediff(day,@curr,@nextbirth);<br />
+end<br />
+else if(month(@curr)=month(@birth))<br />
+ begin<br />
+  if(day(@curr)>day(@birth))--生日已过<br />
+   begin<br />
+     select @nextbirth=dateadd(year,datediff(year,@birth,@curr)+1,@birth);<br />
+     select @days= datediff(day,@curr,@nextbirth);<br />
+   end<br />
+  else   --生日未过<br />
+   begin<br />
+     select @nextbirth=dateadd(year,datediff(year,@birth,@curr),@birth);<br />
+     select @days= datediff(day,@curr,@nextbirth);<br />
+   end<br />
+ end<br />
+else  --生日未过<br />
+  begin<br />
+     select @nextbirth=dateadd(year,datediff(year,@birth,@curr),@birth);<br />
+     select @days= datediff(day,@curr,@nextbirth);<br />
+   end<br />
+return @days<br />
+end<br />
+<br />
+<br />
+<br />
+select dbo.func_calcdays('1980-12-15',getdate())<br />
+<br />
+<br />
+--建立存储过程实现:<br />
+go<br />
+if object_id('pro_calcdays')is not null<br />
+drop proc pro_calcdays<br />
+go<br />
+create proc pro_calcdays @birthday datetime,@days int output<br />
+as<br />
+select @days=<br />
+       case  <br />
+       when <br />
+           month(@birthday)<month(getdate())<br />
+       then <br />
+          datediff(dd,getdate(),dateadd(yy,(year(getdate())-year(@birthday)+1),@birthday))  <br />
+       --case<br />
+       when <br />
+           month(@birthday)>month(getdate()) <br />
+       then<br />
+          datediff(dd,getdate(),dateadd(yy,(year(@birthday)-year(getdate())),@birthday))<br />
+       --case<br />
+       when<br />
+           month(@birthday)=month(getdate()) and day(@birthday)>day(getdate())<br />
+       then         <br />
+           day(@birthday)-day(getdate())<br />
+       else<br />
+           datediff(dd,getdate(),dateadd(yy,(year(getdate())-year(@birthday)+1),@birthday))  <br />
+       end<br />
+<br />
+declare @days int<br />
+exec pro_calcdays '1990-12-19',@days output<br />
+select @days as day<br />
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/97edf03a-cdd1-43dd-89b9-89509cf0307c.html" >https://wzpabc.github.io/Template/97edf03a-cdd1-43dd-89b9-89509cf0307c.html</a>

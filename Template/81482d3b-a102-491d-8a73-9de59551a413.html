@@ -1,0 +1,60 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>拆分表字段的值</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:31:20<br /><p>--分拆列值<br />
+--原著：邹建<br />
+--改编：爱新觉罗.毓华(十八年风雨,守得冰山雪莲花开)  2007-12-16  广东深圳<br />
+<br />
+/*<br />
+有表tb, 如下: <br />
+id          value <br />
+----------- ----------- <br />
+1          aa,bb <br />
+2          aaa,bbb,ccc <br />
+*/<br />
+--欲按id,分拆value列, 分拆后结果如下: <br />
+/*<br />
+id          value <br />
+----------- -------- <br />
+1          aa <br />
+1          bb <br />
+2          aaa <br />
+2          bbb <br />
+2          ccc <br />
+*/<br />
+--1. 旧的解决方法(sql server 2000) <br />
+select top 8000 id = identity(int, 1, 1) into # from syscolumns a, syscolumns b <br />
+<br />
+select A.id, substring(A.[values], B.id, charindex(',', A.[values] + ',', B.id) - B.id) <br />
+from tb A, # B <br />
+where substring(',' + A.[values], B.id, 1) = ',' <br />
+<br />
+drop table # <br />
+<br />
+--2. 新的解决方法(sql server 2005) <br />
+<br />
+create table tb(id int,value varchar(30)) <br />
+insert into tb values(1,'aa,bb') <br />
+insert into tb values(2,'aaa,bbb,ccc') <br />
+go <br />
+select A.id, B.value <br />
+from( <br />
+    select id, [value] = convert(xml,' <root> <v>' + replace([value], ',', ' </v> <v>') + ' </v> </root>') from tb <br />
+)A <br />
+outer apply( <br />
+    select value = N.v.value('.', 'varchar(100)') from A.[value].nodes('/root/v') N(v) <br />
+)B <br />
+<br />
+drop table tb <br />
+<br />
+/* <br />
+id          value <br />
+----------- ------------------------------ <br />
+1          aa <br />
+1          bb <br />
+2          aaa <br />
+2          bbb <br />
+2          ccc <br />
+<br />
+(5 行受影响) <br />
+*/<br />
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/81482d3b-a102-491d-8a73-9de59551a413.html" >https://wzpabc.github.io/Template/81482d3b-a102-491d-8a73-9de59551a413.html</a>

@@ -1,0 +1,37 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>如何截取无规则字符串中的数字</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:31:20<br /><p>--如何截取无规律的字符串中的数字：<br />
+ <br />
+declare   @str   varchar(100),@str2   varchar(100) <br />
+set   @str= 'B3 ' <br />
+select   @str2=substring(@str,patindex( '%[0-9]% ',@str),len(@str)) --得到以第一个数字开始的字符串 <br />
+,@str2=left(@str2,patindex( '%[^0-9]% ',@str2)-1)--得到第一个非数字开始的位置,并根据此位置删除其及以后的字符 <br />
+ select @str2     --显示结果 <br />
+go<br />
+create table #s(<br />
+col varchar(10)<br />
+)<br />
+insert #s<br />
+select 'B3' union all<br />
+select 'C1' union all<br />
+select 'D\4' union all<br />
+select '4MD' union all<br />
+select 'AR/12BD'<br />
+;with t<br />
+as(<br />
+select substring(col+' ',patindex( '%[0-9]% ',col+' '),len(col+' ')) as col1 <br />
+from #s<br />
+)<br />
+select left(col1+' ',patindex( '%[^0-9]% ',col1+' ')-1) as col from t<br />
+/*<br />
+col<br />
+3<br />
+1<br />
+4<br />
+12<br />
+4<br />
+*/<br />
+--加了一种情况,也可以的--不存在 这样的产品 01 买过了，x没买过<br />
+<br />
+<br />
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/cbb709d5-29fd-4ab2-9a84-b55715fa4e7e.html" >https://wzpabc.github.io/Template/cbb709d5-29fd-4ab2-9a84-b55715fa4e7e.html</a>

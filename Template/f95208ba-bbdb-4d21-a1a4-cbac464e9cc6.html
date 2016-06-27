@@ -1,0 +1,191 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>行列互换</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:31:20<br /><p>--行列互转<br />
+--摘自中国风博客，引用请标明内容来源<br />
+--1、行换列<br />
+if object_id('Class') is not  null<br />
+    drop table Class<br />
+Go<br />
+Create table Class(<br />
+[Student] nvarchar(2),<br />
+[Course] nvarchar(2),<br />
+[Score] int)<br />
+Insert Class<br />
+select N'张三',N'语文',78 union all<br />
+select N'张三',N'数学',87 union all<br />
+select N'张三',N'英语',82 union all<br />
+select N'张三',N'物理',90 union all<br />
+select N'李四',N'语文',65 union all<br />
+select N'李四',N'数学',77 union all<br />
+select N'李四',N'英语',65 union all<br />
+select N'李四',N'物理',85 <br />
+Go<br />
+<br />
+--2000方法:<br />
+--动态:<br />
+declare @s nvarchar(4000)<br />
+set @s=''<br />
+Select @s=@s+','+quotename([Course])+'=max(case when [Course]='    <br />
+   <br />
+    +quotename([Course],'''')+' then [Score] else 0 end)'<br />
+from <br />
+    Class group by[Course]<br />
+--select @s<br />
+exec('select [Student]'+@s+' from Class group by [Student]')<br />
+--生成静态:<br />
+select <br />
+    [Student],<br />
+    [数学]=max(case when [Course]='数学' then [Score] else 0 end),<br />
+    [物理]=max(case when [Course]='物理' then [Score] else 0 end),<br />
+    [英语]=max(case when [Course]='英语' then [Score] else 0 end),<br />
+    [语文]=max(case when [Course]='语文' then [Score] else 0 end) <br />
+from <br />
+    Class <br />
+group by [Student]<br />
+GO<br />
+--动态:<br />
+<br />
+declare @s nvarchar(4000)<br />
+Select @s=isnull(@s+',','')+quotename([Course]) from Class group by[Course]<br />
+select @s<br />
+exec('select * from Class pivot (max([Score]) for [Course] in('+@s+'))b')<br />
+<br />
+--生成静态:<br />
+select * <br />
+from <br />
+    Class <br />
+pivot <br />
+    (max([Score]) for [Course] in([数学],[物理],[英语],[语文]))b<br />
+<br />
+--生成格式:<br />
+/*<br />
+Student 数学         物理         英语         语文<br />
+------- ----------- ----------- ----------- -----------<br />
+李四     77          85          65          65<br />
+张三     87          90          82          78<br />
+<br />
+(2 行受影响)<br />
+*/<br />
+<br />
+go<br />
+--加上总成绩(学科平均分)<br />
+<br />
+--2000方法:<br />
+--动态:<br />
+<br />
+declare @s nvarchar(4000)<br />
+set @s=''<br />
+Select @s=@s+','+quotename([Course])+'=max(case when [Course]='+quotename([Course],'''')+'then [Score] else 0 end)'<br />
+from Class group by[Course]<br />
+exec('select [Student]'+@s+',[总成绩]=sum([Score])  from Class group by [Student]')--加多一列(学科平均分用avg([Score]))<br />
+<br />
+生成动态:<br />
+<br />
+select <br />
+    [Student],<br />
+    [数学]=max(case when [Course]='数学' then [Score] else 0 end),<br />
+    [物理]=max(case when [Course]='物理' then [Score] else 0 end),<br />
+    [英语]=max(case when [Course]='英语' then [Score] else 0 end),<br />
+    [语文]=max(case when [Course]='语文' then [Score] else 0 end),<br />
+    [总成绩]=([Score]) --加多一列(学科平均分用avg([Score]))<br />
+from <br />
+    Class <br />
+group by [Student]<br />
+<br />
+go<br />
+<br />
+--2005方法:<br />
+<br />
+动态:<br />
+<br />
+declare @s nvarchar(4000)<br />
+Select  @s=isnull(@s+',','')+quotename([Course]) from Class group by[Course] <br />
+--isnull(@s+',','') 去掉字符串@s中第一个逗号<br />
+<br />
+exec('select [Student],'+@s+',[总成绩] from (select *,[总成绩]=sum([Score])over(partition by [Student]) from Class) a <br />
+pivot (max([Score]) for [Course] in('+@s+'))b ')<br />
+<br />
+--生成静态:<br />
+<br />
+select <br />
+    [Student],[数学],[物理],[英语],[语文],[总成绩] <br />
+from <br />
+    (select *,[总成绩]=sum([Score])over(partition by [Student]) from Class) a --平均分时用avg([Score])<br />
+pivot <br />
+    (max([Score]) for [Course] in([数学],[物理],[英语],[语文]))b <br />
+<br />
+生成格式:<br />
+<br />
+/*<br />
+Student 数学         物理         英语         语文         总成绩<br />
+------- ----------- ----------- ----------- ----------- -----------<br />
+李四     77          85          65          65          292<br />
+张三     87          90          82          78          337<br />
+<br />
+(2 行受影响)<br />
+*/<br />
+<br />
+go<br />
+<br />
+--2、列转行<br />
+ <br />
+if not object_id('Class') is null<br />
+    drop table Class<br />
+Go<br />
+Create table Class([Student] nvarchar(2),[数学] int,[物理] int,[英语] int,[语文] int)<br />
+Insert Class<br />
+select N'李四',77,85,65,65 union all<br />
+select N'张三',87,90,82,78<br />
+Go<br />
+<br />
+--2000:<br />
+<br />
+动态:<br />
+<br />
+declare @s nvarchar(4000)<br />
+select @s=isnull(@s+' union all ','')+'select [Student],[Course]='+quotename(Name,'''')--isnull(@s+' union all ','') 去掉字符串@s中第一个union all<br />
++',[Score]='+quotename(Name)+' from Class'<br />
+from syscolumns where ID=object_id('Class') and Name not in('Student')--排除不转换的列<br />
+order by Colid<br />
+exec('select * from ('+@s+')t order by [Student],[Course]')--增加一个排序<br />
+<br />
+生成静态:<br />
+select * <br />
+from (select [Student],[Course]='数学',[Score]=[数学] from Class union all <br />
+select [Student],[Course]='物理',[Score]=[物理] from Class union all <br />
+select [Student],[Course]='英语',[Score]=[英语] from Class union all <br />
+select [Student],[Course]='语文',[Score]=[语文] from Class)t <br />
+order by [Student],[Course]<br />
+<br />
+go<br />
+--2005:<br />
+<br />
+动态:<br />
+<br />
+declare @s nvarchar(4000)<br />
+select @s=isnull(@s+',','')+quotename(Name)<br />
+from syscolumns where ID=object_id('Class') and Name not in('Student') <br />
+order by Colid<br />
+exec('select Student,[Course],[Score] from Class unpivot ([Score] for [Course] in('+@s+'))b')<br />
+<br />
+go<br />
+select <br />
+    Student,[Course],[Score] <br />
+from <br />
+    Class <br />
+unpivot <br />
+    ([Score] for [Course] in([数学],[物理],[英语],[语文]))b<br />
+生成格式:<br />
+/*<br />
+Student Course Score<br />
+------- ------- -----------<br />
+李四     数学     77<br />
+李四     物理     85<br />
+李四     英语     65<br />
+李四     语文     65<br />
+张三     数学     87<br />
+张三     物理     90<br />
+张三     英语     82<br />
+张三     语文     78<br />
+*/<br />
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/f95208ba-bbdb-4d21-a1a4-cbac464e9cc6.html" >https://wzpabc.github.io/Template/f95208ba-bbdb-4d21-a1a4-cbac464e9cc6.html</a>

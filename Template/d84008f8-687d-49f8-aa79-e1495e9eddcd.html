@@ -1,0 +1,91 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>分区表</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:31:20<br /><p>/*<br />
+本文使对现有的数据库中新建一个表进行分区.暂未发现如何对一个已有数据<br />
+的表进行分区处理的资料.本文事例仅为本人测试用.其中有很多未考虑之处<br />
+和错误,还请大家赐教. <br />
+转载请保留此信息 来自http://user.qzone.qq.com/149651816 作者:BG1JT<br />
+*/<br />
+--创建文件组<br />
+/*<br />
+为数据库[Mydb]添加4个文件组<br />
+*/<br />
+ALTER DATABASE Mydb ADD FILEGROUP [MydbSF1]<br />
+ALTER DATABASE Mydb<br />
+ADD FILE <br />
+(NAME ='MydbSF1',<br />
+FILENAME = 'D:\db\fabuTb\1\MydbSF1.ndf',<br />
+FILEGROWTH=1,<br />
+MAXSIZE = UNLIMITED<br />
+)TO FILEGROUP <br />
+ALTER DATABASE Mydb ADD FILEGROUP [MydbSF2]<br />
+ALTER DATABASE Mydb<br />
+ADD FILE <br />
+(NAME = N'MydbSF2',<br />
+FILENAME = 'D:\db\fabuTb\2\MydbSF2.ndf',<br />
+FILEGROWTH=1,<br />
+MAXSIZE = UNLIMITED)<br />
+TO FILEGROUP <br />
+ALTER DATABASE Mydb ADD FILEGROUP [MydbSF3]<br />
+ALTER DATABASE Mydb<br />
+ADD FILE <br />
+(NAME = N'MydbSF3',<br />
+FILENAME = N'D:\db\fabuTb\3\MydbSF3.ndf',<br />
+FILEGROWTH=1,<br />
+MAXSIZE = UNLIMITED)<br />
+TO FILEGROUP <br />
+ALTER DATABASE Mydb ADD FILEGROUP [MydbSF4]<br />
+ALTER DATABASE Mydb<br />
+ADD FILE<br />
+(NAME = N'MydbSF4',<br />
+FILENAME = N'D:\db\fabuTb\4\MydbSF4.ndf',<br />
+FILEGROWTH=1,<br />
+MAXSIZE = UNLIMITED)<br />
+TO FILEGROUP [MydbSF4]<br />
+/*<br />
+添加文件组结束<br />
+*/<br />
+--创建分区函数<br />
+/*<br />
+以数据库表中ID为参考,此处是以1~10,11~20,<br />
+21~30,31~&做为4个表分区的界限<br />
+*/<br />
+CREATE PARTITION FUNCTION pf_Product_Sell (int)<br />
+AS RANGE RIGHT FOR VALUES (10, 20, 30)<br />
+/*<br />
+将分区界限分别放入4个不同的文件组中<br />
+*/<br />
+CREATE PARTITION SCHEME [ps_Product_SchemeSell] AS PARTITION<br />
+pf_Product_fabu TO (MydbSF1,MydbSF2,MydbSF3,MydbSF4)<br />
+--创建表(在文件组的表分区上)<br />
+SET ANSI_NULLS ON<br />
+GO<br />
+SET QUOTED_IDENTIFIER ON<br />
+GO<br />
+CREATE TABLE [dbo].[Sell](<br />
+[id] [int] IDENTITY(1,1) NOT NULL,<br />
+[userid] [int] NOT NULL<br />
+CONSTRAINT [PK_Sell] PRIMARY KEY CLUSTERED <br />
+(<br />
+[id] ASC<br />
+)WITH (PAD_INDEX   = OFF, STATISTICS_NORECOMPUTE   = OFF, IGNORE_DUP_KEY = OFF,<br />
+ALLOW_ROW_LOCKS   = ON, ALLOW_PAGE_LOCKS   = ON) ON [ps_Product_SchemeSell]([id])<br />
+)<br />
+/*<br />
+然后大家可以插入数据...<br />
+然后用下面的那个查询语句查看PF中的值<br />
+是否已经吧不同数据放在不同的分区中了<br />
+*/<br />
+SELECT *, $PARTITION.[pf_Product_Sell](ID) AS PF<br />
+FROM sell<br />
+/*<br />
+需要注意的在创建分组文件的时候.必须设置自动增长<br />
+并且不要最大值设置为不限,否则在插入数据的时候回<br />
+出现错误.<br />
+*/<br />
+<br />
+这样处理的时候像上10G以上单表的数据操作不必每次操作超大的数据库文件了.<br />
+而且对 I/O 物理磁盘的瓶颈能有效的减轻.<br />
+<br />
+SQL 2005 更多功能继续发觉中<br />
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/d84008f8-687d-49f8-aa79-e1495e9eddcd.html" >https://wzpabc.github.io/Template/d84008f8-687d-49f8-aa79-e1495e9eddcd.html</a>
