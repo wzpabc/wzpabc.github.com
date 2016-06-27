@@ -1,0 +1,156 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--测试数据<br />
+CREATE TABLE tb(col1 varchar(10),col2 int)<br />
+INSERT tb SELECT 'a',2<br />
+UNION ALL SELECT 'a',3<br />
+UNION ALL SELECT 'a',6<br />
+UNION ALL SELECT 'a',7<br />
+UNION ALL SELECT 'a',8<br />
+UNION ALL SELECT 'b',1<br />
+UNION ALL SELECT 'b',5<br />
+UNION ALL SELECT 'b',6<br />
+UNION ALL SELECT 'b',7<br />
+GO<br />
+<br />
+--缺号分布查询<br />
+SELECT a.col1,start_col2=a.col2+1,<br />
+	end_col2=(<br />
+		SELECT MIN(col2) FROM tb aa<br />
+		WHERE col1=a.col1 AND col2>a.col2 <br />
+			AND NOT EXISTS(<br />
+				SELECT * FROM tb WHERE col1=aa.col1 AND col2=aa.col2-1))<br />
+		-1<br />
+FROM(<br />
+	SELECT col1,col2 FROM tb<br />
+	UNION ALL --为每组编号补充查询起始编号是否缺号的辅助记录<br />
+	SELECT DISTINCT col1,0 FROM tb<br />
+)a,(SELECT col1,col2=MAX(col2) FROM tb GROUP BY col1)b<br />
+WHERE a.col1=b.col1 AND a.col2<b.col2 --过滤掉每组数据中,编号最大的记录<br />
+	AND NOT EXISTS(<br />
+		SELECT * FROM tb WHERE col1=a.col1 AND col2=a.col2+1)<br />
+ORDER BY a.col1,start_col2<br />
+/*--结果<br />
+col1       start_col2  end_col2    <br />
+-------------- -------------- ----------- <br />
+a          1           1<br />
+a          4           5<br />
+b          2           4<br />
+--*/<br />
+<br />
+<br />
+--测试数据<br />
+CREATE TABLE tb(col1 varchar(10),col2 int)<br />
+INSERT tb SELECT 'a',2<br />
+UNION ALL SELECT 'a',3<br />
+UNION ALL SELECT 'a',6<br />
+UNION ALL SELECT 'a',7<br />
+UNION ALL SELECT 'a',8<br />
+UNION ALL SELECT 'b',1<br />
+UNION ALL SELECT 'b',5<br />
+UNION ALL SELECT 'b',6<br />
+UNION ALL SELECT 'b',7<br />
+GO<br />
+<br />
+--缺号分布查询<br />
+SELECT a.col1,start_col2=a.col2+1,<br />
+	end_col2=(<br />
+		SELECT MIN(col2) FROM tb aa<br />
+		WHERE col1=a.col1 AND col2>a.col2 <br />
+			AND NOT EXISTS(<br />
+				SELECT * FROM tb WHERE col1=aa.col1 AND col2=aa.col2-1))<br />
+		-1<br />
+FROM(<br />
+	SELECT col1,col2 FROM tb<br />
+	UNION ALL --为每组编号补充查询起始编号是否缺号的辅助记录<br />
+	SELECT DISTINCT col1,0 FROM tb<br />
+)a,(SELECT col1,col2=MAX(col2) FROM tb GROUP BY col1)b<br />
+WHERE a.col1=b.col1 AND a.col2<b.col2 --过滤掉每组数据中,编号最大的记录<br />
+	AND NOT EXISTS(<br />
+		SELECT * FROM tb WHERE col1=a.col1 AND col2=a.col2+1)<br />
+ORDER BY a.col1,start_col2<br />
+/*--结果<br />
+col1       start_col2  end_col2    <br />
+-------------- -------------- ----------- <br />
+a          1           1<br />
+a          4           5<br />
+b          2           4<br />
+--*/<br />
+ <br />
+让你望见影子<trieagle@126.com>  9:49:01<br />
+--生成已用编号分布字符串的函数<br />
+CREATE FUNCTION f_GetStrSeries(@col1 varchar(10))<br />
+RETURNS varchar(8000)<br />
+AS<br />
+BEGIN<br />
+	DECLARE @re varchar(8000),@pid int<br />
+	SELECT @re='',@pid=-1<br />
+	SELECT @re=CASE <br />
+			WHEN col2=@pid+1 THEN @re<br />
+			ELSE @re<br />
+				+CASE <br />
+					WHEN RIGHT(@re,CHARINDEX(',',REVERSE(@re)+',')-1)=@pid THEN ''<br />
+					ELSE CAST(-@pid as varchar)<br />
+				END<br />
+				+','+CAST(col2 as varchar) <br />
+			END,<br />
+		@pid=col2<br />
+	FROM tb<br />
+	WHERE col1=@col1<br />
+	ORDER BY col2<br />
+	RETURN(STUFF(@re,1,2,'')<br />
+		+CASE <br />
+			WHEN RIGHT(@re,CHARINDEX(',',REVERSE(@re)+',')-1)=@pid THEN ''<br />
+			ELSE CAST(-@pid as varchar)<br />
+		END)<br />
+END<br />
+GO<br />
+<br />
+--生成缺号分布字符串的函数<br />
+CREATE FUNCTION f_GetStrNSeries(@col1 varchar(10))<br />
+RETURNS VARCHAR(8000)<br />
+AS<br />
+BEGIN<br />
+	DECLARE @re varchar(8000),@pid int<br />
+	SELECT @re='',@pid=0<br />
+	SELECT @re=CASE <br />
+			WHEN col2=@pid+1 THEN @re<br />
+			ELSE @re+','+CAST(@pid+1 as varchar)<br />
+				+CASE <br />
+					WHEN @pid+1=col2-1 THEN ''<br />
+					ELSE CAST(1-col2 as varchar)<br />
+				END<br />
+			END,<br />
+		@pid=col2<br />
+	FROM tb<br />
+	WHERE col1=@col1<br />
+	ORDER BY col2<br />
+	RETURN(STUFF(@re,1,1,''))<br />
+END<br />
+GO<br />
+<br />
+--调用测试<br />
+--测试数据<br />
+CREATE TABLE tb(col1 varchar(10),col2 int)<br />
+INSERT tb SELECT 'a',2<br />
+UNION ALL SELECT 'a',3<br />
+UNION ALL SELECT 'a',5<br />
+UNION ALL SELECT 'a',8<br />
+UNION ALL SELECT 'a',9<br />
+UNION ALL SELECT 'b',1<br />
+UNION ALL SELECT 'b',5<br />
+UNION ALL SELECT 'b',6<br />
+UNION ALL SELECT 'b',7<br />
+<br />
+--查询<br />
+SELECT col1,<br />
+	col2_Series=dbo.f_GetStrSeries(col1),<br />
+	col2_Series=dbo.f_GetStrNSeries(col1)<br />
+FROM tb<br />
+GROUP BY col1<br />
+/*--结果<br />
+col1       col2_Series       col2_Series <br />
+-------------- ------------------------ --------------<br />
+a          2-3,5,8-9        1,4,6-7<br />
+b          1,5-7           2-4<br />
+--*/<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:15

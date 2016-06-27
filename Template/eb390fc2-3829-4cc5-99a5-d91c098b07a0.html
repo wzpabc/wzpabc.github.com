@@ -1,0 +1,38 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--不同服务器数据库之间的数据操作<br />
+--************************************************************************************<br />
+1、--创建链接服务器 <br />
+exec sp_addlinkedserver   'ITSV', ' ', 'SQLOLEDB', '远程服务器名或ip地址 ' <br />
+exec sp_addlinkedsrvlogin  'ITSV', 'false ',null, '用户名', '密码' <br />
+<br />
+<br />
+2、启动两台服务器的MSDTC服务 <br />
+MSDTC服务提供分布式事务服务，如果要在数据库中使用分布式事务，必须在参与的双方服务器启动MSDTC（Distributed Transaction Coordinator）服务。<br />
+<br />
+3、打开双方的135端口<br />
+MSDTC服务依赖于RPC（Remote Procedure Call (RPC)）服务,RPC使用135端口，保证RPC服务启动，如果服务器有防火墙，保证135端口不被防火墙挡住。<br />
+使用“telnet IP 135”命令测试对方端口是否对外开放。也可用端口扫描软件（比如Advanced Port Scanner）扫描端口以判断端口是否开放<br />
+<br />
+<br />
+4、--如要创建触发器   <br />
+create   trigger   t_test   on   test   <br />
+for   insert,update,delete   <br />
+as <br />
+--加上下面两句，否则会提示新事务不能登记到指定事务处理器<br />
+set    xact_abort   on  <br />
+begin  distributed   tran <br />
+    delete   from   openrowset('sqloledb','xz';'sa';'',test.dbo.test)   <br />
+    where   id   in(select   id   from   deleted)   <br />
+    insert   into   openrowset('sqloledb','xz';'sa';'',test.dbo.test)   <br />
+    select   *   from   inserted   <br />
+commit tran<br />
+<br />
+--查询示例 <br />
+select * from ITSV.数据库名.dbo.表名 <br />
+<br />
+--导入示例 <br />
+select * into 表 from ITSV.数据库名.dbo.表名 <br />
+<br />
+--以后不再使用时删除链接服务器 <br />
+exec sp_dropserver  'ITSV ', 'droplogins ' <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:31

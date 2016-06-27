@@ -1,0 +1,139 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>1.简介:<br />
+有时经常会碰到要求遍历所有表,改变表的属性时,这时可以用到这两个存储过程;<br />
+<br />
+还有要经常检查所有的数据库或用户表,比如:<br />
+<br />
+      检查所有数据库的容量;<br />
+<br />
+      看看指定数据库所有用户表的容量,<br />
+<br />
+      所有表的记录数...,<br />
+<br />
+这时一般处理的方式有:<br />
+<br />
+1.游标处理;<br />
+<br />
+2.用这两个存储过程;<br />
+<br />
+   如用 sp_MSforeachtable就可以非常方便的达到相同的目的:EXEC sp_MSforeachtable @command1="print '?' DBCC CHECKTABLE ('?')"<br />
+存放在 SQL Server的MASTER数据库中。可以用来对某个数据库的所有表或某个SQL服务器上的所有数据库进行管理，后面将对此进行详细介绍。<br />
+<br />
+2.参数说明:<br />
+  @command1 nvarchar（2000）,                     --第一条运行的SQL指令<br />
+  @replacechar nchar（1） = N'?',                     --指定的占位符号 <br />
+  @command2 nvarchar（2000）= null,           --第二条运行的SQL指令<br />
+  @command3 nvarchar（2000）= null,           --第三条运行的SQL指令<br />
+  @whereand nvarchar（2000）= null,              --可选条件来选择表<br />
+  @precommand nvarchar（2000）= null,       --执行指令前的操作(类似控件的触发前的操作)<br />
+  @postcommand nvarchar（2000）= null      --执行指令后的操作(类似控件的触发后的操作)<br />
+<br />
+  以后为sp_MSforeachtable的参数，sp_MSforeachdb不包括参数@whereand<br />
+<br />
+3.使用举例:<br />
+<br />
+  --统计数据库里每个表的详细情况：<br />
+  exec sp_MSforeachtable @command1="sp_spaceused '?'"<br />
+<br />
+  --获得每个表的记录数和容量:<br />
+  EXEC sp_MSforeachtable @command1="print '?'",<br />
+       @command2="sp_spaceused '?'",<br />
+       @command3= "SELECT count(*) FROM ? "<br />
+<br />
+  --获得所有的数据库的存储空间:<br />
+  EXEC sp_MSforeachdb  @command1="print '?'",<br />
+       @command2="sp_spaceused "<br />
+<br />
+  --检查所有的数据库<br />
+  EXEC sp_MSforeachdb  @command1="print '?'",<br />
+       @command2="DBCC CHECKDB (?) "<br />
+<br />
+  --更新PUBS数据库中已t开头的所有表的统计:<br />
+  EXEC sp_MSforeachtable @whereand="and name like 't%'",<br />
+       @replacechar='*',<br />
+       @precommand="print 'Updating Statistics.....' print ''",<br />
+       @command1="print '*' update statistics * ",<br />
+       @postcommand= "print''print 'Complete Update Statistics!'"<br />
+<br />
+  --删除当前数据库所有表中的数据<br />
+  sp_MSforeachtable @command1='Delete from ?'<br />
+  sp_MSforeachtable @command1 = "TRUNCATE TABLE ?" <br />
+<br />
+4.参数@whereand的用法：<br />
+<br />
+<br />
+  @whereand参数在存储过程中起到指令条件限制的作用，具体的写法如下：<br />
+  @whereend,可以这么写 @whereand=' AND o.name in (''Table1'',''Table2'',.......)'<br />
+  例如：我想更新Table1/Table2/Table3中NOTE列为NULL的值<br />
+  sp_MSforeachtable @command1='Update ? Set NOTE='''' Where NOTE is NULL',@whereand=' AND o.name in (''Table1'',''Table2'',''Table3'')'<br />
+<br />
+5."?"在存储过程的特殊用法,造就了这两个功能强大的存储过程.<br />
+<br />
+      这里"?"的作用,相当于DOS命令中、以及我们在WINDOWS下搜索文件时的通配符的作用。 <br />
+<br />
+6.小结<br />
+<br />
+  有了上面的分析,我们可以建立自己的sp_MSforeachObject:（转贴）<br />
+USE MASTER<br />
+GO<br />
+CREATE proc sp_MSforeachObject<br />
+ @objectType int=1,<br />
+ @command1 nvarchar(2000), <br />
+ @replacechar nchar(1) = N'?', <br />
+ @command2 nvarchar(2000) = null,<br />
+    @command3 nvarchar(2000) = null, <br />
+ @whereand nvarchar(2000) = null,<br />
+ @precommand nvarchar(2000) = null, <br />
+ @postcommand nvarchar(2000) = null<br />
+as<br />
+ /* This proc returns one or more rows for each table (optionally, matching @where), with each table defaulting to its <br />
+own result set */<br />
+ /* @precommand and @postcommand may be used to force a single result set via a temp table. */<br />
+ /* Preprocessor won't replace within quotes so have to use str(). */<br />
+ declare @mscat nvarchar(12)<br />
+ select @mscat = ltrim(str(convert(int, 0x0002)))<br />
+ if (@precommand is not null)<br />
+  exec(@precommand)<br />
+ /* Defined  @isobject for save object type */<br />
+ Declare @isobject varchar(256)<br />
+ select @isobject= case @objectType when 1 then 'IsUserTable'<br />
+         when 2 then 'IsView'<br />
+         when 3 then 'IsTrigger'<br />
+         when 4 then 'IsProcedure' <br />
+         when 5 then 'IsDefault'   <br />
+         when 6 then 'IsForeignKey'<br />
+         when 7 then 'IsScalarFunction'<br />
+         when 8 then 'IsInlineFunction'<br />
+         when 9 then 'IsPrimaryKey'<br />
+         when 10 then 'IsExtendedProc'    <br />
+         when 11 then 'IsReplProc'<br />
+         when 12 then 'IsRule'<br />
+                  end<br />
+ /* Create the select */<br />
+ /* Use @isobject variable isstead of IsUserTable string */<br />
+EXEC(N'declare hCForEach cursor global for select ''['' + REPLACE(user_name(uid), N'']'', N'']]'') + '']'' + ''.'' + ''['' + <br />
+REPLACE(object_name(id), N'']'', N'']]'') + '']'' from dbo.sysobjects o '<br />
+        + N' where OBJECTPROPERTY(o.id, N'''+@isobject+''') = 1 '+N' and o.category & ' + @mscat + N' = 0 '<br />
+       + @whereand)<br />
+ declare @retval int<br />
+ select @retval = @@error<br />
+ if (@retval = 0)<br />
+  exec @retval = sp_MSforeach_worker @command1, @replacechar, @command2, @command3<br />
+ if (@retval = 0 and @postcommand is not null)<br />
+  exec(@postcommand)<br />
+ return @retval<br />
+GO<br />
+<br />
+这样我们来测试一下:<br />
+   --获得所有的存储过程的脚本:<br />
+         EXEc sp_MSforeachObject @command1="sp_helptext '?' ",@objectType=4<br />
+   --获得所有的视图的脚本:<br />
+         EXEc sp_MSforeachObject @command1="sp_helptext '?' ",@objectType=2<br />
+   --比如在开发过程中,没一个用户都是自己的OBJECT OWNER,所以在真实的数据库时都要改为DBO:<br />
+         EXEc sp_MSforeachObject @command1="sp_changeobjectowner '?', 'dbo'",@objectType=1<br />
+         EXEc sp_MSforeachObject @command1="sp_changeobjectowner '?', 'dbo'",@objectType=2<br />
+         EXEc sp_MSforeachObject @command1="sp_changeobjectowner '?', 'dbo'",@objectType=3<br />
+         EXEc sp_MSforeachObject @command1="sp_changeobjectowner '?', 'dbo'",@objectType=4<br />
+   这样就非常方便的将每一个数据库对象改为DBO.<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:31

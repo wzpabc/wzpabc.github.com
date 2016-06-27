@@ -1,0 +1,20 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p><br />
+declare @name nvarchar(100)<br />
+declare cur cursor for select name from sysobjects where type = 'U'<br />
+open cur<br />
+fetch next from cur into @name<br />
+WHILE @@FETCH_STATUS = 0<br />
+begin<br />
+<br />
+    declare @sql nvarchar(500),@s varchar(5000)<br />
+    set @s =''<br />
+    set @sql='select @s=isnull(@s+''+'','''')+'''''',''''''+''+cast(isnull([''+name+''],'''''''') as varchar)'' from syscolumns where id=object_id('''+@name+''') and xtype in(175,239,99,231,35,167) ' <br />
+    exec sp_executesql @sql,N'@s varchar(5000) out',@s out<br />
+    if len(@s) > 0 <br />
+        exec('if exists(select 1 from (select '+ @s+' as col from ['+@name+']) b where charindex(''admin'',col)>0) print '''+@name+'''')<br />
+    fetch next from cur into @name<br />
+end<br />
+close cur<br />
+DEALLOCATE cur<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:09

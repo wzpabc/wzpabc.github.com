@@ -1,0 +1,340 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>SQL2005下利用XML进行项目的合并与拆分<br />
+　　通常情况下我们对相同项目进分组求和，那是相当的简单啦，只要select.. group by加聚合函数就行了，可是对于串一类的项目进行合并时就不这么简单了，同样分解一个按指定分隔符分隔的串或分析指定位置的串，在2000下我们通常是创建一个函数，然后分组或提取就行了，现我们主要讨论在2005下利用xml来完成这个工作。<br />
+　　1、先来一个简单点，如下的例子对aaa相同的项目合并。<br />
+------------------------------------------------------------------------<br />
+-- Author:  HappyFlyStone  <br />
+-- Date  :  2009-01-04 20:57:59<br />
+-- Ver:     Microsoft SQL Server 2005 - 9.00.2047.00 (Intel X86) <br />
+--          Apr 14 2006 01:12:25 <br />
+--          Copyright (c) 1988-2005 Microsoft Corporation<br />
+--          Standard Edition on Windows NT 5.0 (Build 2195: Service Pack 4)<br />
+--      <br />
+------------------------------------------------------------------------<br />
+-- Test Data: tb<br />
+IF OBJECT_ID('tb') IS NOT NULL <br />
+    DROP TABLE tb<br />
+Go<br />
+CREATE TABLE tb(aaa INT,bbb INT)<br />
+Go<br />
+INSERT INTO tb<br />
+SELECT 1,2 UNION ALL<br />
+SELECT 1,3 UNION ALL<br />
+SELECT 1,4 UNION ALL<br />
+SELECT 2,2 UNION ALL<br />
+SELECT 2,5 <br />
+GO<br />
+--查询1<br />
+select <br />
+    aaa, <br />
+    [values]=stuff(replace(replace((select [bbb] <br />
+                                    from tb <br />
+                                    where aaa=t.aaa for xml AUTO),<br />
+                                    '"/><tb bbb="',','),<br />
+                            '"/>',''),1,9,'')<br />
+from tb t<br />
+group by aaa <br />
+--查询2<br />
+SELECT * <br />
+FROM( <br />
+    SELECT DISTINCT <br />
+        aaa <br />
+    FROM tb <br />
+)A <br />
+OUTER APPLY( <br />
+    SELECT <br />
+        [bbb]= STUFF(REPLACE(REPLACE( <br />
+            ( <br />
+                SELECT [bbb] FROM tb N <br />
+                WHERE aaa = A.aaa <br />
+                FOR XML AUTO <br />
+            ), '<N bbb="', ','), '"/>', ''), 1, 1, '') <br />
+)N <br />
+<br />
+--查询3<br />
+select <br />
+    aaa, <br />
+    [values]=stuff((select ','+ltrim([bbb])<br />
+                    from tb t <br />
+                    where aaa=tb.aaa for xml path('')), 1, 1, '') <br />
+from tb <br />
+group by aaa <br />
+<br />
+<br />
+drop table tb<br />
+--查询结果<br />
+/*<br />
+aaa         values<br />
+----------- ---------<br />
+1           2,3,4<br />
+2           2,5<br />
+<br />
+(2 行受影响)<br />
+<br />
+*/<br />
+2、来个两个表关联操作并实现行列转换的<br />
+------------------------------------------------------------------------<br />
+-- Author:  HappyFlyStone  <br />
+-- Date  :  2009-01-04 20:57:59<br />
+-- Ver:     Microsoft SQL Server 2005 - 9.00.2047.00 (Intel X86) <br />
+--          Apr 14 2006 01:12:25 <br />
+--          Copyright (c) 1988-2005 Microsoft Corporation<br />
+--          Standard Edition on Windows NT 5.0 (Build 2195: Service Pack 4)<br />
+--      <br />
+------------------------------------------------------------------------<br />
+<br />
+-- Test Data: ta<br />
+IF OBJECT_ID('ta') IS NOT NULL <br />
+    DROP TABLE ta<br />
+Go<br />
+CREATE TABLE ta(pid INT,tid INT,name NVARCHAR(6))<br />
+Go<br />
+INSERT INTO ta<br />
+SELECT 1,1,'hy3500' UNION ALL<br />
+SELECT 1,2,'aabbcc' UNION ALL<br />
+SELECT 2,3,'1111' UNION ALL<br />
+SELECT 2,4,'2222' <br />
+GO<br />
+-- Test Data: tb<br />
+IF OBJECT_ID('tb') IS NOT NULL <br />
+    DROP TABLE tb<br />
+Go<br />
+CREATE TABLE tb(NAME NVARCHAR(2),id INT)<br />
+Go<br />
+INSERT INTO tb<br />
+ SELECT '型号',1 UNION ALL<br />
+ SELECT '参数',2 <br />
+GO<br />
+--Start<br />
+SELECT t.[name],A,B<br />
+FROM(<br />
+    SELECT <br />
+        B.[NAME],<br />
+        CAST((SELECT [name] FROM TA WHERE PID = A.PID FOR XML PATH('')) AS XML) AS X<br />
+    FROM TA A<br />
+    LEFT JOIN TB B ON A.PID = B.ID<br />
+    GROUP BY B.[NAME],A.PID<br />
+) t<br />
+CROSS APPLY<br />
+    (SELECT A=t.x.value('/name[1]','VARCHAR(10)'),B = t.x.value('/name[2]','VARCHAR(10)')) M<br />
+<br />
+--Result:<br />
+/*<br />
+<br />
+c    a          b<br />
+---- ---------- ----------<br />
+参数   1111       2222<br />
+型号   hy3500     aabbcc<br />
+<br />
+(2 行受影响)<br />
+<br />
+*/<br />
+--End <br />
+<br />
+<br />
+<br />
+3、取特定分隔符分隔的串中指定位置的串<br />
+------------------------------------------------------------------------<br />
+-- Author:  HappyFlyStone  <br />
+-- Date  :  2009-01-04 20:57:59<br />
+-- Ver:     Microsoft SQL Server 2005 - 9.00.2047.00 (Intel X86) <br />
+--          Apr 14 2006 01:12:25 <br />
+--          Copyright (c) 1988-2005 Microsoft Corporation<br />
+--          Standard Edition on Windows NT 5.0 (Build 2195: Service Pack 4)<br />
+--      <br />
+------------------------------------------------------------------------<br />
+<br />
+DECLARE @t TABLE(c VARCHAR(20))<br />
+INSERT @t SELECT '双桥,9.6米,30.0吨'<br />
+UNION ALL SELECT 'aa,bb,cc,dd'<br />
+--通常情况如果项目在四个项目以内时，推荐一种方法：<br />
+<br />
+<br />
+SELECT  REPLACE(PARSENAME(XX,3),'$$','.') C ,<br />
+    REPLACE(PARSENAME(XX,2),'$$','.') B <br />
+FROM<br />
+(<br />
+    SELECT REPLACE(REPLACE(c,'.','$$'),',','.') XX FROM @T<br />
+)AA<br />
+--result<br />
+/*<br />
+c                                   b         <br />
+--------------------------------- -----------<br />
+双桥                                 9.6米<br />
+<br />
+（所影响的行数为 1 行）<br />
+*/<br />
+好，那我们来看看2005下XML如何处理的<br />
+SELECT A,B FROM<br />
+    (SELECT CAST('<r>' + REPLACE(c,',','</r><r>') + '</r>' AS XML) x,c FROM @t) a<br />
+CROSS APPLY<br />
+    (SELECT A=a.x.value('/r[1]','VARCHAR(10)'),B=a.x.value('/r[2]','VARCHAR(10)')) b<br />
+<br />
+/*<br />
+A          B<br />
+---------- ----------<br />
+双桥         9.6米<br />
+aa         bb<br />
+<br />
+(2 行受影响)<br />
+*/<br />
+<br />
+4、把项目串的编码用相应名称代替<br />
+------------------------------------------------------------------------<br />
+-- Author:  HappyFlyStone  <br />
+-- Date  :  2009-01-04 20:57:59<br />
+-- Ver:     Microsoft SQL Server 2005 - 9.00.2047.00 (Intel X86) <br />
+--          Apr 14 2006 01:12:25 <br />
+--          Copyright (c) 1988-2005 Microsoft Corporation<br />
+--          Standard Edition on Windows NT 5.0 (Build 2195: Service Pack 4)<br />
+--      <br />
+------------------------------------------------------------------------<br />
+<br />
+-- Test Data: ta<br />
+IF OBJECT_ID('ta') IS NOT NULL <br />
+    DROP TABLE ta<br />
+Go<br />
+CREATE TABLE ta(ID NVARCHAR(3),number varchar(20))<br />
+Go<br />
+INSERT INTO ta<br />
+ SELECT '001','1,2' UNION ALL<br />
+ SELECT '002','1,2,3' <br />
+GO<br />
+-- Test Data: tb<br />
+IF OBJECT_ID('tb') IS NOT NULL <br />
+    DROP TABLE tb<br />
+Go<br />
+CREATE TABLE tb(ID INT,name NVARCHAR(7))<br />
+Go<br />
+INSERT INTO tb<br />
+SELECT 1,'测试一' UNION ALL<br />
+SELECT 2,'测试二' UNION ALL<br />
+SELECT 3,'测试三' <br />
+GO<br />
+--Start<br />
+--查询一<br />
+SELECT C.ID,NUMBER = STUFF(REPLACE(REPLACE((<br />
+    SELECT  B.NAME  AS NAME<br />
+    FROM TA A<br />
+    LEFT JOIN <br />
+    ( SELECT ID,NAME<br />
+          FROM TB<br />
+    ) B <br />
+    ON CHARINDEX(','+LTRIM(B.ID)+',',','+A.NUMBER+',')>0<br />
+    WHERE A.ID = C.ID<br />
+    FOR XML AUTO<br />
+    ),'"/><B NAME="',','),'"/>',''),1,9,'')<br />
+FROM TA C<br />
+--查询二<br />
+SELECT A.ID,NUMBER=STUFF(<br />
+    (SELECT ','+NAME <br />
+     FROM TB <br />
+     WHERE CHARINDEX(','+LTRIM(ID)+',',','+A.NUMBER+',')>0 <br />
+     FOR XML PATH(''),ROOT('R'),TYPE).value('/R[1]','NVARCHAR(MAX)')<br />
+    ,1,1,'') <br />
+FROM TA A<br />
+<br />
+<br />
+<br />
+--Result:<br />
+/*<br />
+<br />
+id   number<br />
+---- -----------------<br />
+001  测试一,测试二<br />
+002  测试一,测试二,测试三<br />
+<br />
+(2 行受影响)<br />
+*/<br />
+--End <br />
+<br />
+<br />
+5、最后我们来说说折分吧<br />
+如：<br />
+/*<br />
+id          value<br />
+----------- -----------<br />
+1           aa,bb<br />
+2           aaa,bbb,ccc<br />
+欲按id,分拆value列, 分拆后结果如下:<br />
+id          value<br />
+----------- --------<br />
+1           aa<br />
+1           bb<br />
+2           aaa<br />
+2           bbb<br />
+2           ccc<br />
+*/<br />
+一般我们在2000下会借助中间生成一个连续的序列，然后和表关联折分，在2005下我们可借助CTE生成一个序列然后再拆分　<br />
+CREATE TABLE TB(ID INT,VALUE VARCHAR(30))<br />
+INSERT INTO TB VALUES(1,'AA,BB')<br />
+INSERT INTO TB VALUES(2,'AAA,BBB,CCC')<br />
+GO<br />
+IF OBJECT_ID('TEMPDB..#NUM') IS NOT NULL<br />
+    DROP TABLE #NUM<br />
+GO<br />
+--2000<br />
+SELECT TOP 100 ID=IDENTITY(INT,1,1) INTO #NUM FROM SYS.SYSCOLUMNS A,SYS.SYSCOLUMNS B<br />
+SELECT <br />
+    A.ID,[VALUE]=SUBSTRING(A.[VALUE],B.ID,CHARINDEX(',',A.[VALUE]+',',B.ID)-B.ID) <br />
+FROM <br />
+    TB A,#NUM B<br />
+WHERE<br />
+    CHARINDEX(',',','+A.[VALUE],B.ID)=B.ID --也可用 SUBSTRING(','+A.COL2,B.ID,1)=','<br />
+--2005<br />
+;WITH T<br />
+AS<br />
+(<br />
+    SELECT 1 AS ID <br />
+    UNION ALL<br />
+    SELECT ID + 1 FROM T WHERE ID < 100)<br />
+SELECT <br />
+    A.ID,[VALUE]=SUBSTRING(A.[VALUE],B.ID,CHARINDEX(',',A.[VALUE]+',',B.ID)-B.ID) <br />
+FROM <br />
+    TB A,T B<br />
+WHERE<br />
+    CHARINDEX(',',','+A.[VALUE],B.ID)=B.ID --也可用 SUBSTRING(','+A.COL2,B.ID,1)=','<br />
+<br />
+DROP TABLE TB,#NUM<br />
+<br />
+<br />
+------------------------------------------------------------------------<br />
+-- Author:  HappyFlyStone  <br />
+-- Date  :  2009-01-04 20:57:59<br />
+-- Ver:     Microsoft SQL Server 2005 - 9.00.2047.00 (Intel X86) <br />
+--          Apr 14 2006 01:12:25 <br />
+--          Copyright (c) 1988-2005 Microsoft Corporation<br />
+--          Standard Edition on Windows NT 5.0 (Build 2195: Service Pack 4)<br />
+--      <br />
+------------------------------------------------------------------------<br />
+<br />
+CREATE TABLE TB(ID INT,VALUE VARCHAR(30))<br />
+INSERT INTO TB VALUES(1,'AA,BB')<br />
+INSERT INTO TB VALUES(2,'AAA,BBB,CCC')<br />
+GO<br />
+SELECT A.ID, B.VALUE<br />
+FROM(<br />
+    SELECT ID, <br />
+    [value] = CONVERT(XML,'<ROOT><V>' + REPLACE([VALUE], ',', '</V><V>') + '</V></ROOT>') <br />
+    FROM tb<br />
+)A<br />
+OUTER APPLY(<br />
+    SELECT value = N.v.value('.', 'varchar(100)') <br />
+    FROM A.[value].nodes('/ROOT/V') N(v)<br />
+)B<br />
+<br />
+DROP TABLE tb<br />
+--查询结果<br />
+/*<br />
+id          value<br />
+----------- ------------------------------<br />
+1           aa<br />
+1           bb<br />
+2           aaa<br />
+2           bbb<br />
+2           ccc<br />
+<br />
+(5 行受影响)<br />
+*/<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:30

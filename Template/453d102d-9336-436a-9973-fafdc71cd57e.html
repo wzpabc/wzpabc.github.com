@@ -1,0 +1,184 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>set nocount on<br />
+go<br />
+--处理当前串中的空格，对时分秒的处理<br />
+create function f_castdt(@s varchar(8000))<br />
+returns varchar(1000)<br />
+as<br />
+begin<br />
+    set @s = ltrim(@s)<br />
+    WHILE CHARINDEX('  ',@s)>0<br />
+    BEGIN<br />
+        SET @s=replace(@s,'  ',' ')<br />
+    END<br />
+    set @s= case when patindex('%-[0-9][0-9] [0-9][0-9]:%',@s)> 0 then stuff(@s,patindex('%-[0-9][0-9] [0-9][0-9]:%',@s)+3,1,'*')<br />
+            when patindex('%-[0-9][0-9] [0-9]:%',@s)> 0 then stuff(@s,patindex('%-[0-9][0-9] [0-9]:%',@s)+3,1,'*')<br />
+            when patindex('%-[0-9] [0-9][0-9]:%',@s)> 0 then stuff(@s,patindex('%-[0-9] [0-9][0-9]:%',@s)+2,1,'*')<br />
+            when patindex('%-[0-9] [0-9]:%',@s) > 0 then stuff(@s,patindex('%-[0-9] [0-9]:%',@s)+2,1,'*') else @s end<br />
+    return @s<br />
+end<br />
+go<br />
+--加一个分隔函数:<br />
+create  function F_split(<br />
+                @s varchar(8000),          --包含多个数据项的字符串<br />
+                @pos int,                 --要获取的数据项的位置<br />
+                @split varchar(10)        --数据分隔符<br />
+)RETURNS varchar(100)<br />
+AS<br />
+BEGIN<br />
+    IF @s IS NULL RETURN(NULL)<br />
+    DECLARE @splitlen int                --分隔符长度<br />
+    SELECT @splitlen=LEN(@split+'a')-2<br />
+    WHILE @pos>1 AND charindex(@split,@s+@split)>0<br />
+        SELECT @pos=@pos-1,<br />
+            @s=stuff(@s,1,charindex(@split,@s+@split)+@splitlen,'')<br />
+    RETURN replace((nullif(left(@s,charindex(@split,@s+@split)-1),'')),char(13),'')<br />
+END<br />
+GO<br />
+<br />
+--判断当前串是有字母如果有那么当作varchar<br />
+create function f_ischar(@s varchar(100))<br />
+returns bit<br />
+as<br />
+begin<br />
+   <br />
+    if patindex('%[a-zA-Z]%',@s)>0 <br />
+        return 1<br />
+    return 0<br />
+end <br />
+go<br />
+<br />
+-- 循环截取法<br />
+CREATE FUNCTION f_splitSTR(<br />
+@s   varchar(8000),   --待分拆的字符串<br />
+@split varchar(20)     --数据分隔符<br />
+)RETURNS @re TABLE(col varchar(100))<br />
+AS<br />
+BEGIN<br />
+    DECLARE @splitlen int<br />
+    set @s = ltrim(rtrim(@s))<br />
+    SET @splitlen=LEN(@split+'a')-2<br />
+    WHILE CHARINDEX(@split,@s)>0<br />
+    BEGIN<br />
+        INSERT @re VALUES( rtrim(ltrim(LEFT(@s,CHARINDEX(@split,@s)-1))) )<br />
+        SET @s=ltrim(STUFF(@s,1,CHARINDEX(@split,@s)+@splitlen,''))<br />
+    END<br />
+    INSERT @re VALUES(@s)<br />
+    RETURN<br />
+END<br />
+GO<br />
+<br />
+<br />
+create proc sp_autoscript<br />
+@s varchar(8000)<br />
+as<br />
+<br />
+declare @a varchar(8000),@b varchar(8000),@c varchar(8000)<br />
+set @a =  rtrim(left(@s,charindex(char(13),@s) - 1))<br />
+set @s =  right(@s,len(@s) - charindex(char(13),@s)- 1)<br />
+set @b =  rtrim(left(@s,charindex(char(13),@s) - 1))<br />
+set @s =  right(@s,len(@s) - charindex(char(13),@s)- 1)<br />
+set @c =  rtrim(left(@s,charindex(char(13),@s) - 1))<br />
+set @s =  left(@s,len(@s) -1)<br />
+<br />
+create table #tmp1(px int identity(1,1),col varchar(120),col2 varchar(50),col3 varchar(50))<br />
+create table #tmp2(px int identity(1,1),col varchar(120))<br />
+create table #tmp3(px int identity(1,1),col varchar(1000))<br />
+insert into #tmp1(col) select ltrim(rtrim(col)) from f_splitSTR(@b,' ')<br />
+set @c = dbo.f_castdt(@c)<br />
+insert into #tmp2 select ltrim(rtrim(col)) from f_splitSTR(@c,' ')<br />
+insert into #tmp3 select ltrim(rtrim(col)) from f_splitSTR(@s,'<br />
+')<br />
+<br />
+--取每一列的最大值，尽量让类型准确<br />
+--update a<br />
+--set col= c.col<br />
+--from #tmp2 a left join (<br />
+--select a.px, max(dbo.F_split(b.col,a.px,' ')) as col<br />
+--from #tmp2 a,#tmp3 b<br />
+--group by a.px) c on a.px = c.px<br />
+<br />
+<br />
+declare @px int,@col varchar(100),@maxid int<br />
+select @maxid = count(1) from #tmp1<br />
+<br />
+DECLARE f CURSOR FOR SELECT px,col FROM #tmp2<br />
+OPEN f<br />
+FETCH NEXT FROM f INTO @px,@col<br />
+<br />
+<br />
+<br />
+WHILE @@FETCH_STATUS = 0<br />
+BEGIN<br />
+<br />
+    set @col=  --还原datatime数据用于判断 <br />
+       case when patindex('%-[0-9][0-9]*[0-9][0-9]:%',@col)> 0 then stuff(@col,patindex('%-[0-9][0-9]*[0-9][0-9]:%',@col)+3,1,' ')<br />
+            when patindex('%-[0-9][0-9]*[0-9]:%',@col)> 0 then stuff(@col,patindex('%-[0-9][0-9]*[0-9]:%',@col)+3,1,' ')<br />
+            when patindex('%-[0-9]*[0-9][0-9]:%',@col)> 0 then stuff(@col,patindex('%-[0-9]*[0-9][0-9]:%',@col)+2,1,' ')<br />
+            when patindex('%-[0-9]*[0-9]:%',@col) > 0 then stuff(@col,patindex('%-[0-9]*[0-9]:%',@col)+2,1,' ') else @col end<br />
+<br />
+    if ISDATE(@col) = 1 <br />
+        if len(@col) <= 10<br />
+            update #tmp1<br />
+            set col = col + ' smalldatetime,',<br />
+                col2 = case when px = 1 then ' select ''''' else '''''' end,<br />
+                col3 = case when px = @maxid then ''''' union all'  else ''''',' end<br />
+            where px = @px<br />
+        else<br />
+            update #tmp1<br />
+            set col = col + ' datetime,',<br />
+                col2 = case when px = 1 then ' select ''''' else '''''' end,<br />
+                col3 = case when px = @maxid then ''''' union all' else ''''',' end<br />
+            where px = @px<br />
+    else<br />
+        if isnumeric(@col) = 1<br />
+            if charindex('.',@col) > 0 <br />
+                update #tmp1<br />
+                set col = col + ' numeric('+ltrim(len(@col) -1)+','+ ltrim(len(@col) - charindex('.',@col))+'),',<br />
+                col2 = case when px = 1 then ' select ' else '' end,<br />
+                col3 = case when px = @maxid then ' union all' else ',' end<br />
+                where px = @px<br />
+            else<br />
+                update #tmp1<br />
+                set col = col + ' int,',<br />
+                col2 = case when px = 1 then 'select ' else '' end,<br />
+                col3 = case when px = @maxid then ' union all' else ',' end<br />
+                where px = @px<br />
+        else<br />
+            if dbo.f_ischar(@col) = 1 <br />
+                update #tmp1<br />
+                set col = col + ' varchar('+ltrim(len(@col))+'),',<br />
+                col2 = case when px = 1 then ' select ''''' else '''''' end,<br />
+                col3 = case when px = @maxid then ''''' union all' else ''''',' end    <br />
+                where px = @px<br />
+<br />
+        <br />
+    FETCH NEXT FROM f INTO @px,@col<br />
+END<br />
+<br />
+CLOSE f<br />
+DEALLOCATE f<br />
+<br />
+update #tmp3<br />
+set col = dbo.f_castdt(col)<br />
+<br />
+--select * from #tmp3<br />
+<br />
+declare @sql varchar(8000)<br />
+declare @sql1 varchar(8000)<br />
+select @sql = isnull(@sql+'+' ,'')+''''<br />
++col2 + '''+dbo.F_split(col,'+ltrim(px)+','' '')' + '+'''+col3+'''' <br />
+from #tmp1<br />
+select @sql1 = isnull(@sql1,'') + col <br />
+from #tmp1<br />
+--select @sql<br />
+<br />
+exec('update #tmp3 set col = '+@sql)<br />
+--还原datetime数据<br />
+update #tmp3<br />
+set col = <br />
+   case when patindex('%-[0-9][0-9]*[0-9][0-9]:%',col)> 0 then stuff(col,patindex('%-[0-9][0-9]*[0-9][0-9]:%',col)+3,1,' ')<br />
+        when patindex('%-[0-9][0-9]*[0-9]:%',col)> 0 then stuff(col,patindex('%-[0-9][0-9]*[0-9]:%',col)+3,1,' ')<br />
+        when patindex('%-[0-9]*[0-9][0-9]:%',col)> 0 then stuff(col,patindex('%-[0-9]*[0-9][0-9]:%',col)+2,1,' ')<br />
+        when patindex('%-[0-9]*[0-9]:%',col) > 0 then stuff(col,patindex('%-[0-9]*[0-9]:%',col)+2,1,' ') else col end<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:15

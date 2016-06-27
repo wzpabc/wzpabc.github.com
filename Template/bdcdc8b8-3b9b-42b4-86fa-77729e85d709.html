@@ -1,0 +1,120 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>分区视图 <br />
+分区视图是提高查询性能的一个很好的办法 <br />
+<br />
+<br />
+--看下面的示例 <br />
+<br />
+--示例表 <br />
+create table tempdb.dbo.t_10( <br />
+id int primary key check(id between 1 and 10),name varchar(10)) <br />
+<br />
+create table pubs.dbo.t_20( <br />
+id int primary key check(id between 11 and 20),name varchar(10)) <br />
+<br />
+create table northwind.dbo.t_30( <br />
+id int primary key check(id between 21 and 30),name varchar(10)) <br />
+go <br />
+<br />
+--分区视图 <br />
+create view v_t <br />
+as <br />
+select * from tempdb.dbo.t_10 <br />
+union all <br />
+select * from pubs.dbo.t_20 <br />
+union all <br />
+select * from northwind.dbo.t_30 <br />
+go <br />
+<br />
+--插入数据 <br />
+insert v_t select 1 ,'aa' <br />
+union  all select 2 ,'bb' <br />
+union  all select 11,'cc' <br />
+union  all select 12,'dd' <br />
+union  all select 21,'ee' <br />
+union  all select 22,'ff' <br />
+<br />
+--更新数据 <br />
+update v_t set name=name+'_更新' where right(id,1)=1 <br />
+<br />
+--删除测试 <br />
+delete from v_t where right(id,1)=2 <br />
+<br />
+--显示结果 <br />
+select * from v_t <br />
+go <br />
+<br />
+--删除测试 <br />
+drop table northwind.dbo.t_30,pubs.dbo.t_20,tempdb.dbo.t_10 <br />
+drop view v_t <br />
+<br />
+/**//*--测试结果 <br />
+<br />
+id          name      <br />
+----------- ---------- <br />
+1          aa_更新 <br />
+11          cc_更新 <br />
+21          ee_更新 <br />
+<br />
+（所影响的行数为 3 行） <br />
+==*/ <br />
+<br />
+<br />
+八、 树型的实现 <br />
+<br />
+<br />
+--参考 <br />
+<br />
+--树形数据查询示例 <br />
+--作者: 邹建 <br />
+<br />
+--示例数据 <br />
+create table [tb]([id] int identity(1,1),[pid] int,name varchar(20)) <br />
+insert [tb] select 0,'中国' <br />
+union  all  select 0,'美国' <br />
+union  all  select 0,'加拿大' <br />
+union  all  select 1,'北京' <br />
+union  all  select 1,'上海' <br />
+union  all  select 1,'江苏' <br />
+union  all  select 6,'苏州' <br />
+union  all  select 7,'常熟' <br />
+union  all  select 6,'南京' <br />
+union  all  select 6,'无锡' <br />
+union  all  select 2,'纽约' <br />
+union  all  select 2,'旧金山' <br />
+go <br />
+<br />
+--查询指定id的所有子 <br />
+create function f_cid( <br />
+@id int <br />
+)returns @re table([id] int,[level] int) <br />
+as <br />
+begin <br />
+declare @l int <br />
+set @l=0 <br />
+insert @re select @id,@l <br />
+while @@rowcount>0 <br />
+begin <br />
+  set @l=@l+1 <br />
+  insert @re select a.[id],@l <br />
+  from [tb] a,@re b <br />
+  where a.[pid]=b.[id] and b.[level]=@l-1 <br />
+end <br />
+/**//**//**//*--如果只显示最明细的子(下面没有子),则加上这个删除 <br />
+delete a from @re a <br />
+where exists( <br />
+  select 1 from [tb] where [pid]=a.[id]) <br />
+--*/ <br />
+return <br />
+end <br />
+go <br />
+<br />
+--调用(查询所有的子) <br />
+select a.*,层次=b.[level] from [tb] a,f_cid(2)b where a.[id]=b.[id] <br />
+go <br />
+<br />
+--删除测试 <br />
+drop table [tb] <br />
+drop function f_cid <br />
+go <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:32

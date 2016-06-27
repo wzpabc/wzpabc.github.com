@@ -1,0 +1,10 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--1、create table tablename(id int identity(1,1))go<br />
+insert into tablename default values<br />
+go<br />
+select * from tablenamegodrop table tablename<br />
+go--<br />
+2、--还用上个表。set identity_insert   tablename on<br />
+insert tablename(id) select 2<br />
+set identity_insert   tablename  off<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:06

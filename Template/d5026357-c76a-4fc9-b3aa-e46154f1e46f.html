@@ -1,0 +1,71 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--收集特定表上所有索引、堆的信息<br />
+<br />
+SELECT  sysIn.name AS IndexName ,<br />
+<br />
+        sysIn.index_id ,<br />
+<br />
+        func.avg_fragmentation_in_percent ,<br />
+<br />
+        func.index_type_desc AS IndexType ,<br />
+<br />
+        func.page_count<br />
+<br />
+FROM    sys.dm_db_index_physical_stats(DB_ID(), OBJECT_ID(N'ordDemo'), NULL,<br />
+<br />
+                                       NULL, NULL) AS func<br />
+<br />
+        INNER JOIN sys.indexes AS sysIn ON func.object_id = sysIn.object_id<br />
+<br />
+                                           AND func.index_id = sysIn.index_id<br />
+<br />
+--聚集索引的Index_id为，非聚集索引的Index_id总是大于，如果不想看堆表的信息，可以使用<br />
+<br />
+--where sysIn.index_id>0;       <br />
+<br />
+ <br />
+<br />
+--收集在数据库中所有可用的索引信息，下面查询可能会运行时间比较久：<br />
+<br />
+USE AdventureWorks<br />
+<br />
+GO<br />
+<br />
+--收集特定表上所有索引、堆的信息<br />
+<br />
+SELECT  sysIn.name AS IndexName ,<br />
+<br />
+        sysIn.index_id ,<br />
+<br />
+        func.avg_fragmentation_in_percent ,<br />
+<br />
+        func.index_type_desc AS IndexType ,<br />
+<br />
+        func.page_count<br />
+<br />
+FROM    sys.dm_db_index_physical_stats(DB_ID(), NULL, NULL, NULL, NULL) AS func<br />
+<br />
+        INNER JOIN sys.indexes AS sysIn ON func.object_id = sysIn.object_id<br />
+<br />
+                                           AND func.index_id = sysIn.index_id<br />
+<br />
+WHERE   sysIn.index_id > 0 ;<br />
+<br />
+<br />
+--查看索引的填充因子<br />
+SELECT  OBJECT_NAME(object_id) AS TableName ,<br />
+        name AS IndexName ,<br />
+        type_desc ,<br />
+        fill_factor<br />
+FROM    sys.indexes<br />
+WHERE   type_desc <> 'HEAP'<br />
+<br />
+--查看服务器上的默认填充因子的值<br />
+SELECT  [Description] ,<br />
+        value_in_use<br />
+FROM    sys.configurations<br />
+WHERE   name = 'fill factor (%)'<br />
+<br />
+<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:13

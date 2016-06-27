@@ -1,0 +1,31 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p> 时间格式转换问题 <br />
+因为新开发的软件需要用一些旧软件生成的一些数据，在时间格式上不统一，只能手工转换，研究了一下午写了三条语句，以前没怎么用过convert函数和case语句，还有"+"操作符在不同上下文环境也会起到不同的作用，把我搞晕了要，不过现在看来是差不多弄好了。 <br />
+<br />
+1、把所有"70.07.06"这样的值变成"1970-07-06" <br />
+<br />
+<br />
+UPDATE lvshi <br />
+SET shengri = '19' + REPLACE(shengri, '.', '-') <br />
+WHERE (zhiyezheng = '139770070153') <br />
+<br />
+<br />
+2、在"1970-07-06"里提取"70","07","06" <br />
+<br />
+<br />
+SELECT SUBSTRING(shengri, 3, 2) AS year, SUBSTRING(shengri, 6, 2) AS month, <br />
+      SUBSTRING(shengri, 9, 2) AS day <br />
+FROM lvshi <br />
+WHERE (zhiyezheng = '139770070153') <br />
+<br />
+3、把一个时间类型字段转换成"1970-07-06" <br />
+<br />
+<br />
+UPDATE lvshi <br />
+SET shenling = CONVERT(varchar(4), YEAR(shenling)) <br />
+      + '-' + CASE WHEN LEN(MONTH(shenling)) = 1 THEN '0' + CONVERT(varchar(2), <br />
+      month(shenling)) ELSE CONVERT(varchar(2), month(shenling)) <br />
+      END + '-' + CASE WHEN LEN(day(shenling)) = 1 THEN '0' + CONVERT(char(2), <br />
+      day(shenling)) ELSE CONVERT(varchar(2), day(shenling)) END <br />
+WHERE (zhiyezheng = '139770070153') <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:33

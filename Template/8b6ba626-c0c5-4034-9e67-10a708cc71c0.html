@@ -1,0 +1,316 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>====================================================================== <br />
+SQL备份 <br />
+====================================================================== <br />
+---------------------------------------------------------------------- <br />
+1、SQL数据库恢复模型 <br />
+---------------------------------------------------------------------- <br />
+1）完全恢复模型 <br />
+----------------- <br />
+（1）备份时要备份数据库的数据文件和日志文件 <br />
+（2）还原时使用数据库的备份的数据文件副本和全部日志信息来恢复数据库。 <br />
+（3）能还原全部数据，并可以将数据库恢复到任意指定的时刻。 <br />
+（4）为保证实现即时点恢复，对数据库的所有*作都将完整地记入日志，这样，日志占用空间较大，对性能也有所影响。 <br />
+------------------ <br />
+（2）大容量日志记录恢复模型 <br />
+------------------ <br />
+（1）备份时要备份数据库的数据文件和日志文件 <br />
+（2）还原时使用数据库的备份的数据文件副本和全部日志信息来恢复数据库。 <br />
+（3）日志中不记录*作细节（如select into、create index等），而只记录*作的最终结果，因此占用日志空间小。 <br />
+（4）只支持将数据库还原到事务日志备份的时刻，而不支持即时点恢复，因此可能产生数据丢失。 <br />
+------------------- <br />
+（3）简单恢复模型 <br />
+------------------- <br />
+（1）备份时只备份数据文件，还原时也用备份的数据文件恢复数据库。 <br />
+（2）只能将数据恢复到数据文件备份的时刻，可能产生最多的数据丢失。 <br />
+（3）不适于生产系统和大规模*作环境下选用。 <br />
+----------------------------------------- <br />
+alter database d1 set recovery simple    --设置数据库恢复模型 <br />
+alter database d1 set recovery bulk_logged <br />
+alter database d1 set recovery full <br />
+---------------------------------------------------------------------- <br />
+2、备份设备 <br />
+---------------------------------------------------------------------- <br />
+1）物理设备 <br />
+--------------------------- <br />
+disk：支持本地磁盘或者网络备份 <br />
+tape：支持磁带机备份 <br />
+name pipe：支持第三方备份软件 <br />
+--------------------------- <br />
+2）逻辑设备 <br />
+--------------------------- <br />
+永久备份文件：可以重复使用，应该在备份前创建。 <br />
+临时备份文件：用于一次性备份，在备份时创建。 <br />
+------------------------------------------------- <br />
+exec sp_addumpdevice 'disk','bak2','e:\back_device\bak2.bak' --创建永久磁盘备份设备 <br />
+exec sp_addumpdevice 'disk','bak3','e:\back_device\bak3.bak' <br />
+---------------------------------------------------------------------- <br />
+exec sp_addumpdevice 'disk','bak4','\\sv2\backup\bak4.bak' --创建网络永久磁盘备份设备 <br />
+exec sp_addumpdevice 'disk','bak5','\\sv2\backup\bak5.bak' <br />
+---------------------------------------------------------------------- <br />
+exec sp_dropdevice 'bak5'              --删除备份设备 <br />
+---------------------------------------------------------------------- <br />
+backup database d3 to bak3      --将数据库备份到备份设备 <br />
+backup database d4 to bak4 <br />
+---------------------------------------------------------------------- <br />
+restore headeronly from bak2    --查看备份设备中的内容 <br />
+---------------------------------------------------------------------- <br />
+backup database d3 to disk='e:\back_file\d3.bak'    --将数据库备份到临时备份文件 <br />
+backup database d4 to disk='e:\back_file\d4.bak' <br />
+---------------------------------------------------------------------- <br />
+restore database d3 from bak3          --从备份设备还原数据库      <br />
+restore database d4 from disk='e:\back_file\d4.bak' --从备份文件还原数据库 <br />
+---------------------------------------------------------------------- <br />
+3、使用多个备份文件存储备份 <br />
+---------------------------------------------------------------------- <br />
+1）SQL可同时向多个备份文件进行写*作。如果把这些文件放到多个磁带机或磁盘中，则可提高备份速度。 <br />
+2）这多个备份文件必须用同业型的媒体，并放到一个媒体集中。 <br />
+3）媒体集中的文件必须同时使用，而不能单独使用。 <br />
+4）可以通过format命令将媒体集重新划分，但原备份集中的数据不能再使用。 <br />
+-------------------------------------------------------------------- <br />
+backup database d4 to bak4,bak5,bak6 with medianame='bak456',format --备份D4并形成Media Set <br />
+backup database d3 to bak4      --失败，因Media set中文件必须同时使用 <br />
+backup database d3 to bak4,bak5,bak6    --成功，将D3也备份到Media Set中 <br />
+restore headeronly from bak4,bak5,bak6--查看Media Set中的备份内容 <br />
+---------------------------------------------------------------------- <br />
+backup database d4 to bak4 with medianame='bak4',format    --重新划分Media Set <br />
+backup database d3 to bak5,bak6 with medianame='bak56',format <br />
+---------------------------------------------------------------------- <br />
+backup database d1 to bak1 with init    --with init重写备份设备中内容 <br />
+backup database d2 to bak1 with noinit --with noinit将内容追加到备份设备中 <br />
+restore headeronly from bak1 <br />
+---------------------------------------------------------------------- <br />
+<br />
+1）完全备份 <br />
+------------------------------------------- <br />
+（1）是备份的基准。在做备份时第一次备份都建议使用完全备份。 <br />
+（2）完全备份会备份数据库的所有数据文件、数据对象和数据。 <br />
+（3）会备份事务日志中任何未提交的事务。因为已提交的事务已经写入数据文件中。 <br />
+-------------------------------------------- <br />
+backup database d1 to bak1 with init    --完全备份 <br />
+backup database d1 to bak1 with noinit <br />
+---------------------------------------------------------------------- <br />
+2）差异备份 <br />
+--------------------------------------------- <br />
+（1）基于完全备份。 <br />
+（2）备份自最近一次完全备份以来的所有数据库改变。 <br />
+（3）恢复时，只应用最近一次完全备份和最新的差异备份。 <br />
+----------------------------------------------- <br />
+backup database d2 to bak2 with init,name='d2_full' --差异备份，第一次备份时应做完全备份 <br />
+create table b1(c1 int not null,c2 char(10) not null) <br />
+backup database d2 to bak2 with differential,name='d2_diff1' <br />
+insert b1 values(1,'a') <br />
+backup database d2 to bak2 with differential,name='d2_diff2' <br />
+insert b1 values(2,'b') <br />
+backup database d2 to bak2 with differential,name='d2_diff3' <br />
+insert b1 values(3,'c') <br />
+backup database d2 to bak2 with differential,name='d2_diff4' <br />
+restore headeronly from bak2 <br />
+---------------------------------------------------------------------- <br />
+3）事务日志备份 <br />
+------------------------------------------------------------- <br />
+（1）基于完全备份。 <br />
+（2）为递增备份，即备份从上一次备份以来到备份时所写的事务日志。 <br />
+（3）允许恢复到故障时刻或者一个强制时间点。 <br />
+（4）恢复时，需要应用完全备份和完全备份后的每次日志备份。 <br />
+------------------------------------------------------------- <br />
+backup database d3 to bak3 with init,name='d3_full' --日志备份，第一次备份时应做完全备份 <br />
+create table b1(c1 int not null,c2 char(10) not null) <br />
+backup log d3 to bak3 with <br />
+insert b1 values(1,'a') <br />
+backup log d3 to bak3 with <br />
+insert b1 values(2,'b') <br />
+backup log d3 to bak3 with <br />
+insert b1 values(3,'c') <br />
+backup log d3 to bak3 with <br />
+restore headeronly from bak3 <br />
+---------------------------------------------------------------------- <br />
+create table b1(c1 int not null,c2 char(10) not null)    --Full+Log+Diff <br />
+backup log d4 to bak4 with <br />
+insert b1 values(1,'a') <br />
+backup log d4 to bak4 with <br />
+insert b1 values(2,'b') <br />
+backup database d4 to bak4 with differential,name='d4_diff1' <br />
+insert b1 values(3,'c') <br />
+backup log d4 to bak4 with <br />
+insert b1 values(4,'d') <br />
+backup log d4 to bak4 with <br />
+insert b1 values(5,'d') <br />
+backup database d4 to bak4 with differential,name='d4_diff2' <br />
+restore headeronly from bak4 <br />
+---------------------------------------------------------------------- <br />
+日志清除 <br />
+----------------------------------------- <br />
+1）如果日志空间被填满，数据库将不能记录修改。 <br />
+2）数据库在做完全备份时日志被截断。 <br />
+3）如果将'Trans log on checkpoint'选项设为TRUE，则结果为不保存日志，即没有日志记录，不建议使用。 <br />
+4）with truncate_only和with no_log设置日志满时清除日志 <br />
+5）with no_truncate则可以完整保存日志，不清除，即使在数据文件已经损坏情况下。主要用于数据库出问题后在恢复前使用。可以将数据还原到出故障的那一时刻。 <br />
+------------------------------------------- <br />
+exec sp_dboption d3 <br />
+exec sp_dboption <br />
+sp_dboption 'd3','trunc. log on chkpt.','true'    --设置自动清除数据库日志 <br />
+sp_dboption 'd3','trunc. log on chkpt.','false'    --将自动清除数据库日志的选项去除 <br />
+---------------------------------------------------------------------- <br />
+backup log d4 with truncate_only    --设置D4日志满时清除日志，并做清除记录 <br />
+---------------------------------------------------------------------- <br />
+backup log d4 with no_log      --设置D4日志满时清除日志，但不做清除记录 <br />
+---------------------------------------------------------------------- <br />
+backup log d4 to bak4 with no_truncate--在D4数据库损坏时马上备份当前数据库日志(DEMO) <br />
+-------- <br />
+使用no_truncate <br />
+完全+修改1+差异+修改2+差异+修改3+停止SQL，删除数据库数据文件+重启SQL <br />
+backup log no_truncate <br />
+再还原，可还原到修改3 <br />
+---------------------------------------------------------------------- <br />
+4）文件/文件组备份 <br />
+------------------------------------------------------------------ <br />
+（1）用于超大型数据库。 <br />
+（2）只备份选定的文件或者文件组。 <br />
+（3）必须同时作日志备份。 <br />
+（4）还原时用文件/文件组备份和日志备份进行还原。 <br />
+（5）备份量少，恢复速度快。 <br />
+<br />
+<br />
+create database d5      <br />
+on primary <br />
+(name=d5_data1, <br />
+filename='e:\data\d5\d5_data1.mdf', <br />
+size=2MB), <br />
+filegroup FG2          --创建数据库时创建filegroup FG2 <br />
+(name=d5_data2, <br />
+filename='e:\data\d5\d5_data2.ndf',    --并将文件d5_data2放到FG2中 <br />
+size=2Mb) <br />
+log on <br />
+(name=d5_log1, <br />
+filename='e:\data\d5\d5_log1.ldf', <br />
+size=2Mb) <br />
+use d5 <br />
+go <br />
+alter database d5 <br />
+add file <br />
+(name=d5_data3, <br />
+filename='e:\data\d5\d5_data5.ndf', <br />
+size=2MB) <br />
+to filegroup FG2          --将d5_data3加到文件组FG2中 <br />
+alter database d5 add filegroup FG3    --增加文件组FG3 <br />
+alter database d5          --将d5_data4加到文件组FG2中 <br />
+add file <br />
+(name=d5_data4, <br />
+filename='e:\data\d5\d5_data4.ndf', <br />
+size=2MB) <br />
+to filegroup FG3 <br />
+sp_helpdb d5 <br />
+create table t1(c1 int not null,c2 char(10) not null) on [primary] --将不同表放到不同filegroup中 <br />
+create table t2(c1 int not null,c2 char(10) not null) on FG2 <br />
+create table t3(c1 int not null,c2 char(10) not null) on FG3 <br />
+---------------------------------------------------------------------- <br />
+backup database d5 to bak5 with init,name='d5_full'      --filegroup备份 <br />
+backup database d5 filegroup='primary' to bak5 with <br />
+backup log d5 to bak5 with <br />
+backup database d5 filegroup='FG2' to bak5 with <br />
+backup log d5 to bak5 with <br />
+backup database d5 filegroup='FG3' to bak5 with <br />
+backup log d5 to bak5 with <br />
+---------------------------------------------------------------------- <br />
+backup database d5 to bak6 with init,name='d5_full'        --file备份 <br />
+backup database d5 file='d5_data1' to bak6 with <br />
+backup log d5 to bak6 with <br />
+backup database d5 file='d5_data2' to bak6 with <br />
+backup log d5 to bak6 with <br />
+backup database d5 file='d5_data3' to bak6 with <br />
+backup log d5 to bak6 with <br />
+backup database d5 file='d5_data4' to bak6 with <br />
+backup log d5 to bak6 with <br />
+restore headeronly from bak6 <br />
+====================================================================== <br />
+SQL还原 <br />
+====================================================================== <br />
+1、验证备份 <br />
+------------------------------------------------------------ <br />
+restore headeronly from bak3 <br />
+restore filelistonly from bak3 with file=1 <br />
+restore labelonly from bak3 <br />
+restore verifyonly from bak3 <br />
+---------------------------------------------------------------------- <br />
+2、从备份中还原 <br />
+------------------------------------------------------------------------- <br />
+restore headeronly from bak1 <br />
+restore database d1 from bak1 with file=2        --从完全备份中恢复 <br />
+---------------------------------------------------------------------- <br />
+restore headeronly from bak2              --从差异备份中恢复 <br />
+restore database d2 from bak2 with file=1,norecovery    <br />
+restore database d2 from bak2 with file=5,recovery <br />
+---------------------------------------------------------------------- <br />
+restore headeronly from bak3              --从日志备份中恢复 <br />
+restore database d3 from bak3 with file=1,norecovery <br />
+restore log    d3 from bak3 with file=2,norecovery <br />
+restore log    d3 from bak3 with file=3,norecovery <br />
+restore log    d3 from bak3 with file=4,norecovery <br />
+restore log    d3 from bak3 with file=5,recovery <br />
+---------------------------------------------------------------------- <br />
+restore database d3 from bak3 with file=1,norecovery      --恢复到指定时间 <br />
+restore log    d3 from bak3 with file=2,norecovery <br />
+restore log    d3 from bak3 with file=3,norecovery <br />
+restore log    d3 from bak3 with file=4,recovery,stopat='2003-08-15 11:29:00.000' <br />
+---------------------------------------------------------------------- <br />
+restore database d5 filegroup='FG2' from bak5 with file=4,norecovery --还原文件组备份 <br />
+restore log d5 from bak5 with file=5,norecovery <br />
+restore log d5 from bak5 with file=7,recovery <br />
+---------------------------------------------------------------------- <br />
+restore headeronly from bak6                --还原文件备份 <br />
+restore database d5 file='d5_data3' from bak6 with file=6,norecovery <br />
+restore log d5 from bak6 with file=7,norecovery <br />
+restore log d5 from bak6 with file=9,recovery <br />
+---------------------------------------------------------------------- <br />
+restore database d5 from bak6 with replace    --删除现有数据库，从备份中重建数据库 <br />
+---------------------------------------------------------------------- <br />
+create database d6            --move to将数据库文件移动到新位置 <br />
+on primary <br />
+(name=d6_data, <br />
+filename='E:\Program Files\Microsoft SQL Server\MSSQL\data\d6_Data.MDF', <br />
+size=2MB) <br />
+log on <br />
+(name=d6_log, <br />
+filename='E:\Program Files\Microsoft SQL Server\MSSQL\data\d6_log.ldf', <br />
+size=2MB) <br />
+go <br />
+backupdatabase d6 to bak6 with init <br />
+drop database d6 <br />
+restore database d6 from bak6 <br />
+with move 'd6_data' to 'e:\data\d6\d6_data.mdf', <br />
+move 'd6_log'to 'e:\data\d6\d6_log.ldf' <br />
+sp_helpdb d6 <br />
+---------------------------------------------------------------------- <br />
+3、分离与重连接数据库 <br />
+-------------------------------------- <br />
+sp_detach_db 'd6'        <br />
+sp_attach_db 'd6','e:\data\d6\d6_data.mdf','e:\data\d6\d6_log.ldf' <br />
+-------------------------------------- <br />
+sp_detach_db d6 <br />
+go <br />
+create database d6 <br />
+on primary <br />
+(filename='e:\data\d6\d6_data.mdf') <br />
+for attach <br />
+go <br />
+---------------------------------------------------------------------- <br />
+4、恢复损坏的系统数据库 <br />
+---------------------------------------------------------------------- <br />
+1）先备份MASTER、MSDB <br />
+2）停止SQL服务，将MASTER数据库文件删除或者重命名。这样，SQL服务将不能启动。 <br />
+3）系统数据库的还原 <br />
+----------------------------------------------- <br />
+（1）如果SQL服务还能启动，则从备份中恢复系统数据库。 <br />
+（2）如果SQL服务不能启动，则需要重建系统数据库。 <br />
+使用SQL文件夹TOOLS\BINN目录下的Rebuildm.exe重建master数据库。 <br />
+（3）创建备份设备，指向以前的备份设备。 <br />
+（4）以单用户模式启动SQL <br />
+cd programe files\microsoft sql server\mssql\binn <br />
+sqlservr.exe -c -m <br />
+（5）进查询分析器，从备份中恢复master数据库。 <br />
+restore database master from masterbak <br />
+restore database msdb from disk='e:\bak\msdb.bak' <br />
+MASTER还原后，SQL中用户数据库的信息也会恢复。 <br />
+（6）如果MASTER没有备份，则需要用sp_attach_db命令将用户数据库附加到新的MASTER数据库中。<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:30

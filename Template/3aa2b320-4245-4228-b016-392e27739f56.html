@@ -1,0 +1,156 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p><br />
+IF object_id('usp_insert_PaymentTables') IS NOT NULL<br />
+	   BEGIN <br />
+	   	PRINT 'Dropping procedure usp_insert_PaymentTables'<br />
+	   	DROP PROCEDURE [usp_insert_PaymentTables]  <br />
+	   	IF @@ERROR = 0 PRINT 'Procedure usp_insert_PaymentTables dropped'<br />
+	   END<br />
+	   go<br />
+	   <br />
+	   CREATE PROCEDURE [usp_insert_PaymentTables]<br />
+	   (<br />
+	   	@campaignID NVARCHAR(20)=N'',<br />
+		@dataareaid NVARCHAR(5)=N'830',<br />
+		@MailPlan  NVARCHAR(20)=N'',<br />
+	    @tablename NVARCHAR(50)=N'',<br />
+		@TransDate_begin DATETIME,<br />
+		@TransDate_end DATETIME<br />
+	   )<br />
+	   AS<br />
+	   BEGIN<br />
+	   	SET NOCOUNT ON;<br />
+	   	SET XACT_ABORT ON<br />
+	   	 declare @recid BIGINT,@COUNT_HRANGE BIGINT<br />
+		 SELECT @recid=0,@COUNT_HRANGE =0<br />
+		/*BEGIN TRY*/<br />
+	   	BEGIN TRY<br />
+	   	IF @tablename='AvMCSRPaymentTable' OR @tablename='AvPreMCSRPaymentTable'<br />
+	   	BEGIN<br />
+	   		 BEGIN TRAN<br />
+		  SELECT @campaignID avcampaignid,SUM(ct.amountmst)avpaymamount,ct.accountnum custaccount,format(getdate(),'yyyy-MM-dd')avtransdate,t.status avaccountstatus,<br />
+                   t.custgroup,t.district avdistrict,@MailPlan  avmailplan,format(getdate(),'yyyy-MM-dd')createddatetime,'ADMIN'createdby,<br />
+                   '830'dataareaid,1 recVersion,dbo.UF_GETPARTITIONID() partition,row_number()over( ORDER BY  ct.accountnum,t.district,t.custGroup,t.status )recid <br />
+                   INTO #tmp_paymenttable<br />
+                   FROM (<br />
+                        SELECT c.accountnum,c.avgroupcode district,c.custgroup custgroup,c.AvAccountStatus [STATUS] FROM <br />
+                               CustTable c,avgroupcodetable g WHERE c.dataareaid = @dataareaid <br />
+							   and c.partition=dbo.UF_GETPARTITIONID()<br />
+							   and c.PARTITION=g.partition<br />
+                       AND g.dataareaid = c.dataareaid<br />
+                       AND g.avgroupcode = c.avgroupcode<br />
+                       AND g.avmailplan = @MailPlan <br />
+                   ) t,Custtrans ct WHERE ct.dataareaid = @dataareaid <br />
+				   and ct.partition=dbo.UF_GETPARTITIONID()<br />
+           AND ct.accountnum = t.accountnum<br />
+           AND ct.Transdate >=  cast(@TransDate_begin AS DATE)<br />
+           AND ct.Transdate <=  cast(@TransDate_end AS DATE)<br />
+           AND (<br />
+           	ct.Voucher like 'EBAY%' OR ct.Voucher like 'EBBL%' OR ct.Voucher like 'EBOA%' OR ct.Voucher like 'ECHQ%' OR <br />
+			ct.Voucher like 'ECNT%' OR ct.Voucher like 'EKB1%' OR ct.Voucher like 'EKB2%' OR ct.Voucher like 'EKT1%' OR <br />
+			ct.Voucher like 'EKT2%' OR ct.Voucher like 'EPP1%' OR ct.Voucher like 'EPP2%' OR ct.Voucher like 'ESCB%' OR <br />
+			ct.Voucher like 'ETMB%' OR ct.Voucher like 'HMPY%' OR ct.Voucher like 'MOPO%' OR ct.Voucher like 'MOID%' OR <br />
+			ct.Voucher like 'CREC%' OR ct.Voucher like 'HMPP%' OR ct.Voucher like 'OBAY%' OR ct.Voucher like 'OBBL%' OR <br />
+			ct.Voucher like 'OCNT%' OR ct.Voucher like 'OKB1%' OR ct.Voucher like 'OKB2%' OR ct.Voucher like 'OKTB%' OR <br />
+			ct.Voucher like 'OPAP%' OR ct.Voucher like 'SCB%'  OR ct.Voucher like 'REV%'  OR ct.Voucher like 'WBAY%' OR <br />
+			ct.Voucher like 'WBBL%' OR ct.Voucher like 'WCHQ%' OR ct.Voucher like 'WCNT%' OR ct.Voucher like 'WKB1%' OR <br />
+			ct.Voucher like 'WKB2%' OR ct.Voucher like 'WKT1%' OR ct.Voucher like 'WKT2%' OR ct.Voucher like 'WPP1%' OR <br />
+			ct.Voucher like 'WPP2%' OR ct.Voucher like 'WSCB%' OR ct.Voucher like 'WTMB%' OR ct.Voucher like 'ECHQR%' OR <br />
+			ct.Voucher like 'RETM%' OR ct.Voucher like 'PEB0%' OR ct.Voucher like 'CEB0%' OR ct.Voucher like 'WABB%' OR <br />
+			ct.Voucher like 'EBAC%' OR ct.Voucher like 'OBAC%' OR ct.Voucher like 'WBAC%' OR ct.Voucher like 'COUPR%' OR<br />
+			ct.Voucher like 'PEA0%' OR ct.Voucher like 'CEA0%' OR ct.Voucher like 'ETLT%' OR ct.Voucher like 'OTLT%' OR<br />
+			ct.Voucher like 'WTLT%' OR ct.Voucher like 'EWEB%' OR ct.Voucher like 'OWEB%' OR ct.Voucher like 'WWEB%' OR<br />
+			ct.Voucher like 'EDTC%' OR ct.Voucher like 'ODTC%' OR ct.Voucher like 'WDTC%'<br />
+<br />
+           )<br />
+               GROUP BY ct.accountnum,t.district,t.custGroup,t.status<br />
+               <br />
+         SET @COUNT_HRANGE=@@rowcount<br />
+		 BEGIN TRAN<br />
+<br />
+				EXEC DBO.UP_Get_Axapta_Seqno @ac_table = @tablename,@ln_seqno =  @recid OUTPUT<br />
+<br />
+				UPDATE S<br />
+				SET s.nextval = s.nextval + @COUNT_HRANGE+1<br />
+				FROM SystemSequences s<br />
+				INNER JOIN SqlDictionary d ON d.tableid = s.tabid<br />
+				WHERE s.id = - 1<br />
+					AND s.dataareaid = 'dat'<br />
+					AND s.NAME = 'SEQNO'<br />
+					AND d.fieldid = 0<br />
+					AND d.NAME = @tablename<br />
+<br />
+				COMMIT TRAN<br />
+				IF @tablename='AvMCSRPaymentTable'<br />
+				BEGIN<br />
+					INSERT INTO AvMCSRPaymentTable( avcampaignid,avpaymamount,custaccount,<br />
+					avtransdate,avaccountstatus,custgroup,avdistrict,avmailplan,createddatetime,<br />
+					createdby,dataareaid,recVersion ,partition ,recid )<br />
+					SELECT  avcampaignid,avpaymamount,custaccount,<br />
+					avtransdate,avaccountstatus,custgroup,avdistrict,avmailplan,createddatetime,<br />
+					createdby,dataareaid,recVersion ,partition ,recid+@recid<br />
+					FROM #tmp_paymenttable<br />
+				END<br />
+				ELSE<br />
+				BEGIN<br />
+					INSERT INTO AvPreMCSRPaymentTable( avcampaignid,avpaymamount,custaccount,<br />
+					avtransdate,avaccountstatus,custgroup,avdistrict,avmailplan,createddatetime,<br />
+					createdby,dataareaid,recVersion ,partition ,recid)<br />
+					SELECT  avcampaignid,avpaymamount,custaccount,<br />
+					avtransdate,avaccountstatus,custgroup,avdistrict,avmailplan,createddatetime,<br />
+					createdby,dataareaid,recVersion ,partition ,recid+@recid<br />
+					FROM #tmp_paymenttable<br />
+				END<br />
+								 <br />
+				DROP TABLE #tmp_paymenttable	   <br />
+	   		 <br />
+	   		/*CATCHING @@ERROR*/<br />
+	   		IF @@ERROR>0<br />
+	   			 RAISERROR ('Error raised in TRY block.1', 16, 1 );/*[0-10]:CONTINUE;[11-19]:jump to catch*/<br />
+	   		COMMIT	   		<br />
+	   	END     <br />
+		ELSE<br />
+		BEGIN<br />
+			PRINT 'TABLE NAME SHOULD BE IN (AvMCSRPaymentTable,AvPreMCSRPaymentTable),CURRENT IS '+@tablename<br />
+		END<br />
+	   		select  0<br />
+	   	END TRY<br />
+	   	/*END TRY*/<br />
+	   	BEGIN CATCH<br />
+	   		/*DECLARE*/<br />
+	   		ROLLBACK<br />
+	   		DECLARE @ErrorMessage        NVARCHAR(4000),<br />
+	   		        @ErrorSeverity       NVARCHAR(5),<br />
+	   		        @ErrorState          NVARCHAR(5),<br />
+	   		        @ERROR_NUMBER        NVARCHAR(5),<br />
+	   		        @ERROR_LINE          NVARCHAR(5),<br />
+	   		        @ERROR_PROCEDURE     NVARCHAR(100)	<br />
+	   		/*SET VALUES*/	<br />
+	   		SELECT @ErrorMessage = ERROR_MESSAGE(),<br />
+	   		       @ErrorSeverity       = ERROR_SEVERITY(),<br />
+	   		       @ErrorState          = ERROR_STATE(),<br />
+	   		       @ERROR_NUMBER        = ERROR_NUMBER(),<br />
+	   		       @ERROR_LINE          = ERROR_LINE(),<br />
+	   		       @ERROR_PROCEDURE     = CASE ISNULL(ERROR_PROCEDURE(), '') WHEN '' THEN '' ELSE  'Error occur when running procedure: ['  + ERROR_PROCEDURE() + '];'   END;<br />
+	   		/*FORMATING MSG*/	<br />
+	   		SET @ErrorMessage = @ERROR_PROCEDURE + CHAR(10)<br />
+	    		    + 'Msg:' + @ErrorMessage + ' Line:' +CAST(@ERROR_LINE AS NVARCHAR)   + ' Number:' +CAST( @ERROR_NUMBER AS nvarchar)<br />
+	    		    + CHAR(10)<br />
+	    		    + 'Date:' + CONVERT(NVARCHAR(30), GETDATE(), 120) <br />
+	   		/*RAISERROR*/	    <br />
+	   		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);<br />
+		    select  1<br />
+	   	END CATCH;<br />
+	   <br />
+	   END<br />
+	   go<br />
+	   <br />
+	   IF @@ERROR = 0 PRINT 'Procedure usp_insert_PaymentTables created'<br />
+	   go<br />
+	   <br />
+	   GO<br />
+	   <br />
+		BEGIN tran<br />
+		EXEC [usp_insert_PaymentTables] '201602','830','A','AvPreMCSRPaymentTable','01/01/2016','01/06/2016'<br />
+		ROLLBACK<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:31

@@ -1,0 +1,246 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>1、说明：复制表(只复制结构,源表名：a 新表名：b) (Access可用) <br />
+法一：select * into b from a where 1 <>1 <br />
+法二：select top 0 * into b from a <br />
+<br />
+2、说明：拷贝表(拷贝数据,源表名：a 目标表名：b) (Access可用) <br />
+insert into b(a, b, c) select d,e,f from a; <br />
+<br />
+3、说明：跨数据库之间表的拷贝(具体数据使用绝对路径) (Access可用) <br />
+insert into b(a, b, c) select d,e,f from b in ‘具体数据库’ where 条件 <br />
+例子：..from b in '"&Server.MapPath(".")&"\data.mdb" &"' where.. <br />
+<br />
+4、说明：子查询(表名1：a 表名2：b) <br />
+select a,b,c from a where a IN (select d from b ) 或者: select a,b,c from a where a IN (1,2,3) <br />
+<br />
+5、说明：显示文章、提交人和最后回复时间 <br />
+select a.title,a.username,b.adddate from table a,(select max(adddate) adddate from table where table.title=a.title) b <br />
+<br />
+6、说明：外连接查询(表名1：a 表名2：b) <br />
+select a.a, a.b, a.c, b.c, b.d, b.f from a LEFT OUT JOIN b ON a.a = b.c <br />
+<br />
+7、说明：在线视图查询(表名1：a ) <br />
+select * from (SELECT a,b,c FROM a) T where t.a > 1; <br />
+<br />
+8、说明：between的用法,between限制查询数据范围时包括了边界值,not between不包括 <br />
+select * from table1 where time between time1 <br />
+<br />
+9、说明：in 的使用方法 <br />
+select * from table1 where a [not] in (‘值1’,’值2’,’值4’,’值6’) <br />
+<br />
+10、说明：两张关联表，删除主表中已经在副表中没有的信息 <br />
+delete from table1 where not exists ( select * from table2 where table1.field1=table2.field1 ) <br />
+<br />
+11、说明：四表联查问题： <br />
+select * from a left inner join b on a.a=b.b right inner join c on a.a=c.c inner join d on a.a=d.d where ..... <br />
+<br />
+12、说明：日程安排提前五分钟提醒 <br />
+SQL: select * from 日程安排 where datediff('minute',f开始时间,getdate())>5 <br />
+<br />
+13、说明：一条sql 语句搞定数据库分页 <br />
+select top 10 b.* from (select top 20 主键字段,排序字段 from 表名 order by 排序字段 desc) a,表名 b where b.主键字段 = a.主键字段 order by a.排序字段 <br />
+<br />
+14、说明：前10条记录 <br />
+select top 10 * form table1 where 范围 <br />
+<br />
+15、说明：选择在每一组b值相同的数据中对应的a最大的记录的所有信息(类似这样的用法可以用于论坛每月排行榜,每月热销产品分析,按科目成绩排名,等等.) <br />
+select a,b,c from tablename ta where a=(select max(a) from tablename tb where tb.b=ta.b) <br />
+<br />
+16、说明：包括所有在 TableA 中但不在 TableB和TableC 中的行并消除所有重复行而派生出一个结果表 <br />
+(select a from tableA ) except (select a from tableB) except (select a from tableC) <br />
+<br />
+17、说明：随机取出10条数据 <br />
+select top 10 * from tablename order by newid() <br />
+<br />
+18、说明：随机选择记录 <br />
+select newid() <br />
+<br />
+19、说明：删除重复记录 <br />
+Delete from tablename where id not in (select max(id) from tablename group by col1,col2,...) <br />
+<br />
+20、说明：列出数据库里所有的表名 <br />
+select name from sysobjects where type='U' <br />
+<br />
+21、说明：列出表里的所有的列 <br />
+select name from syscolumns where id=object_id('TableName') <br />
+<br />
+22、说明：列示type、vender、pcs字段，以type字段排列，case可以方便地实现多重选择，类似select 中的case。 <br />
+select type,sum(case vender when 'A' then pcs else 0 end),sum(case vender when 'C' then pcs else 0 end),sum(case vender when 'B' then pcs else 0 end) FROM tablename group by type <br />
+显示结果： <br />
+type vender pcs <br />
+电脑 A 1 <br />
+电脑 A 1 <br />
+光盘 B 2 <br />
+光盘 A 2 <br />
+手机 B 3 <br />
+手机 C 3 <br />
+<br />
+23、说明：初始化表table1 <br />
+TRUNCATE TABLE table1 <br />
+<br />
+24、说明：选择从10到15的记录 <br />
+select top 5 * from (select top 15 * from table order by id asc) table_别名 order by id desc <br />
+<br />
+declare @a varchar(100),@b varchar(20) <br />
+select @a='abcdefbcmnbcde',@b='bc' <br />
+select (len(@a)-len(replace(@a,@b,'')))/len(@b)<br />
+<br />
+说明：选择在每一组b值相同的数据中对应的a最大的记录的所有信息(类似这样的用法可以用于论坛每月排行榜,每月热销产品分析,按科目成绩排名,等等.) <br />
+select a,b,c from tablename ta where a=(select max(a) from tablename tb where tb.b=ta.b)<br />
+<br />
+一年中所有为星期二的日期 <br />
+<br />
+select dateadd(day,x,col),'星期二' from <br />
+( <br />
+select cast('2006-1-1' as datetime) as col <br />
+)a cross join <br />
+( <br />
+SELECT  top 365 b8.i+b7.i + b6.i + b5.i + b4.i +b3.i +b2.i + b1.i + b0.i x <br />
+FROM(SELECT 0 i UNION ALL SELECT 1) b0 <br />
+CROSS JOIN(SELECT 0 i UNION ALL SELECT 2) b1 <br />
+CROSS JOIN(SELECT 0 i UNION ALL SELECT 4) b2 <br />
+CROSS JOIN(SELECT 0 i UNION ALL SELECT 8) b3 <br />
+CROSS JOIN(SELECT 0 i UNION ALL SELECT 16) b4 <br />
+CROSS JOIN(SELECT 0 i UNION ALL SELECT 32) b5 <br />
+CROSS JOIN(SELECT 0 i UNION ALL SELECT 64) b6 <br />
+CROSS JOIN(SELECT 0 i UNION ALL SELECT 128) b7 <br />
+CROSS JOIN(SELECT 0 i UNION ALL SELECT 256) b8 <br />
+order by 1 <br />
+)b <br />
+where datepart(dw,dateadd(day,x,col))=3<br />
+<br />
+实现将整型123456789转换为123，456，789<br />
+SELECT REPLACE(CONVERT(varchar, CONVERT(money, 123456789), 1), '.00', '')<br />
+<br />
+复制表结构，而不复制内容 <br />
+<br />
+<br />
+select * into #table1 <br />
+from admin <br />
+where 1 <>1 --不会复制数据 <br />
+<br />
+select * from #table1 <br />
+<br />
+drop table #table1 <br />
+<br />
+这样#table1就有了admin 的所有字段<br />
+<br />
+select 字段1,字段3 into newtable where 1<>1<br />
+<br />
+--查询当前表的数据量计数<br />
+select max(a.rowcnt)  计数<br />
+from sysindexes a<br />
+join sys.objects b on b.object_id=a.id<br />
+where b.[name]='kucun'<br />
+<br />
+--查询当前数据库的数据量计数，按表分组<br />
+use --数据库<br />
+select max(a.rowcnt) 计数,b.[name] 表名 <br />
+from sysindexes a<br />
+join sys.objects b on b.object_id=a.id<br />
+where b.type='U'<br />
+group by b.[name]<br />
+having max(a.rowcnt) >0<br />
+order by 1 desc<br />
+<br />
+速度查询数据条数<br />
+select rowcnt from sysindexes where id=object_id('表名') <br />
+<br />
+取得一个表的所有字段名，用逗号分割开。。<br />
+DECLARE @columns VARCHAR(500);<br />
+<br />
+SELECT<br />
+    @columns=isnull(@columns+',','')+name<br />
+FROM syscolumns<br />
+WHERE [id]=OBJECT_ID(N'表名');<br />
+<br />
+SELECT @columns<br />
+<br />
+SELECT [rows]<br />
+FROM sysindexes<br />
+WHERE (id = OBJECT_ID('GENERALDATA')) AND (indid < 2)//速度查询行数<br />
+ <br />
+select count(1) from table//速度查询行数<br />
+<br />
+<br />
+N-M条记录<br />
+1.<br />
+select top m * into 临时表(或表变量) from tablename order by columnname -- 将top m笔插入<br />
+set rowcount n<br />
+select * from 表变量 order by columnname desc<br />
+<br />
+<br />
+2.<br />
+select top n * from <br />
+(select top m * from tablename order by columnname) a<br />
+order by columnname desc<br />
+<br />
+<br />
+3.<br />
+如果tablename里没有其他identity列，那么：<br />
+select identity(int) id0,* into #temp from tablename<br />
+<br />
+取n到m条的语句为：<br />
+select * from #temp where id0 >=n and id0 <= m<br />
+<br />
+如果你在执行select identity(int) id0,* into #temp from tablename这条语句的时候报错,那是因为你的DB中间的select into/bulkcopy属性没有打开要先执行：<br />
+exec sp_dboption 你的DB名字,'select into/bulkcopy',true<br />
+<br />
+<br />
+4.<br />
+如果表里有identity属性，那么简单：<br />
+select * from tablename where identitycol between n and m<br />
+<br />
+计算一个库里各个表的记录总数：<br />
+select b.name,a.rowcnt from sysindexes a,sysobjects b <br />
+where a.id=b.id and a.indid<2 and b.xtype='u'<br />
+<br />
+--统计数据库里每个表的详细情况<br />
+   EXEC sp_MSforeachtable @command1="sp_spaceused '?'"<br />
+<br />
+   --获得每个表的记录数和容量:<br />
+   EXEC sp_MSforeachtable @command1="print '?'",<br />
+        @command2="sp_spaceused '?'",<br />
+        @command3= "SELECT count(*) FROM ? "<br />
+<br />
+<br />
+<br />
+select<br />
+    o.name as tbname,<br />
+    c.name as columnname,<br />
+    t.name as typename,<br />
+    c.max_length<br />
+from sys.tables as o<br />
+    join sys.columns as c<br />
+on o.object_id=c.object_id<br />
+    join sys.types as t<br />
+on c.system_type_id=t.system_type_id<br />
+<br />
+<br />
+<br />
+<br />
+  SELECT<br />
+        C.column_id<br />
+        ,C.name<br />
+        ,type    = T.name + CASE T.user_type_id WHEN 41 THEN '('+CAST(C.scale AS VARCHAR) +')'    -- time<br />
+            WHEN 42 THEN '('+CAST(C.scale AS VARCHAR) +')'                                        -- datetime2<br />
+            WHEN 43 THEN '('+CAST(C.scale AS VARCHAR) +')'                                        -- datetimeoffset<br />
+            WHEN 106 THEN '('+CAST(C.precision  AS VARCHAR)+','+ CAST(C.scale AS VARCHAR) +')'    -- decimal<br />
+            WHEN 108 THEN '('+CAST(C.precision  AS VARCHAR)+','+ CAST(C.scale AS VARCHAR) +')'    -- numeric<br />
+            WHEN 165 THEN '('+ISNULL(CAST(NULLIF(C.max_length,-1) AS VARCHAR),'MAX') +')'        -- varbinary<br />
+            WHEN 167 THEN '('+ISNULL(CAST(NULLIF(C.max_length,-1) AS VARCHAR),'MAX') +')'        -- varchar<br />
+            WHEN 173 THEN '('+ISNULL(CAST(NULLIF(C.max_length,-1) AS VARCHAR),'MAX') +')'        -- binary<br />
+            WHEN 175 THEN '('+ISNULL(CAST(NULLIF(C.max_length,-1) AS VARCHAR),'MAX') +')'        -- char<br />
+            WHEN 231 THEN '('+ISNULL(CAST(NULLIF(C.max_length,-1) AS VARCHAR),'MAX') +')'        -- nvarchar<br />
+            WHEN 239 THEN '('+ISNULL(CAST(NULLIF(C.max_length,-1) AS VARCHAR),'MAX') +')'        -- nchar<br />
+            ELSE ''<br />
+            END<br />
+        ,C.is_identity<br />
+        ,C.is_nullable<br />
+        ,DefaultText = ISNULL(STUFF(LEFT(D.definition,LEN(D.definition)-1),1,1,''),'')<br />
+    FROM sys.columns C<br />
+    INNER JOIN sys.types T ON C.user_type_id = T.user_type_id <br />
+    LEFT JOIN sys.default_constraints D ON D.[object_id] =C.default_object_id <br />
+        AND D.parent_object_id = C.[object_id] AND D.parent_column_id = C.column_id <br />
+    WHERE C.[object_id] = OBJECT_ID('你的表名');<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:06

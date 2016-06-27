@@ -1,0 +1,85 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>Create Function F_LowerToUpper(@LowerMoney Decimal(38,4)) <br />
+Returns Varchar(200)    --返回的大写金额的字符 <br />
+As <br />
+Begin <br />
+      Declare @LowerStr  Varchar(50)    --小写金额 <br />
+      Declare @UpperStr  Varchar(200)  --大写金额 <br />
+      Declare @UpperTmp  Varchar(15)    --大写金额的临时字符串 <br />
+      Declare @i          Int            --递增量 <br />
+      Declare @LowerLen  Int            --小写金额的总长度 <br />
+<br />
+      Set @LowerStr = @LowerMoney --把Decimal型的值全部赋给字符串变量 注:(赋值过去的话如8 在字符串变量中是显示8.0000 因为小数位精确到四位,没有的话，它会自动补0) <br />
+      Set @LowerStr = Replace(@LowerStr,'.','') --把小数点替换成空字符      --精确到小数点的四位 角分厘毫 <br />
+      Set @LowerLen = Len(@LowerStr) --获取小写金额的总长度(包括四个小数位) <br />
+      Select @i = 1,@UpperStr = '',@UpperTmp = '' --设置默认初始值 <br />
+      While @i <= @LowerLen          <br />
+          Begin <br />
+            Set @UpperTmp = Case <br />
+                                  When SubString(@LowerStr,@LowerLen - @i + 1,1) = '0' And @i = 5 And (Convert(Int,Right(@LowerStr,4)) = 0 Or @LowerLen > 5) Then '元'      --注：如果个位为0的话,并且四位小数都是0或者它的长度超过5(也就是超过元)，则为元 <br />
+                                  --When SubString(@LowerStr,@LowerLen - @i + 1,1) = '0' Then '' <br />
+                                  Else <br />
+                                      + Case SubString(@LowerStr,@LowerLen - @i + 1,1) --看当前位是数字几,就直接替换成汉字繁体大写 <br />
+                                              When '0' Then '零' <br />
+                                              When '1' Then '壹' <br />
+                                              When '2' Then '贰' <br />
+                                              When '3' Then '叁' <br />
+                                              When '4' Then '肆' <br />
+                                              When '5' Then '伍' <br />
+                                              When '6' Then '陆' <br />
+                                              When '7' Then '柒' <br />
+                                              When '8' Then '捌' <br />
+                                              When '9' Then '玖' <br />
+                                        End <br />
+                                      + Case @i <br />
+                                              When 1      Then '毫' <br />
+                                              When 2      Then '厘' <br />
+                                              When 3      Then '分' <br />
+                                              When 4      Then '角' <br />
+                                              When 5      Then '元' <br />
+                                              When 9      Then '萬' <br />
+                                              When 13      Then '亿' <br />
+                                              When 17      Then '兆' <br />
+                                              When 21      Then '京' <br />
+                                              When 25      Then '垓' <br />
+                                              When 29      Then '杼'  <br />
+                                              When 33      Then '穰' <br />
+                                              When 37      Then '沟' --Decimal型最大长度是38 后面的就不用再考虑了 <br />
+                                              Else <br />
+                                                  + Case @i%4 <br />
+                                                          When 2 Then '拾'      --拾 6 10 14 18 22 26 30 34 38 ………… <br />
+                                                          When 3 Then '佰'      --佰 7 11 15 19 23 27 31 35 39 ………… <br />
+                                                          When 0 Then '仟'      --仟 8 12 16 20 24 28 32 36 40 ………… <br />
+                                                      End <br />
+                                        End <br />
+                            End <br />
+            Set @UpperStr = Isnull(@UpperTmp,'') + Isnull(@UpperStr,'') <br />
+            Set @i = @i + 1 <br />
+          End <br />
+      If Convert(Int,Right(@LowerStr,4)) = 0 Set @UpperStr = Left(@UpperStr,Len(@UpperStr)-8) + '整' --判断小数位数是不是都是0,是0就可以取整 <br />
+      While Patindex('%零[仟佰拾角分厘毫零]%',@UpperStr) <> 0    --把零拾或零佰或零零变成一个零 <br />
+          Begin <br />
+            Set @UpperStr = stuff(@UpperStr,patindex('%零[仟佰拾角分厘毫零]%',@UpperStr),2,'零') <br />
+          End <br />
+      While Patindex('%[沟穰杼垓京兆亿萬]零[沟穰杼垓京兆亿萬]%',@UpperStr) <> 0 --把零萬或零亿的清空掉 <br />
+          Begin <br />
+            Select @UpperStr = Stuff(@UpperStr,Patindex('%[沟穰杼垓京兆亿萬]零[沟穰杼垓京兆亿萬]%',@UpperStr)+1,2,'') <br />
+          End <br />
+      While Patindex('%[仟佰拾]零[沟穰杼垓京兆亿萬]%',@UpperStr) <> 0 --把类似拾零萬或佰零萬或仟零萬中间的零清空掉 <br />
+          Begin <br />
+            Select @UpperStr = Stuff(@UpperStr,Patindex('%[仟佰拾]零[沟穰杼垓京兆亿萬]%',@UpperStr)+1,1,'') <br />
+          End <br />
+      If Patindex('%_零[元]%',@UpperStr) <> 0 --把类似拾零元或百零元中间的零清空掉 <br />
+          Begin <br />
+            Select @UpperStr = Stuff(@UpperStr,Patindex('%_零[元]%',@UpperStr) + 1,1,'') <br />
+  End <br />
+      Else If (Patindex('零[元]%',@UpperStr) <> 0) And (Convert(Int,Right(@LowerStr,4)) <> 0) --判断当前否是零元开头，并且后面的四个小数不为0 <br />
+              Begin <br />
+          Select @UpperStr = Stuff(@UpperStr,Patindex('零[元]%',@UpperStr),2,'') --把零元清空掉 <br />
+        End <br />
+      If Right(@UpperStr,1) = '零' Set @UpperStr = Left(@UpperStr,Len(@UpperStr)-1)      --如果最后一位是零也清空掉 <br />
+      If @UpperStr = '元整' Set @UpperStr = '零' + @UpperStr                            --如果只是0的话，就显示零元整 <br />
+      Return @UpperStr      --返回大写金额 <br />
+End  <br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:06

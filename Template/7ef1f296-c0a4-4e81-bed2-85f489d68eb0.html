@@ -1,0 +1,295 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>IF OBJECT_ID(N'dbo.p_ExportHtml') IS NOT NULL<br />
+<br />
+    DROP PROC dbo.p_ExportHtml;<br />
+<br />
+GO<br />
+<br />
+ <br />
+<br />
+/*-- == 导出表/视图中的数据为html 文件======================<br />
+<br />
+ <br />
+<br />
+此存储过程用于将指定的表/视图中的数据导出为 html 文件<br />
+<br />
+由于是使用存储过程, 因此文件目录基于 sql server 服务器<br />
+<br />
+ <br />
+<br />
+存储过程中会使用xp_cmdshell 调用bcp 来写文件<br />
+<br />
+因此必须打开xp_cmdshell 功能, 可以使用下面的脚本实现<br />
+<br />
+EXEC sp_configure N'show advanced options', 1 RECONFIGURE;<br />
+<br />
+EXEC sp_configure N'xp_cmdshell', 1 RECONFIGURE;<br />
+<br />
+ <br />
+<br />
+---------------------------------------------------------<br />
+<br />
+-- 调用示例<br />
+<br />
+EXEC dbo.p_ExportHtml<br />
+<br />
+    @object_name = N'sys.objects',<br />
+<br />
+    @file_name = N'c:\test.html';<br />
+<br />
+ <br />
+<br />
+---------------------------------------------------------<br />
+<br />
+-- 环境要求<br />
+<br />
+适用于sql server 2005 或者更高的版本<br />
+<br />
+ <br />
+<br />
+-- ==== 邹建2008.11(引用请保留此信息) =============== */<br />
+<br />
+CREATE PROC dbo.p_ExportHtml<br />
+<br />
+    @object_name sysname,<br />
+<br />
+    @file_name nvarchar(260),<br />
+<br />
+    @title nvarchar(1000) = NULL -- html 标题, 为NULL时使用@object_name<br />
+<br />
+AS<br />
+<br />
+SET NOCOUNT ON;<br />
+<br />
+ <br />
+<br />
+DECLARE<br />
+<br />
+    @sql_field nvarchar(max),<br />
+<br />
+    @sql_body nvarchar(max);<br />
+<br />
+SELECT<br />
+<br />
+    @sql_field = N'',<br />
+<br />
+    @sql_body = N''<br />
+<br />
+SELECT<br />
+<br />
+    @sql_field = @sql_field<br />
+<br />
+           + N' UNION ALL SELECT field_name = N' + QUOTENAME(C.name, N''''),<br />
+<br />
+    @sql_body = @sql_body<br />
+<br />
+           + N', [td/@align] = '<br />
+<br />
+              + QUOTENAME(<br />
+<br />
+                     CASE<br />
+<br />
+                         WHEN T.name LIKE N'%int'<br />
+<br />
+                                OR T.name LIKE N'%money'<br />
+<br />
+                                OR T.name IN(N'real', N'float', N'decimal', N'numeric')<br />
+<br />
+                            THEN 'right'<br />
+<br />
+                         WHEN T.name IN(N'bit')<br />
+<br />
+                            THEN 'center'<br />
+<br />
+                         ELSE 'left'<br />
+<br />
+                     END,<br />
+<br />
+                     '''')<br />
+<br />
+           + N', [td] = '<br />
+<br />
+              + CASE<br />
+<br />
+                  WHEN T.name IN(N'xml')<br />
+<br />
+                     THEN N'CONVERT(nvarchar(max), ' + QUOTENAME(C.name) + N')'<br />
+<br />
+                  ELSE QUOTENAME(C.name)<br />
+<br />
+              END<br />
+<br />
+           + N', NULL'<br />
+<br />
+FROM sys.all_columns C<br />
+<br />
+    INNER JOIN sys.types T<br />
+<br />
+       ON T.system_type_id = C.system_type_id<br />
+<br />
+           AND T.system_type_id = T.user_type_id<br />
+<br />
+WHERE  C.object_id = OBJECT_ID(@object_name)<br />
+<br />
+ORDER BY C.column_id;<br />
+<br />
+ <br />
+<br />
+IF @@ROWCOUNT = 0<br />
+<br />
+BEGIN<br />
+<br />
+    RAISERROR(N'can''t found object "%s"', 16, 1, @object_name);<br />
+<br />
+    RETURN -1;<br />
+<br />
+END<br />
+<br />
+ <br />
+<br />
+DECLARE<br />
+<br />
+    @temp_proce_name sysname,<br />
+<br />
+    @sql nvarchar(max),<br />
+<br />
+    @cmd nvarchar(4000);<br />
+<br />
+ <br />
+<br />
+SELECT<br />
+<br />
+    @temp_proce_name = QUOTENAME(N'##_'<br />
+<br />
+                                + CONVERT(char(10), GETDATE(), 112)<br />
+<br />
+                                + N'_' + CONVERT(char(36), NEWID())<br />
+<br />
+                                ),  <br />
+<br />
+    @sql = N'<br />
+<br />
+CREATE PROC ' + @temp_proce_name + N'<br />
+<br />
+AS<br />
+<br />
+WITH<br />
+<br />
+FIELD AS(<br />
+<br />
+    ' + STUFF(@sql_field, 1, 11, N'') + N'<br />
+<br />
+),<br />
+<br />
+DATA AS(<br />
+<br />
+    SELECT * FROM ' + @object_name + N'<br />
+<br />
+)<br />
+<br />
+SELECT<br />
+<br />
+    [H1] = N''' + REPLACE(ISNULL(@title, @object_name), N'''', N'''''') + N''',<br />
+<br />
+    [table/@border] = 1,<br />
+<br />
+    [tr] = (<br />
+<br />
+           SELECT<br />
+<br />
+              [*] = field_name<br />
+<br />
+           FROM FIELD<br />
+<br />
+           FOR XML PATH(''th''), TYPE<br />
+<br />
+           ),<br />
+<br />
+    [*] = (<br />
+<br />
+           SELECT ' + STUFF(@sql_body, 1, 2, N'') + N'<br />
+<br />
+           FROM DATA<br />
+<br />
+           FOR XML PATH(''tr''), TYPE<br />
+<br />
+       )<br />
+<br />
+FOR XML PATH(''html''), TYPE;<br />
+<br />
+';<br />
+<br />
+ <br />
+<br />
+-- 生成临时处理存储过程<br />
+<br />
+EXEC sp_executesql<br />
+<br />
+    @sql;<br />
+<br />
+ <br />
+<br />
+-- 输出结果到文件<br />
+<br />
+SET @cmd = N'bcp "EXEC ' + QUOTENAME(DB_NAME()) <br />
+<br />
+       + N'.' +  @temp_proce_name <br />
+<br />
+       + N'" queryout ' + QUOTENAME(@file_name, N'"')<br />
+<br />
+       + N' /T /w';<br />
+<br />
+DECLARE @tb_re TABLE(<br />
+<br />
+    col nvarchar(4000)<br />
+<br />
+);<br />
+<br />
+INSERT @tb_re<br />
+<br />
+EXEC sys.xp_cmdshell @cmd;<br />
+<br />
+DECLARE<br />
+<br />
+    @file_exist int;<br />
+<br />
+EXEC master.sys.xp_fileexist @file_name, @file_exist OUTPUT;<br />
+<br />
+ <br />
+<br />
+-- 删除临时存储过程<br />
+<br />
+IF OBJECT_ID(@temp_proce_name) IS NOT NULL<br />
+<br />
+    EXEC(N'DROP PROC ' + @temp_proce_name + N';');<br />
+<br />
+ <br />
+<br />
+-- 检查文件生成是否成功<br />
+<br />
+IF @file_exist = 1<br />
+<br />
+BEGIN<br />
+<br />
+    RAISERROR(N'object "%s" output to "%s" succeed.', 10, 1, @object_name, @file_name);<br />
+<br />
+END<br />
+<br />
+ELSE<br />
+<br />
+BEGIN<br />
+<br />
+    SELECT * FROM @tb_re;<br />
+<br />
+    RAISERROR(N'some error occur when generate html file, please check output information', 16, 1);<br />
+<br />
+    RETURN -1;<br />
+<br />
+END<br />
+<br />
+GO<br />
+<br />
+<br />
+<br />
+本文来自CSDN博客，转载请标明出处：http://blog.csdn.net/zjcxc/archive/2008/11/10/3264186.aspx<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:09

@@ -1,0 +1,92 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>只有mdf文件的恢复技术 <br />
+<br />
+　　由于种种原因，我们如果当时仅仅备份了mdf文件，那么恢复起来就是一件很麻烦的事情了。 <br />
+<br />
+　　如果您的mdf文件是当前数据库产生的，那么很侥幸，也许你使用sp_attach_db或者sp_attach_single_file_db可以恢复数据库，但是会出现类似下面的提示信息 <br />
+<br />
+　　设备激活错误。物理文件名 ’C:\Program Files\Microsoft SQL Server\MSSQL\data\test_Log.LDF’ 可能有误。 <br />
+<br />
+　　已创建名为 ’C:\Program Files\Microsoft SQL Server\MSSQL\Data\test_log.LDF’ 的新日志文件。 <br />
+<br />
+　　但是，如果您的数据库文件是从其他计算机上复制过来的，那么很不幸，也许上述办法就行不通了。你也许会得到类似下面的错误信息<br />
+<br />
+服务器: 消息 1813，级别 16，状态 2，行 1 <br />
+<br />
+　　未能打开新数据库 ’test’。CREATE DATABASE 将终止。 <br />
+<br />
+　　设备激活错误。物理文件名 ’d:\test_log.LDF’ 可能有误。 <br />
+<br />
+　　应该怎么办呢?下面我们举例说明恢复办法。 <br />
+<br />
+　　A.我们使用默认方式建立一个供恢复使用的数据库(如test)。可以在SQL Server EntERPrise Manager里面建立。 <br />
+<br />
+　　B.停掉数据库服务器。 <br />
+<br />
+　　C.将刚才生成的数据库的日志文件test_log.ldf删除，用要恢复的数据库mdf文件覆盖刚才生成的数据库数据文件test_data.mdf。 <br />
+<br />
+　　D.启动数据库服务器。此时会看到数据库test的状态为“置疑”。这时候不能对此数据库进行任何操作。 <br />
+<br />
+　　E.设置数据库允许直接操作系统表。此操作可以在SQL Server Enterprise Manager里面选择数据库服务器，按右键，选择“属性”，在“服务器设置”页面中将“允许对系统目录直接修改”一项选中。也可以使用如下语句来实现。 <br />
+<br />
+<br />
+　　use master <br />
+　　go <br />
+　　sp_configure ’allow updates’,1 <br />
+　　go <br />
+　　reconfigure with override <br />
+　　go <br />
+<br />
+<br />
+　　F.设置test为紧急修复模式 <br />
+<br />
+　　update sysdatabases set status=-32768 where dbid=DB_ID(’test’) <br />
+<br />
+　　此时可以在SQL Server Enterprise Manager里面看到该数据库处于“只读\置疑\脱机\紧急模式”可以看到数据库里面的表，但是仅仅有系统表 <br />
+<br />
+　　G.下面执行真正的恢复操作，重建数据库日志文件 <br />
+<br />
+　　dbcc rebuild_log(’test’,’C:\Program Files\Microsoft SQL Server\MSSQL\Data\test_log.ldf’) <br />
+<br />
+　　执行过程中，如果遇到下列提示信息： <br />
+<br />
+　　服务器: 消息 5030，级别 16，状态 1，行 1 <br />
+<br />
+　　未能排它地锁定数据库以执行该操作。 <br />
+<br />
+　　DBCC 执行完毕。如果 DBCC 输出了错误信息，请与系统管理员联系。 <br />
+<br />
+　　说明您的其他程序正在使用该数据库，如果刚才您在F步骤中使用SQL Server Enterprise Manager打开了test库的系统表，那么退出SQL Server Enterprise Manager就可以了。 <br />
+<br />
+　　正确执行完成的提示应该类似于： <br />
+告: 数据库 ’test’ 的日志已重建。已失去事务的一致性。应运行 DBCC CHECKDB 以验证物理一致性。将必须重置数据库选项，并且可能需要删除多余的日志文件。 <br />
+<br />
+　　DBCC 执行完毕。如果 DBCC 输出了错误信息，请与系统管理员联系。 <br />
+<br />
+　　此时打开在SQL Server Enterprise Manager里面会看到数据库的状态为“只供DBO使用”。此时可以访问数据库里面的用户表了。 <br />
+<br />
+　　H.验证数据库一致性(可省略) <br />
+<br />
+　　dbcc checkdb(’test’) <br />
+<br />
+　　一般执行结果如下： <br />
+<br />
+　　CHECKDB 发现了 0 个分配错误和 0 个一致性错误(在数据库 ’test’ 中)。 <br />
+<br />
+　　DBCC 执行完毕。如果 DBCC 输出了错误信息，请与系统管理员联系。 <br />
+<br />
+　　I.设置数据库为正常状态 <br />
+<br />
+　　sp_dboption ’test’,’dbo use only’,’false’ <br />
+<br />
+　　假如没有出错，现在你就可以正常的使用恢复后的数据库啦。 <br />
+<br />
+　　J.最后一步，我们要将步骤E中设置的“允许对系统目录直接修改”一项恢复。因为平时直接操作系统表是一件比较危险的事情。当然，我们可以在SQL Server Enterprise Manager里面恢复，也可以使用如下语句完成 <br />
+<br />
+<br />
+　　sp_configure ’allow updates’,0 <br />
+　　go <br />
+　　reconfigure with override <br />
+　　go <br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:33

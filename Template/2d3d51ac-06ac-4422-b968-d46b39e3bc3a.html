@@ -1,0 +1,234 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>/*--化解字符串不能超过8000的方法 <br />
+<br />
+经常有人提到,用动态生成SQL语句的方法处理数据时,处理语句超长,无法处理的问题 <br />
+下面就讨论这个问题: <br />
+--邹建   2003.9(引用请保留此信息)--*/ <br />
+<br />
+<br />
+--方法1.   多个变量处理 <br />
+<br />
+--根据查询结果定义变量(实际处理中,应该是估计需要多少个变量,定义足够多的变量个数,多定义变量并不影响处理,下面就多定义了一个) <br />
+--生成数据处理临时表 <br />
+SELECT   id=IDENTITY(int,0,1), <br />
+g=0, <br />
+a=CAST(N ', '+QUOTENAME([name]) <br />
++N '=SUM(CASE   [name]   WHEN   N '+QUOTENAME(name,N ' ' ' ') <br />
++N '   THEN   [colid]   ELSE   0   END) ' <br />
+as   nvarchar(4000)) <br />
+INTO   #   FROM   syscolumns <br />
+WHERE   name> N ' ' <br />
+GROUP   BY   name <br />
+<br />
+--分组临时表 <br />
+UPDATE   a   SET   G=id/i <br />
+FROM   #   a,(SELECT   i=3800/MAX(LEN(a))   FROM   #)b <br />
+SELECT   MAX(g)+1   as   N '需要的变量个数 '   FROM   # <br />
+<br />
+DECLARE   @0   nvarchar(4000),@1   nvarchar(4000),@2   nvarchar(4000),@3   nvarchar(4000),@4   nvarchar(4000) <br />
+SELECT   @0=N ' ',@1=N ' ',@2=N ' ',@3=N ' ',@4=N ' ' <br />
+SELECT   <br />
+@0=CASE   g   WHEN   0   THEN   @0+a   ELSE   @0   END, <br />
+@1=CASE   g   WHEN   1   THEN   @1+a   ELSE   @1   END, <br />
+@2=CASE   g   WHEN   2   THEN   @2+a   ELSE   @2   END, <br />
+@3=CASE   g   WHEN   3   THEN   @3+a   ELSE   @3   END, <br />
+@4=CASE   g   WHEN   4   THEN   @4+a   ELSE   @4   END <br />
+FROM   # <br />
+EXEC(N 'SELECT   xtype '+@0+@1+@2+@3+@4+N '   FROM   syscolumns   GROUP   BY   xtype ') <br />
+DROP   TABLE   # <br />
+<br />
+/*--方法说明 <br />
+<br />
+优点:比较灵活,数据量大时只需要增加变量就行了.不用改动其他部分 <br />
+缺点:要自行估计处理的数据,估计不足就会出错 <br />
+--*/ <br />
+<br />
+<br />
+/*--化解字符串不能超过8000的方法一<br />
+经常有人提到,用动态生成SQL语句的方法处理数据时,处理语句超长,无法处理的问题<br />
+下面就讨论这个问题:<br />
+--邹建 2003.9(引用请保留此信息)--*/<br />
+/*-- 测试环境<br />
+--以系统表 syscolumns 为测试数据,要求按xtype为列字段,name为行字段,统计colid的和<br />
+--要求结果<br />
+xtype    filedname_1    fieldname_2    .....    fieldname_n<br />
+-------- -------------- -------------- -------- --------------<br />
+34       0              0              .....    1<br />
+--*/<br />
+<br />
+/*--常规处理方法(不加行数限制会因生成的字符串益出而出错)<br />
+set rowcount 10    --因为syscolumns的记录较,会导致生成的字符串溢出,所以限制一下行数<br />
+<br />
+declare @s nvarchar(4000)<br />
+set @s=''<br />
+select @s=@s+N','+quotename([name])<br />
+    +N'=sum(case name when '+quotename([name],'''')<br />
+    +N' then [colid] else 0 end)'<br />
+from(select distinct [name] from [syscolumns]) a<br />
+<br />
+set rowcount 0    --取消限制<br />
+exec(N'select [xtype]'+@s+N' from [syscolumns] group by [xtype]')<br />
+<br />
+/*--问题<br />
+不加行数限制时,会因生成的字符串益出而出错<br />
+--*/<br />
+--*/<br />
+<br />
+/*--方法1. 多个变量处理<br />
+<br />
+--根据查询结果定义变量(实际处理中,应该是估计需要多少个变量,定义足够多的变量个数,多定义变量并不影响处理,下面就多定义了一个)<br />
+--生成数据处理临时表<br />
+SELECT id=IDENTITY(int,0,1),<br />
+    g=0,<br />
+    a=CAST(N','+QUOTENAME([name])<br />
+        +N'=SUM(CASE [name] WHEN N'+QUOTENAME(name,N'''')<br />
+        +N' THEN [colid] ELSE 0 END)'<br />
+        as nvarchar(4000))<br />
+INTO # FROM syscolumns<br />
+WHERE name>N''<br />
+GROUP BY name<br />
+<br />
+--分组临时表<br />
+UPDATE a SET G=id/i<br />
+FROM # a,(SELECT i=3800/MAX(LEN(a)) FROM #)b<br />
+SELECT MAX(g)+1 as N'需要的变量个数' FROM #<br />
+<br />
+DECLARE @0 nvarchar(4000),@1 nvarchar(4000),@2 nvarchar(4000),@3 nvarchar(4000),@4 nvarchar(4000)<br />
+SELECT @0=N'',@1=N'',@2=N'',@3=N'',@4=N''<br />
+SELECT <br />
+    @0=CASE g WHEN 0 THEN @0+a ELSE @0 END,<br />
+    @1=CASE g WHEN 1 THEN @1+a ELSE @1 END,<br />
+    @2=CASE g WHEN 2 THEN @2+a ELSE @2 END,<br />
+    @3=CASE g WHEN 3 THEN @3+a ELSE @3 END,<br />
+    @4=CASE g WHEN 4 THEN @4+a ELSE @4 END<br />
+FROM #<br />
+EXEC(N'SELECT xtype'+@0+@1+@2+@3+@4+N' FROM syscolumns GROUP BY xtype')<br />
+DROP TABLE #<br />
+<br />
+/*--方法说明<br />
+<br />
+优点:比较灵活,数据量大时只需要增加变量就行了.不用改动其他部分<br />
+缺点:要自行估计处理的数据,估计不足就会出错<br />
+--*/<br />
+--*/<br />
+<br />
+/*--方法2. bcp+isql<br />
+<br />
+--因为要用到bcp+isql,所以需要这些信息<br />
+declare @servername sysname,@username sysname,@pwd sysname<br />
+select @servername=@@servername  --服务器名<br />
+    ,@username=N''           --用户名<br />
+    ,@pwd=N''                --密码<br />
+<br />
+declare @tbname sysname,@s nvarchar(4000)<br />
+<br />
+--创建数据处理临时表<br />
+set @tbname=quotename(N'##temp_'+cast(newid() as varchar(36)))<br />
+set @s=N'create table '+@tbname+'(a nvarchar(4000))<br />
+insert into '+@tbname+N'<br />
+select N''create view '<br />
+    +stuff(@tbname,2,2,N'')<br />
+    +N' as <br />
+select [xtype]''<br />
+union all<br />
+select N'',''+quotename([name])+''=sum(case [name] when N''<br />
+    +quotename([name],'''''''')<br />
+    +'' then [colid] else 0 end)''<br />
+    from(select distinct [name] from [syscolumns] where name<>N''xtype'')a<br />
+union all<br />
+select N''from [syscolumns] group by [xtype]'''<br />
+exec(@s)<br />
+<br />
+--生成创建视图的文件,注意使用了文件:c:\temp.txt<br />
+set @s=N'bcp "'+@tbname+N'" out "c:\'+@tbname+N'" /S"'<br />
+    +@servername+N'" /U"'+@username+N'" /P"'+@pwd+N'" /w'<br />
+exec master..xp_cmdshell @s,no_output<br />
+<br />
+--调用isql生成数据处理视图<br />
+set @s=N'osql /S"'+@servername<br />
+    +case <br />
+        when @username=N'' then N'" /E' <br />
+        else N'" /U"'+@username+N'" /P"'+@pwd+N'"'<br />
+    end<br />
+    +N' /d"'+db_name()+N'" /i"c:\'+@tbname+'"'<br />
+exec master..xp_cmdshell @s,no_output<br />
+<br />
+--删除临时文件<br />
+set @s=N'del "c:\'+@tbname+'"'<br />
+exec master..xp_cmdshell @s,no_output<br />
+<br />
+--调用视图,显示处理结果<br />
+set @s=N'drop table '+@tbname+N'<br />
+select * from '+stuff(@tbname,2,2,N'')+N'<br />
+drop view '+stuff(@tbname,2,2,N'')<br />
+exec(@s)<br />
+<br />
+/*--方法总结<br />
+<br />
+    优点:程序自动处理,不存在判断错误的问题<br />
+    缺点:复杂,经过的步骤多,容易出错,而且需要一定的操作员权限<br />
+--*/<br />
+--*/<br />
+<br />
+--/*-- 方法3. 多个变量处理,综合了方法1,2的优点,解决了方法1中需要人为判断,增加变量的问题,排除了方法2,需要权限和过程复杂的问题<br />
+DECLARE @sqlhead nvarchar(4000),@sqlend nvarchar(4000)<br />
+    ,@sql1 nvarchar(4000),@sql2 nvarchar(4000),@sql3 nvarchar(4000),@sql4 nvarchar(4000)<br />
+    ,@i int,@ic nvarchar(10)<br />
+<br />
+--生成数据处理临时表<br />
+SELECT id=IDENTITY(int,0,1),<br />
+    g=0,<br />
+    a=CAST(N','<br />
+        +QUOTENAME([name])<br />
+        +N'=SUM(CASE [name] WHEN N'<br />
+        +QUOTENAME(name,N'''')<br />
+        +N' THEN [colid] ELSE 0 END)'<br />
+        as nvarchar(4000))<br />
+INTO # FROM(<br />
+    SELECT DISTINCT name FROM [syscolumns] WHERE name>N'')a<br />
+<br />
+--分组临时表<br />
+UPDATE a SET @i=id/i,g=@i<br />
+FROM # a,(SELECT i=3800/MAX(LEN(a)) FROM #)b<br />
+SET @ic=@i<br />
+<br />
+--生成数据处理语句<br />
+SELECT <br />
+    @sqlhead=N''''<br />
+        +REPLACE(N'SELECT [xtype]',N'''',N'''''')<br />
+        +'''',<br />
+    @sqlend=N''''<br />
+        +REPLACE(N' FROM [syscolumns] GROUP BY [xtype]',N'''',N'''''')<br />
+        +N'''',<br />
+    @sql1=N'',@sql2=N'',@sql3=N'',@sql4=N''<br />
+WHILE @ic>=0<br />
+    SELECT <br />
+        @sql1=N',@'+@ic+N' nvarchar(4000)'+@sql1,<br />
+        @sql2=N',@'+@ic+N'=N'''''+@sql2,<br />
+        @sql3=N',@'+@ic<br />
+            +N'=CASE g WHEN '+@ic<br />
+            +N' THEN @'+@ic+N'+a ELSE @'+@ic<br />
+            +N' END'+@sql3,<br />
+        @sql4=N'+@'+@ic+@sql4,<br />
+        @ic=@ic-1<br />
+SELECT <br />
+    @sql1=STUFF(@sql1,1,1,N''),<br />
+    @sql2=STUFF(@sql2,1,1,N''),<br />
+    @sql3=STUFF(@sql3,1,1,N''),<br />
+    @sql4=STUFF(@sql4,1,1,N'')<br />
+<br />
+--执行<br />
+EXEC(N'DECLARE '+@sql1+N'<br />
+SELECT '+@sql2+N'<br />
+SELECT '+@sql3+N' FROM #<br />
+EXEC(N'+@sqlhead+N'+'+@sql4+N'+N'+@sqlend+N')')<br />
+--删除临时表<br />
+DROP TABLE #<br />
+<br />
+/*--方法总结<br />
+    <br />
+    总结了前两种方法的优点，自动判断需要处理的变量数<br />
+--*/<br />
+--*/<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:33

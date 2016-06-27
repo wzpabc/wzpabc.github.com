@@ -1,0 +1,168 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>-------------------------------------------------------------------------------   <br />
+-- 自动生成测试数据共享加强版   <br />
+--   <br />
+-- 基本特性   <br />
+-- * 表前缀：@表变量、#临时表、$实体表，支持混合多表。   <br />
+-- * 无表名：@1...@n　#1...#n　T1...Tn   <br />
+-- * 无列名：C1...Cn   <br />
+-- * 少列名：Cm...Cn   <br />
+-- * 列分隔：空格和TAB键。   <br />
+-- * 列填充：数据左边对齐原则，数据不足右向填充NULL。   <br />
+-- * 占位符：分号(;)，控制数据位置，左向填充NULL。   <br />
+-- * 字符集：不考虑UNICODE/NCHAR，网页能够正常显示的应该没问题，网页不能正常显示的，UNICODE也没用。   <br />
+--   <br />
+-- 加强特性   <br />
+-- * 优化数据类型解析，基本上涵盖了所有的原始测试数据形式。   <br />
+-- * 逗号(,)不再作为列分隔符，添加指定列分隔符控制，具体方法见示例。   <br />
+-- * 连续(;;)或离散(;)的分号才会被解析为占位符，维持数据中的分号。   <br />
+--   <br />
+-- 解析类型   <br />
+-- * int   <br />
+-- * bigint   <br />
+-- * money (New)   <br />
+-- * numeric   <br />
+-- * float   <br />
+-- * datetime   <br />
+-- * varchar   <br />
+-- * varbinary (New)   <br />
+-- * uniqueidentifier (New)   <br />
+-- * sql_variant   <br />
+--   <br />
+-- Limpire(昨夜小楼)   <br />
+-------------------------------------------------------------------------------   <br />
+CREATE PROCEDURE CS#   <br />
+(   <br />
+  @Input varchar(8000)   <br />
+)   <br />
+AS  <br />
+  <br />
+SET NOCOUNT ON  <br />
+  <br />
+declare @tid int,@cid int,@pos int,@num int,@p int,@s int,@tb sysname,@spt varchar(20),@inf varchar(2000),@col varchar(4000),@def sysname,@ent varchar(2),@sql varchar(8000)   <br />
+declare @tables table(id int identity primary key,name sysname)   <br />
+declare @data table(id int identity primary key,data varchar(8000),fc as nullif(left(nullif(data,''),charindex(' ',nullif(data,''))-1),'null'))   <br />
+declare @temp table(id int primary key,temp varchar(4000))   <br />
+declare @code table(id int primary key,code varchar(8000))   <br />
+  <br />
+--> 格式整理   <br />
+set @Input=replace(replace(replace(@Input collate Chinese_PRC_CS_AS_KS_WS,'　',' '),char(9),' '),char(13),char(10))   <br />
+set @Input=char(10)+ltrim(rtrim(@Input))+char(10)   <br />
+while charindex(char(10)+char(10),@Input)>0 set @Input=replace(@Input,char(10)+char(10),char(10))   <br />
+set @Input=stuff(@Input,1,1,'')   <br />
+if @Input not like '[@#$]%' and @Input not like '0[@#$]%' return  <br />
+set @Input=replace(replace(@Input,'。','.'),'·','.')   <br />
+select top 94 n=identity(tinyint,33,1) into # from syscolumns   <br />
+select @Input=replace(@Input collate Chinese_PRC_CS_AS_KS_WS,nchar(n+65248),char(n)) from #   <br />
+while charindex('  ',@Input)>0 set @Input=replace(@Input,'  ',' ')   <br />
+set @Input=replace(@Input,char(10)+' ',char(10))   <br />
+set @Input=replace(@Input,' '+char(10),char(10))   <br />
+select @ent=char(13)+char(10),@pos=charindex(char(10),@Input)<br />
+print '----------------------------------------------------------------'<br />
+print '-- Author  :fredrickhu(小F，向高手学习)'<br />
+print '-- Date    :'+convert(char(19),getdate(),120)<br />
+print '-- Version:<br />
+--      '+replace(@@version,char(10),'<br />
+--')<br />
+print '----------------------------------------------------------------'   <br />
+  <br />
+--> 解析数据   <br />
+while @Input<>''  <br />
+  begin  <br />
+    select @tb=left(@Input,@pos-1),@tid=isnull(@tid,0)+1,@Input=stuff(@Input,1,@pos,''),@pos=charindex(char(10),@Input)   <br />
+  <br />
+    if @tb like '0%' set @tb=stuff(@tb,1,1,'') <br />
+ <br />
+    else select @inf=left(@Input,@pos-1)+' ',@Input=stuff(@Input,1,@pos,''),@pos=charindex(char(10),@Input)   <br />
+<br />
+    if @tb like '%\%' select @spt=stuff(@tb,1,charindex('\',@tb),''),@tb=left(@tb,charindex('\',@tb)-1)   <br />
+<br />
+    if @tb like '$%' set @tb=stuff(@tb,1,1,'')   <br />
+ <br />
+    if @tb='' set @tb='T'  <br />
+ --   if len(@tb)=1 set @tb=@tb+ltrim(@tid)   <br />
+    if @tb like '[^@#]%' set @tb='['+@tb+']'  <br />
+    insert @tables select @tb   <br />
+    while @pos>0   <br />
+      begin  <br />
+        insert @data select left(@Input,@pos-1)+' '  <br />
+        select @Input=stuff(@Input,1,@pos,''),@pos=charindex(char(10),@Input)   <br />
+        if @Input like '[@#$]%' or @Input like '0[@#$]%' break   <br />
+      end  <br />
+    if @spt is not null  <br />
+      begin  <br />
+        set @inf=replace(@inf,@spt,' ')   <br />
+        while charindex('  ',@inf)>0 set @inf=replace(@inf,'  ',' ')   <br />
+        update @data set data=replace(data,@spt,' ')   <br />
+        while exists (select 1 from @data where charindex('  ',data)>0) update @data set data=replace(data,'  ',' ') where charindex('  ',data)>0   <br />
+      end  <br />
+    delete @data where data not like '%[^ -]%'  <br />
+    insert @code select id,null from @data   <br />
+    while exists (select 1 from @data where data<>'')   <br />
+      begin  <br />
+        set @cid=isnull(@cid,0)+1   <br />
+        insert @temp select id,case when fc not like '%[^;]%' then null else fc end from @data   <br />
+        update @data set data=case when fc not like '%[^;]%' and len(fc)>1 then stuff(fc,1,1,'')+' ' else '' end+stuff(data,1,charindex(' ',data),'')   <br />
+        if exists (select 1 from @temp a join @data b on a.id=b.id and temp is not null and fc is not null and isdate(temp)=1 and isdate(fc)=1) and not exists (select 1 from @temp a join @data b on a.id=b.id and temp is not null and fc is not null and isdate(temp+case when fc not like '%[^;]%' then '' else ' '+fc end)=0)   <br />
+        begin  <br />
+          update a set temp=temp+case when fc not like '%[^;]%' then '' else ' '+fc end from @temp a join @data b on a.id=b.id where temp is not null and fc is not null  <br />
+          update @data set data=case when fc not like '%[^;]%' and len(fc)>1 then stuff(fc,1,1,'')+' ' else '' end+stuff(data,1,charindex(' ',data),'')   <br />
+        end  <br />
+        select @num=max(datalength(temp)) from @temp where temp is not null  <br />
+        if @num is null set @def='sql_variant'  <br />
+        else if not exists (select 1 from @temp where temp is not null and isnumeric(temp)=0)   <br />
+          begin  <br />
+            if exists (select 1 from @temp where (len(temp)>1 and temp like '0%' and temp not like '%[^0-9]%') or temp like '%,%') set @def=@num   <br />
+            else if exists (select 1 from @temp where patindex('%[Ee]%',temp)>0) set @def='float'  <br />
+            else if exists (select 1 from @temp where len(replace(replace(replace(temp,'+',''),'-',''),'.',''))>@@max_precision) set @def=@num   <br />
+            else if exists (select 1 from @temp where temp like '%[^0-9.+-]%') set @def='money'  <br />
+            else if exists (select 1 from @temp where temp like '%.%')   <br />
+              begin  <br />
+                select @p=max(len(parsename(n,2))),@s=max(len(parsename(n,1))) from (select n+case when n like '%.' then ' ' when n like '%.%' then '' else '. ' end n from (select replace(replace(temp,'+',''),'-','')n from @temp where temp is not null) a) b   <br />
+                if @p+@s>@@max_precision set @def='float'  <br />
+                else set @def='numeric('+ltrim(@p+@s)+','+ltrim(@s)+')'  <br />
+              end  <br />
+            else if exists (select 1 from @temp where temp is not null and isdate(temp)=0 or len(temp)<>8)   <br />
+              begin  <br />
+                if exists (select 1 from @temp where cast(temp as numeric(38,0)) not between -9223372036854775808 and 9223372036854775807) select @def='numeric('+ltrim(max(len(replace(replace(temp,'+',''),'-',''))))+',0)' from @temp where temp is not null  <br />
+                else if exists (select 1 from @temp where cast(temp as numeric(38,0)) not between -2147483648 and 2147483647) set @def='bigint'  <br />
+                else set @def='int'  <br />
+              end  <br />
+            else set @def='datetime'  <br />
+          end  <br />
+        else if not exists (select 1 from @temp where temp is not null and isdate(temp)=0) set @def='datetime'  <br />
+        else if not exists (select 1 from @temp where temp not like '0x%' or temp like '0x%[^0-9a-f]%') select @def='varbinary('+ltrim((@num-3)/2+1)+')'  <br />
+        else if not exists (select 1 from @temp where temp not like replicate('[0-9a-z]',8)+replicate('[-]'+replicate('[0-9a-z]',4),3)+'[-]'+replicate('[0-9a-z]',12)) set @def='uniqueidentifier'  <br />
+        else set @def=@num   <br />
+        if isnumeric(@def)=1 set @def='varchar('+@def+')'  <br />
+        set @col=isnull(@col+',','')+'['+isnull(left(@inf,charindex(' ',@inf)-1),'C'+ltrim(@cid))+'] '+@def   <br />
+        select @inf=nullif(stuff(@inf,1,charindex(' ',@inf),''),''),@def=left(@def+'(',charindex('(',@def+'(')-1)   <br />
+        update a set code=isnull(code+',','select ')+case when @def in ('datetime','varchar','uniqueidentifier') then isnull(''''+temp+'''','null') else isnull(temp,'null') end from @code a join @temp b on a.id=b.id   <br />
+        delete @temp  <br />
+      end  <br />
+    if @inf is not null  <br />
+      begin  <br />
+        update @code set code=code+replicate(',null',len(@inf)-len(replace(@inf,' ',''))+1)   <br />
+        set @col=@col+',['+replace(rtrim(@inf),' ','] sql_variant,[')+'] sql_variant'  <br />
+      end  <br />
+    select @sql=isnull(@sql+' union all'+@ent,'')+code from @code   <br />
+    print '--> 测试数据：'+@tb   <br />
+    print case when @tb like '@%' then 'declare '+@tb+' table' else 'if object_id('''+case when @tb like '#%' then 'tempdb.dbo.' else '' end+@tb+''') is not null drop table '+@tb+@ent+'go '+@ent+'create table '+@tb end+'('+@col+')'+@ent+'insert '+@tb   <br />
+    print @sql   <br />
+    delete @data   <br />
+    delete @code   <br />
+    select @cid=null,@spt=null,@inf=null,@col=null,@sql=null  <br />
+  end  <br />
+  <br />
+--> 智能代码(略)<br />
+print'--------------开始查询--------------------------'   <br />
+select @sql=isnull(@sql+@ent,@ent)+'select * from '+name from @tables   <br />
+print @sql   <br />
+print'----------------结果----------------------------'<br />
+print'/* <br />
+*/'<br />
+SET NOCOUNT OFF  <br />
+  <br />
+<br />
+ <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:12

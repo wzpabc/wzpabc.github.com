@@ -1,0 +1,39 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--删除外键约束<br />
+DECLARE c1 cursor for <br />
+    select 'alter table ['+ object_name(parent_obj) + '] drop constraint ['+name+']; '<br />
+    from sysobjects <br />
+    where xtype = 'F'<br />
+open c1<br />
+declare @c1 varchar(8000)<br />
+fetch next from c1 into @c1<br />
+while(@@fetch_status=0)<br />
+    begin <br />
+        exec(@c1)<br />
+        fetch next from c1 into @c1<br />
+    end<br />
+close c1<br />
+deallocate c1 <br />
+--删除表<br />
+DECLARE c2 cursor for <br />
+    select 'drop table ['+name +']; '<br />
+    from sysobjects <br />
+    where xtype = 'u' <br />
+open c2<br />
+declare @c2 varchar(8000)<br />
+fetch next from c2 into @c2<br />
+while(@@fetch_status=0)<br />
+    begin<br />
+        exec(@c2)<br />
+        fetch next from c2 into @c2<br />
+    end<br />
+close c2<br />
+deallocate c2<br />
+<br />
+<br />
+<br />
+exec sp_msforeachtable @command1="truncate table ? ;",<br />
+                       @whereand='and schema_id = (select schema_id from sys.schemas where [name] not in(''khda'',''khzh'',''khzmx''))'<br />
+<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:06

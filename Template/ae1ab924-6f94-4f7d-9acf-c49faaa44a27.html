@@ -1,0 +1,74 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>在学习中遇到这个问题 <br />
+数据库里有编号字段 <br />
+BH00001 <br />
+BH00002 <br />
+BH00003 <br />
+BH00004 <br />
+如何实现自动增长<br />
+<br />
+ <br />
+<br />
+--下面的代码生成长度为8的编号，编号以BH开头，其余6位为流水号。<br />
+--得到新编号的函数<br />
+CREATE FUNCTION f_NextBH()<br />
+RETURNS char(8)<br />
+AS<br />
+BEGIN<br />
+    RETURN(SELECT 'BH'+RIGHT(1000001+ISNULL(RIGHT(MAX(BH),6),0),6) FROM tb WITH(XLOCK,PAGLOCK))<br />
+END<br />
+GO<br />
+<br />
+--在表中应用函数<br />
+CREATE TABLE tb(<br />
+BH char(8) PRIMARY KEY DEFAULT dbo.f_NextBH(),<br />
+col int)<br />
+<br />
+--插入资料<br />
+BEGIN TRAN<br />
+    INSERT tb(col) VALUES(1)<br />
+    INSERT tb(col) VALUES(2)<br />
+    INSERT tb(col) VALUES(3)<br />
+    DELETE tb WHERE col=3<br />
+    INSERT tb(col) VALUES(4)<br />
+    INSERT tb(BH,col) VALUES(dbo.f_NextBH(),14)<br />
+COMMIT TRAN<br />
+<br />
+--显示结果<br />
+SELECT * FROM tb<br />
+/*--结果<br />
+BH         col <br />
+---------------- ----------- <br />
+BH000001  1<br />
+BH000002  2<br />
+BH000003  4<br />
+BH000004  14<br />
+--*/<br />
+<br />
+ <br />
+<br />
+create table tb<br />
+(id int identity,<br />
+name varchar(10),<br />
+code as 'BH'+right('0000'+cast(id as varchar),5))<br />
+go<br />
+insert tb(name) select 'A'<br />
+union all select 'B'<br />
+union all select 'C'<br />
+union all select 'D'<br />
+<br />
+select * from tb<br />
+<br />
+drop table tb<br />
+<br />
+/*<br />
+id          name       code         <br />
+----------- ---------- ------------ <br />
+1           A          BH00001<br />
+2           B          BH00002<br />
+3           C          BH00003<br />
+4           D          BH00004<br />
+<br />
+（所影响的行数为 4 行）<br />
+*/<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:11

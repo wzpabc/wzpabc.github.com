@@ -1,0 +1,253 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>中位数（Median）统计学名词<br />
+<br />
+ 1、定义：一组数据按从小到大（或从大到小）的顺序依次排列，处在中间位置的一个数（或最中间两个数据的平均数，注意：和众数不同，中位数不一定在这组数据中）。　 　　<br />
+ 2、中位数的优缺点：中位数是样本数据所占频率的等分线，它不受少数几个极端值得影响，有时用它代表全体数据的一般水平更合适。 　<br />
+ 3、在频率分布直方图中，中位数左边和右边的直方图的面积应该相等，由此可以估计中位数的值。 　　<br />
+ 4、中位数也可表述为第50百分位数，二者等价。 　　<br />
+ 5、直观印象描述：一半比“我”小，一半比“我”大。<br />
+<br />
+ <br />
+<br />
+中位数的算法<br />
+　  求中位数时，首先要先进行数据的排序（从小到大），然后计算中位数的序号，分数据为奇数个与偶数个两种来求. 　　<br />
+ 中位数算出来可避免极端数据，代表着数据总体的中等情况。 　　<br />
+ 如果总数个数是奇数的话,按从小到大的顺序,取中间的那个数 　　<br />
+ 如果总数个数是偶数个的话,按从小到大的顺序,取中间那两个数的平均数<br />
+<br />
+<br />
+-- 测试表<br />
+CREATE TABLE test_median (<br />
+  Name  varchar(10),<br />
+  val   INT<br />
+);<br />
+GO<br />
+<br />
+-- 测试数据.<br />
+INSERT INTO test_median<br />
+  SELECT 'A',  1000  UNION ALL<br />
+  SELECT 'A',  2000  UNION ALL<br />
+  SELECT 'A',  3000  UNION ALL<br />
+  SELECT 'A',  4000  UNION ALL<br />
+  SELECT 'A',  5000  UNION ALL<br />
+  SELECT 'B',  100   UNION ALL<br />
+  SELECT 'B',  200   UNION ALL<br />
+  SELECT 'B',  300   UNION ALL<br />
+  SELECT 'B',  400   UNION ALL<br />
+  SELECT 'B',  7000  UNION ALL<br />
+  SELECT 'B',  10000<br />
+GO<br />
+<br />
+Name 为 A 的数据，有5条<br />
+Name 为 B 的数据，有6条<br />
+<br />
+<br />
+直接使用 SQL 语句来进行计算的处理<br />
+<br />
+使用2个子查询来计算<br />
+1个子查询用来排序<br />
+1个子查询用于计算总数<br />
+然后根据总数的 奇/偶，来决定哪些行需要进行计算。<br />
+<br />
+<br />
+SELECT<br />
+  data_with_rownumber.Name,<br />
+  AVG(data_with_rownumber.val) AS median<br />
+FROM<br />
+  (<br />
+  SELECT<br />
+ ROW_NUMBER() OVER(PARTITION BY Name ORDER BY val) AS seq,<br />
+ Name,<br />
+ val<br />
+  FROM<br />
+ test_median<br />
+  ) data_with_rownumber JOIN<br />
+  (<br />
+  SELECT<br />
+ Name, COUNT(1) AS NumOfVal<br />
+  FROM<br />
+ test_median<br />
+  GROUP BY<br />
+ Name<br />
+  ) data_count<br />
+  ON (<br />
+ data_count.Name = data_with_rownumber.Name<br />
+ AND (<br />
+  (data_count.NumOfVal % 2 = 0 AND data_with_rownumber.seq IN (data_count.NumOfVal / 2, (data_count.NumOfVal / 2) + 1))<br />
+  OR<br />
+  (data_count.NumOfVal % 2 = 1 AND data_with_rownumber.seq = 1 + data_count.NumOfVal / 2)<br />
+  )<br />
+  )<br />
+GROUP BY<br />
+  data_with_rownumber.Name<br />
+<br />
+Name       median<br />
+---------- -----------<br />
+A                 3000<br />
+B                  350<br />
+<br />
+(2 行受影响)<br />
+<br />
+ <br />
+<br />
+使用  Visual C# SQL CLR  创建的聚合函数来处理<br />
+<br />
+ <br />
+<br />
+使用 VS2010，创建一个<br />
+Visual C# SQL CLR 数据库项目 命名为 MyMidNumber<br />
+在项目中添加一个 [聚合] 的类<br />
+<br />
+代码如下：<br />
+<br />
+using System;<br />
+using System.Collections.Generic;<br />
+using System.Data;<br />
+using System.Data.SqlClient;<br />
+using System.Data.SqlTypes;<br />
+using Microsoft.SqlServer.Server;<br />
+<br />
+<br />
+[Serializable]<br />
+[SqlUserDefinedAggregate(<br />
+ Format.UserDefined,               // 使用 UserDefined 序列化格式<br />
+  IsInvariantToNulls = true,        // 指示聚合是否与空值无关。<br />
+  IsInvariantToDuplicates = false,  // 指示聚合是否与重复值无关。<br />
+  IsInvariantToOrder = false,       // 指示聚合是否与顺序无关。<br />
+  MaxByteSize = 8000)               //  聚合实例的最大大小（以字节为单位）。<br />
+  ]<br />
+public struct Median : Microsoft.SqlServer.Server.IBinarySerialize<br />
+{<br />
+ public void Init()<br />
+ {<br />
+  // 初始化.<br />
+  dataList = new List<Decimal>();<br />
+ }<br />
+<br />
+ public void Accumulate(SqlDecimal Value)<br />
+ {<br />
+  // 新增一个数据<br />
+  dataList.Add(Value.Value);<br />
+ }<br />
+<br />
+ public void Merge(Median Group)<br />
+ {<br />
+  // 新增一组数据.<br />
+  dataList.AddRange(Group.dataList);<br />
+ }<br />
+<br />
+ public SqlDecimal Terminate()<br />
+ {<br />
+  // 首先排序.<br />
+  dataList.Sort();<br />
+<br />
+  decimal middleVal = 0;<br />
+<br />
+  if (dataList.Count > 0)<br />
+  {<br />
+   if (dataList.Count % 2 == 1)<br />
+   {<br />
+    // 当数量为奇数的时候.<br />
+    // 中位数为中间的那个数字.<br />
+    // 例如<br />
+    // 1个数字， 中位为第1个<br />
+    // 3个数字， 中位为第2个<br />
+    // 5个数字， 中位为第3个<br />
+    // 7个数字， 中位为第4个<br />
+    middleVal = dataList[dataList.Count / 2];<br />
+   }<br />
+   else<br />
+   {<br />
+    // 当数量为偶数的时候.<br />
+    // 中位数为 中间2个数的 算数平均<br />
+    // 例如<br />
+    // 2个数字， 中位为 (第1个 + 第2个) / 2<br />
+    // 4个数字， 中位为 (第2个 + 第3个) / 2<br />
+    // 6个数字， 中位为 (第3个 + 第4个) / 2<br />
+    // 8个数字， 中位为 (第4个 + 第5个) / 2<br />
+    middleVal =<br />
+     (dataList[dataList.Count / 2 - 1]<br />
+     + dataList[dataList.Count / 2]) / 2;<br />
+   }<br />
+  }<br />
+<br />
+  return new SqlDecimal(middleVal);<br />
+ }<br />
+<br />
+ // 这是分组的所有数据.<br />
+ private List<Decimal> dataList;<br />
+<br />
+<br />
+ /// <summary><br />
+ /// 使用 UserDefined 序列化格式<br />
+ /// 通过 IBinarySerialize.Read 方法完全控制二进制格式。<br />
+ /// 从用户定义类型 (UDT) 或用户定义聚合的二进制格式生成用户定义的类型或用户定义的聚合。<br />
+ /// </summary><br />
+ /// <param name="r"></param><br />
+ public void Read(System.IO.BinaryReader r)<br />
+ {<br />
+  // 初始化数据.<br />
+  dataList = new List<decimal>();<br />
+  // 先读取总数量.<br />
+  int size = r.ReadInt32();<br />
+  // 依次读取数据，加入列表.<br />
+  for (int i = 0; i < size; i++)<br />
+  {<br />
+   dataList.Add(r.ReadDecimal());<br />
+  }<br />
+ }<br />
+<br />
+ /// <summary><br />
+ /// 使用 UserDefined 序列化格式<br />
+ /// 通过 IBinarySerialize.Read 方法完全控制二进制格式。<br />
+ /// 将用户定义的类型 (UDT) 或用户定义的聚合转换为其二进制格式，以便保留。<br />
+ /// </summary><br />
+ /// <param name="w"></param><br />
+ public void Write(System.IO.BinaryWriter w)<br />
+ {<br />
+  // 先写入一个 总数量<br />
+  w.Write(dataList.Count);<br />
+  // 依次写入每一个数据.<br />
+  foreach (Decimal data in dataList)<br />
+  {<br />
+   w.Write(data);<br />
+  }<br />
+ }<br />
+}<br />
+<br />
+ <br />
+<br />
+C# 项目需要记得设置 目标框架为 .NET Framework 3.5<br />
+如果使用默认的 .NET Framework 4，可能无法成功的把编译好的 DLL 文件发布到 SQL Server 2008 上面去。<br />
+<br />
+在把编辑好的 DLL 文件，加入到数据库的程序集之后。<br />
+再执行下面的 SQL 语句。<br />
+CREATE AGGREGATE [dbo].[Median](@Value NUMERIC (18))<br />
+ RETURNS NUMERIC (18)<br />
+ EXTERNAL NAME [MyMidNumber].[Median];<br />
+<br />
+ <br />
+<br />
+最后直接在 SQL 语句里面，使用新编写的聚合函数：<br />
+<br />
+SELECT<br />
+  ISNULL(Name, '全部') AS 名称,<br />
+  SUM(val)  AS  合计,<br />
+  AVG(val)  AS  平均数,<br />
+  dbo.Median(val) AS 中位数<br />
+FROM<br />
+  test_median<br />
+GROUP BY<br />
+  Name<br />
+WITH ROLLUP<br />
+<br />
+<br />
+名称         合计          平均数         中位数<br />
+---------- ----------- ----------- --------------------<br />
+A                15000        3000                 3000<br />
+B                18000        3000                  350<br />
+全部             33000        3000                 2000<br />
+<br />
+(3 行受影响)<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:32

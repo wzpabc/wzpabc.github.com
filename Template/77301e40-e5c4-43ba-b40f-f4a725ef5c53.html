@@ -1,0 +1,197 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>BOM按节点排序应用实例 <br />
+--------------------------------------------------------------------------<br />
+<br />
+--  Author : htl258(Tony)<br />
+<br />
+--  Date   : 2010-04-23 02:37:28<br />
+<br />
+--  Version:Microsoft SQL Server 2008 (RTM) - 10.0.1600.22 (Intel X86) <br />
+<br />
+--          Jul  9 2008 14:43:34 <br />
+<br />
+--          Copyright (c) 1988-2008 Microsoft Corporation<br />
+<br />
+--          Developer Edition on Windows NT 5.1 <X86> (Build 2600: Service Pack 3)<br />
+<br />
+--  Subject: BOM按节点排序应用实例<br />
+<br />
+--------------------------------------------------------------------------<br />
+<br />
+ <br />
+<br />
+--实例1:<br />
+<br />
+--> 生成测试数据表:tb<br />
+<br />
+ <br />
+<br />
+IF NOT OBJECT_ID('[tb]') IS NULL<br />
+<br />
+    DROP TABLE [tb]<br />
+<br />
+GO<br />
+<br />
+CREATE TABLE [tb]([id] INT,[code] NVARCHAR(10),[pid] INT,[name] NVARCHAR(10))<br />
+<br />
+INSERT [tb]<br />
+<br />
+SELECT 1,'01',0,N'服装' UNION ALL<br />
+<br />
+SELECT 2,'01',1,N'男装' UNION ALL<br />
+<br />
+SELECT 3,'01',2,N'西装' UNION ALL<br />
+<br />
+SELECT 4,'01',3,N'全毛' UNION ALL<br />
+<br />
+SELECT 5,'02',3,N'化纤' UNION ALL<br />
+<br />
+SELECT 6,'02',2,N'休闲装' UNION ALL<br />
+<br />
+SELECT 7,'02',1,N'女装' UNION ALL<br />
+<br />
+SELECT 8,'01',7,N'套装' UNION ALL<br />
+<br />
+SELECT 9,'02',7,N'职业装' UNION ALL<br />
+<br />
+SELECT 10,'03',7,N'休闲装' UNION ALL<br />
+<br />
+SELECT 11,'04',7,N'西装' UNION ALL<br />
+<br />
+SELECT 12,'01',11,N'全毛' UNION ALL<br />
+<br />
+SELECT 13,'02',11,N'化纤' UNION ALL<br />
+<br />
+SELECT 14,'05',7,N'休闲装'<br />
+<br />
+GO<br />
+<br />
+--SELECT * FROM [tb]<br />
+<br />
+ <br />
+<br />
+-->SQL查询如下:<br />
+<br />
+ <br />
+<br />
+;WITH T AS<br />
+<br />
+(<br />
+<br />
+    SELECT CAST(CODE AS VARCHAR(20)) AS CODE,*,<br />
+<br />
+        CAST(ID AS VARBINARY(MAX)) AS px <br />
+<br />
+    FROM tb AS A<br />
+<br />
+    WHERE NOT EXISTS(SELECT * FROM tb WHERE id=A.pid)<br />
+<br />
+    UNION ALL <br />
+<br />
+    SELECT CAST(B.CODE+A.CODE AS VARCHAR(20)),A.*,<br />
+<br />
+         CAST(B.px+CAST(A.ID AS VARBINARY) AS VARBINARY(MAX))    <br />
+<br />
+    FROM tb AS A<br />
+<br />
+        JOIN T AS B<br />
+<br />
+           ON A.pid=B.id<br />
+<br />
+)<br />
+<br />
+SELECT Code,Name FROM T <br />
+<br />
+ORDER BY px<br />
+<br />
+/*<br />
+<br />
+Code                 Name<br />
+<br />
+-------------------- ----------<br />
+<br />
+01                   服装<br />
+<br />
+0101                 男装<br />
+<br />
+010101               西装<br />
+<br />
+01010101             全毛<br />
+<br />
+01010102             化纤<br />
+<br />
+010102               休闲装<br />
+<br />
+0102                 女装<br />
+<br />
+010201               套装<br />
+<br />
+010202               职业装<br />
+<br />
+010203               休闲装<br />
+<br />
+010204               西装<br />
+<br />
+01020401             全毛<br />
+<br />
+01020402             化纤<br />
+<br />
+010205               休闲装<br />
+<br />
+ <br />
+<br />
+(14 行受影响)<br />
+<br />
+*/<br />
+<br />
+ <br />
+<br />
+--实例2:<br />
+<br />
+--> 生成测试数据表:tb<br />
+<br />
+IF NOT OBJECT_ID('[tb]') IS NULL<br />
+    DROP TABLE [tb]<br />
+GO<br />
+CREATE TABLE [tb]([id] INT,[parentid] INT,[categoryname] NVARCHAR(10))<br />
+INSERT [tb]<br />
+SELECT 1,0,'test1' UNION ALL<br />
+SELECT 2,0,'test2' UNION ALL<br />
+SELECT 3,1,'test1.1' UNION ALL<br />
+SELECT 4,2,'test2.1' UNION ALL<br />
+SELECT 5,3,'test1.1.1' UNION ALL<br />
+SELECT 6,1,'test1.2'<br />
+GO<br />
+--SELECT * FROM [tb]<br />
+<br />
+-->SQL查询如下:<br />
+;WITH T AS<br />
+(<br />
+    SELECT *,CAST(ID AS VARBINARY(MAX)) AS px <br />
+    FROM tb AS A<br />
+    WHERE NOT EXISTS(SELECT * FROM tb WHERE id=A.[parentid])<br />
+    UNION ALL <br />
+    SELECT A.*,CAST(B.px+CAST(A.ID AS VARBINARY) AS VARBINARY(MAX))  <br />
+    FROM tb AS A<br />
+        JOIN T AS B<br />
+           ON A.[parentid]=B.id<br />
+)<br />
+SELECT [id],[parentid],[categoryname] FROM T <br />
+ORDER BY px<br />
+/*<br />
+id          parentid    categoryname<br />
+----------- ----------- ------------<br />
+1           0           test1<br />
+3           1           test1.1<br />
+5           3           test1.1.1<br />
+6           1           test1.2<br />
+2           0           test2<br />
+4           2           test2.1<br />
+<br />
+(6 行受影响)<br />
+*/<br />
+<br />
+<br />
+<br />
+本文来自CSDN博客，转载请标明出处：http://blog.csdn.net/htl258/archive/2010/04/23/5518166.aspx<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:31

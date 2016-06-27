@@ -1,0 +1,27 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>if object_id('f_split')is not null drop function  f_split<br />
+go<br />
+create function f_split<br />
+(<br />
+@s     varchar(8000),  --待分拆的字符串<br />
+@split varchar(10)     --数据分隔符<br />
+)returns table<br />
+as<br />
+ return<br />
+ (<br />
+  select substring(@s,number,charindex(@split,@s+@split,number)-number)as col<br />
+  from master..spt_values<br />
+  where type='p' and number<=len(@s+'a') <br />
+  and charindex(@split,@split+@s,number)=number<br />
+  )<br />
+go<br />
+select * from dbo.f_split('11,2,3',',')<br />
+/*<br />
+col<br />
+----<br />
+11<br />
+2<br />
+3<br />
+(3 個資料列受到影響)<br />
+*/<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:15

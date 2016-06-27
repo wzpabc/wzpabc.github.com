@@ -1,0 +1,170 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--sql server 2000<br />
+SELECT <br />
+    表名       = case when a.colorder=1 then d.name else '' end,<br />
+    表说明     = case when a.colorder=1 then isnull(f.value,'') else '' end,<br />
+    字段序号   = a.colorder,<br />
+    字段名     = a.name,<br />
+    标识       = case when COLUMNPROPERTY( a.id,a.name,'IsIdentity')=1 then '√'else '' end,<br />
+    主键       = case when exists(SELECT 1 FROM sysobjects where xtype='PK' and parent_obj=a.id and name in (<br />
+                     SELECT name FROM sysindexes WHERE indid in(<br />
+                        SELECT indid FROM sysindexkeys WHERE id = a.id AND colid=a.colid))) then '√' else '' end,<br />
+    类型       = b.name,<br />
+    占用字节数 = a.length,<br />
+    长度       = COLUMNPROPERTY(a.id,a.name,'PRECISION'),<br />
+    小数位数   = isnull(COLUMNPROPERTY(a.id,a.name,'Scale'),0),<br />
+    允许空     = case when a.isnullable=1 then '√'else '' end,<br />
+    默认值     = isnull(e.text,''),<br />
+    字段说明   = isnull(g.[value],'')<br />
+FROM <br />
+    syscolumns a<br />
+left join <br />
+    systypes b <br />
+on <br />
+    a.xusertype=b.xusertype<br />
+inner join <br />
+    sysobjects d <br />
+on <br />
+    a.id=d.id  and d.xtype='U' and  d.name<>'dtproperties'<br />
+left join <br />
+    syscomments e <br />
+on <br />
+    a.cdefault=e.id<br />
+left join <br />
+    sysproperties g <br />
+on <br />
+    a.id=g.id and a.colid=g.smallid  <br />
+left join <br />
+    sysproperties f <br />
+on <br />
+    d.id=f.id and f.smallid=0<br />
+where <br />
+    d.name='要查询的表'    --如果只查询指定表,加上此条件<br />
+order by <br />
+    a.id,a.colorder<br />
+<br />
+<br />
+<br />
+--sql server 2005<br />
+-- 1. 表结构信息查询 <br />
+-- ========================================================================<br />
+-- 表结构信息查询<br />
+-- 邹建 2005.08(引用请保留此信息)<br />
+-- ========================================================================<br />
+SELECT <br />
+    TableName=CASE WHEN C.column_id=1 THEN O.name ELSE N'' END,<br />
+    TableDesc=ISNULL(CASE WHEN C.column_id=1 THEN PTB.[value] END,N''),<br />
+    Column_id=C.column_id,<br />
+    ColumnName=C.name,<br />
+    PrimaryKey=ISNULL(IDX.PrimaryKey,N''),<br />
+    [IDENTITY]=CASE WHEN C.is_identity=1 THEN N'√'ELSE N'' END,<br />
+    Computed=CASE WHEN C.is_computed=1 THEN N'√'ELSE N'' END,<br />
+    Type=T.name,<br />
+    Length=C.max_length,<br />
+    Precision=C.precision,<br />
+    Scale=C.scale,<br />
+    NullAble=CASE WHEN C.is_nullable=1 THEN N'√'ELSE N'' END,<br />
+    [Default]=ISNULL(D.definition,N''),<br />
+    ColumnDesc=ISNULL(PFD.[value],N''),<br />
+    IndexName=ISNULL(IDX.IndexName,N''),<br />
+    IndexSort=ISNULL(IDX.Sort,N''),<br />
+    Create_Date=O.Create_Date,<br />
+    Modify_Date=O.Modify_date<br />
+FROM sys.columns C<br />
+    INNER JOIN sys.objects O<br />
+        ON C.[object_id]=O.[object_id]<br />
+            AND O.type='U'<br />
+            AND O.is_ms_shipped=0<br />
+    INNER JOIN sys.types T<br />
+        ON C.user_type_id=T.user_type_id<br />
+    LEFT JOIN sys.default_constraints D<br />
+        ON C.[object_id]=D.parent_object_id<br />
+            AND C.column_id=D.parent_column_id<br />
+            AND C.default_object_id=D.[object_id]<br />
+    LEFT JOIN sys.extended_properties PFD<br />
+        ON PFD.class=1 <br />
+            AND C.[object_id]=PFD.major_id <br />
+            AND C.column_id=PFD.minor_id<br />
+--             AND PFD.name='Caption'  -- 字段说明对应的描述名称(一个字段可以添加多个不同name的描述)<br />
+    LEFT JOIN sys.extended_properties PTB<br />
+        ON PTB.class=1 <br />
+            AND PTB.minor_id=0 <br />
+            AND C.[object_id]=PTB.major_id<br />
+--             AND PFD.name='Caption'  -- 表说明对应的描述名称(一个表可以添加多个不同name的描述) <br />
+    LEFT JOIN                       -- 索引及主键信息<br />
+    (<br />
+        SELECT <br />
+            IDXC.[object_id],<br />
+            IDXC.column_id,<br />
+            Sort=CASE INDEXKEY_PROPERTY(IDXC.[object_id],IDXC.index_id,IDXC.index_column_id,'IsDescending')<br />
+                WHEN 1 THEN 'DESC' WHEN 0 THEN 'ASC' ELSE '' END,<br />
+            PrimaryKey=CASE WHEN IDX.is_primary_key=1 THEN N'√'ELSE N'' END,<br />
+            IndexName=IDX.Name<br />
+        FROM sys.indexes IDX<br />
+        INNER JOIN sys.index_columns IDXC<br />
+            ON IDX.[object_id]=IDXC.[object_id]<br />
+                AND IDX.index_id=IDXC.index_id<br />
+        LEFT JOIN sys.key_constraints KC<br />
+            ON IDX.[object_id]=KC.[parent_object_id]<br />
+                AND IDX.index_id=KC.unique_index_id<br />
+        INNER JOIN  -- 对于一个列包含多个索引的情况,只显示第1个索引信息<br />
+        (<br />
+            SELECT [object_id], Column_id, index_id=MIN(index_id)<br />
+            FROM sys.index_columns<br />
+            GROUP BY [object_id], Column_id<br />
+        ) IDXCUQ<br />
+            ON IDXC.[object_id]=IDXCUQ.[object_id]<br />
+                AND IDXC.Column_id=IDXCUQ.Column_id<br />
+                AND IDXC.index_id=IDXCUQ.index_id<br />
+    ) IDX<br />
+        ON C.[object_id]=IDX.[object_id]<br />
+            AND C.column_id=IDX.column_id <br />
+-- WHERE O.name=N'要查询的表'       -- 如果只查询指定表,加上此条件<br />
+ORDER BY O.name,C.column_id <br />
+<br />
+-- 2. 索引及主键信息 <br />
+-- ========================================================================<br />
+-- 索引及主键信息<br />
+-- 邹建 2005.08(引用请保留此信息)<br />
+-- ========================================================================<br />
+SELECT <br />
+    TableId=O.[object_id],<br />
+    TableName=O.Name,<br />
+    IndexId=ISNULL(KC.[object_id],IDX.index_id),<br />
+    IndexName=IDX.Name,<br />
+    IndexType=ISNULL(KC.type_desc,'Index'),<br />
+    Index_Column_id=IDXC.index_column_id,<br />
+    ColumnID=C.Column_id,<br />
+    ColumnName=C.Name,<br />
+    Sort=CASE INDEXKEY_PROPERTY(IDXC.[object_id],IDXC.index_id,IDXC.index_column_id,'IsDescending')<br />
+        WHEN 1 THEN 'DESC' WHEN 0 THEN 'ASC' ELSE '' END,<br />
+    PrimaryKey=CASE WHEN IDX.is_primary_key=1 THEN N'√'ELSE N'' END,<br />
+    [UQIQUE]=CASE WHEN IDX.is_unique=1 THEN N'√'ELSE N'' END,<br />
+    Ignore_dup_key=CASE WHEN IDX.ignore_dup_key=1 THEN N'√'ELSE N'' END,<br />
+    Disabled=CASE WHEN IDX.is_disabled=1 THEN N'√'ELSE N'' END,<br />
+    Fill_factor=IDX.fill_factor,<br />
+    Padded=CASE WHEN IDX.is_padded=1 THEN N'√'ELSE N'' END<br />
+FROM sys.indexes IDX<br />
+    INNER JOIN sys.index_columns IDXC<br />
+        ON IDX.[object_id]=IDXC.[object_id]<br />
+            AND IDX.index_id=IDXC.index_id<br />
+    LEFT JOIN sys.key_constraints KC<br />
+        ON IDX.[object_id]=KC.[parent_object_id]<br />
+            AND IDX.index_id=KC.unique_index_id<br />
+    INNER JOIN sys.objects O<br />
+        ON O.[object_id]=IDX.[object_id]<br />
+    INNER JOIN sys.columns C<br />
+        ON O.[object_id]=C.[object_id]<br />
+            AND O.type='U'<br />
+            AND O.is_ms_shipped=0<br />
+            AND IDXC.Column_id=C.Column_id<br />
+--    INNER JOIN  -- 对于一个列包含多个索引的情况,只显示第1个索引信息<br />
+--    (<br />
+--        SELECT [object_id], Column_id, index_id=MIN(index_id)<br />
+--        FROM sys.index_columns<br />
+--        GROUP BY [object_id], Column_id<br />
+--    ) IDXCUQ<br />
+--        ON IDXC.[object_id]=IDXCUQ.[object_id]<br />
+--            AND IDXC.Column_id=IDXCUQ.Column_id<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:07

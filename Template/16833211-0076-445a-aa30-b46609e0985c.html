@@ -1,0 +1,240 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>SET QUOTED_IDENTIFIER ON<br />
+SET ANSI_NULLS ON<br />
+GO<br />
+CREATE PROCEDURE Curdsqlstring(<br />
+					@TableName sysname<br />
+		)<br />
+with encryption<br />
+AS<br />
+<br />
+if object_id(@TableName,'U') is null<br />
+	return 0<br />
+declare @S nvarchar(4000),@ColName nvarchar(4000),@Identity sysname,@IdentityWHERE nvarchar(100)<br />
+,@Insert nvarchar(4000),@UPDATE nvarchar(4000),@SELECTWHERE nvarchar(4000),@SELECT nvarchar(4000)<br />
+,@DELETE nvarchar(4000),@ColName2 nvarchar(4000),@ObjectID int,@UPDATECol nvarchar(4000),@ColAll nvarchar(4000)<br />
+,@InputCol sysname,@Write nvarchar(100),@OutputAll nvarchar(1000)<br />
+<br />
+SELECT @Write='Roy'+char(32)+char(32)+char(32)+convert(varchar(10),getdate(),120)<br />
+<br />
+SELECT <br />
+	@S=isnull(@s+',','')+'@'+Name+char(32)+ TYPE_NAME(user_type_id)<br />
+	+cASe	when user_type_id in(34,35,36,48,52,56,58,59,60,61,62,98,99,104,122,127,189,241,256,241,40,41) then '' <br />
+			when user_type_id in(106,108) then '('+rtrim(Precision)+','+rtrim(Scale)+')'<br />
+			when user_type_id in (231,239) then  cASe when  max_length=-1 then '(max)' else '('+rtrim(max_length/2)+')' end<br />
+			when max_length=-1 then '(Max)'<br />
+			else '('+rtrim(max_length)+')' end<br />
+	+cASe	when is_identity=1 then char(32)+'OUTPUT' <br />
+			else '' end,<br />
+	@ColName=cASe when is_identity=1 then @ColName else isnull(@ColName+',','')+quotename(Name) end,<br />
+	@ColName2=cASe when is_identity=1 then @ColName2 else isnull(@ColName2+',','')+'@'+Name end,<br />
+	@UPDATECol=isnull(@UPDATECol+',','')+cASe when Name!=N'ID' then quotename(Name)+'='+'@'+Name  end,<br />
+	@IdentityWHERE=isnull(@IdentityWHERE,'')+cASe when Name=N'ID' OR COLUMNPROPERTY (object_id, Name , 'IsIdentity' )=1  then quotename(Name)+'='+'@'+Name else '' end,<br />
+	@ColAll=isnull(@ColAll+',','')+quotename(Name),<br />
+	@OutputAll=isnull(@OutputAll+',','')+'@'+Name<br />
+from <br />
+	Sys.columns<br />
+WHERE <br />
+	object_id=object_id(@TableName)<br />
+order by cASe when Name='ID' then 0 else 1 end,Column_id<br />
+<br />
+<br />
+--主键为第一列<br />
+SELECT @Identity=replace(left(@s,charindex(',',@s)-1),char(32)+'output',''),@ObjectID=object_id(@TableName),<br />
+	@TableName=replace(replace(stuff(@TableName,1,charindex('.',@TableName),''),']',''),'[','')<br />
+<br />
+SELECT @Insert='CREATE PROCEDURE c'+@TableName+char(10)+char(9)+char(9)+'('+@s+')'+char(10)+'AS'+char(10)+<br />
+				'INSERT INTO '+@TableName+char(10)+char(9)+'('+@ColName+')'+char(10)+'VALUES'+char(10)+char(9)+'('+@ColName2+')'<br />
+				+cASe	when exists(SELECT 1 from Sys.columns WHERE object_id=@ObjectID and is_identity=1) <br />
+						then char(10)+char(10)+'SET '+left(@Identity,charindex(char(32),@Identity)-1)+'=SCOPE_IDENTITY()' <br />
+						else '' end,<br />
+		@UPDATE='CREATE PROCEDURE u'+@TableName+char(10)+char(9)+char(9)+'('+replace(@s,char(32)+'output','')+')'+char(10)+'AS'+char(10)+<br />
+				'UPDATE '+@TableName+char(10)+'SET '+@UPDATECol+char(10)+'WHERE '+@IdentityWHERE,<br />
+		@SELECTWHERE='CREATE PROCEDURE r'+@TableName+'By'+stuff(left(@Identity,charindex(char(32),@Identity)-1),1,1,'')+char(10)+char(9)+char(9)+'('+@Identity+')'+char(10)+'AS'+char(10)+<br />
+					'SELECT '+char(10)+char(9)+@ColAll+char(10)+'From'+char(10)+char(9)+@TableName+char(10)+'WHERE'+char(10)+char(9)+@IdentityWHERE,<br />
+		@SELECT='CREATE PROCEDURE r'+@TableName+'ForAll'+char(10)+'AS'+char(10)+<br />
+					'SELECT '+char(10)+char(9)+@ColAll+char(10)+'From'+char(10)+char(9)+@TableName,<br />
+		@DELETE='CREATE PROCEDURE d'+@TableName+char(10)+char(9)+'('+@Identity+')'+char(10)+'AS'+char(10)+'DELETE '+@TableName+char(32)+'WHERE'+char(32)+@IdentityWHERE,<br />
+		@InputCol=cASe when exists(SELECT 1 from Sys.columns WHERE object_id=@ObjectID and is_identity=1) then @Identity else '' end<br />
+<br />
+<br />
+<br />
+--Insert<br />
+SELECT @Insert=<br />
+'if object_id('+quotename('c'+@TableName,'''')+',''P'') is not null'+char(13)+char(9)+'DROP PROC '+quotename('c'+@TableName)<br />
++char(10)+'Go'+char(13)+char(10)+'/'+replicate('*',160)+char(10)+<br />
+'%%存储过程名：c'+@TableName+char(10)+char(10)+<br />
+'%%输入参数：'+@ColName2+char(10)+char(10)+<br />
+'%%输出参数：'+@InputCol+char(10)+char(10)+<br />
+'%%功能：新增记录在表'+@TableName+char(10)+replicate('*',160)+char(10)+<br />
+'%%编写：'+@Write+char(10)+char(10)+replicate('*',160)+'/'+char(10)<br />
++@Insert+char(13)+char(10)+'Go'+char(13)+char(10),<br />
+<br />
+--UPDATE<br />
+<br />
+@UPDATE=<br />
+'if object_id('+quotename('u'+@TableName,'''')+',''P'') is not null'+char(13)+char(9)+'DROP PROC '+quotename('u'+@TableName)<br />
++char(10)+'Go'+char(13)+char(10)+'/'+replicate('*',160)+char(10)+<br />
+'%%存储过程名：u'+@TableName+char(10)+char(10)+<br />
+'%%输入参数：'+@OutputAll+char(10)+char(10)+<br />
+'%%输出参数：'+char(10)+char(10)+<br />
+'%%功能：修改记录在表'+@TableName+char(10)+replicate('*',160)+char(10)+<br />
+'%%编写：'+@Write+char(10)+char(10)+replicate('*',160)+'/'+char(10)<br />
++@UPDATE+char(13)+char(10)+'Go'+char(13)+char(10),<br />
+--SELECTWHERE<br />
+@SELECTWHERE=<br />
+'if object_id('+quotename('r'+@TableName+'By'+stuff(left(@Identity,charindex(char(32),@Identity)-1),1,1,''),'''')+',''P'') is not null'+char(13)+char(9)+'DROP PROC '+quotename('r'+@TableName+'By'+stuff(left(@Identity,charindex(char(32),@Identity)-1),1,1,''))<br />
++char(10)+'Go'+char(13)+char(10)+'/'+replicate('*',160)+char(10)<br />
++'%%存储过程名：r'+@TableName+'By'+stuff(left(@Identity,charindex(char(32),@Identity)-1),1,1,'')+char(10)+char(10)<br />
++N'%%输入参数：'+@Identity+char(10)+char(10)<br />
++N'%%输出参数：'+char(10)+char(10)<br />
++N'%%功能：根据条件读取记录在表'+@TableName+char(10)+replicate('*',160)+char(10)<br />
++'%%编写：'+@Write+char(10)+char(10)+replicate('*',160)+'/'+char(10)<br />
++@SELECTWHERE+char(13)+char(10)+'Go'+char(13)+char(10),<br />
+--SELECT <br />
+@SELECT=<br />
+'if object_id('+quotename('r'+@TableName+'ForAll','''')+',''P'') is not null'+char(13)+char(9)+'DROP PROC '+quotename('r'+@TableName+'ForAll')<br />
++char(10)+'Go'+char(13)+char(10)+'/'+replicate('*',160)+char(10)<br />
++'%%存储过程名：r'+@TableName+'ForAll'+char(10)+char(10)<br />
++'%%输入参数：'+char(10)+char(10)<br />
++'%%输出参数：'+char(10)+char(10)<br />
++'%%功能：读取记录在表'+@TableName+char(10)+replicate('*',160)+char(10)<br />
++'%%编写：'+@Write+char(10)+char(10)+replicate('*',160)+'/'+char(10)<br />
++@SELECT+char(13)+char(10)+'Go'+char(13)+char(10),<br />
+@DELETE=<br />
+'if object_id('+quotename('d'+@TableName,'''')+',''P'') is not null'+char(13)+char(9)+'DROP PROC '+quotename('d'+@TableName)<br />
++char(10)+'Go'+char(13)+char(10)+'/'+replicate('*',160)+char(10)<br />
++'%%存储过程名：d'+@TableName+char(10)+char(10)<br />
++'%%输入参数：'+char(10)+char(10)<br />
++'%%输出参数：'+@Identity+char(10)+char(10)<br />
++'%%功能：删除记录在表'+@TableName+char(10)+replicate('*',160)+char(10)<br />
++'%%编写：'+@Write+char(10)+char(10)+replicate('*',160)+'/'+char(10)<br />
++@DELETE+char(13)+char(10)+'Go'+char(13)+char(10)<br />
+<br />
+print 'USE '+db_name()+char(13)+char(10)+'Go'+char(13)+char(10)<br />
+print @Insert<br />
+print @UPDATE<br />
+print @SELECTWHERE<br />
+print @SELECT<br />
+print @DELETE<br />
+<br />
+<br />
+CREATE PROCEDURE Curdsqlstring(<br />
+					@TableName sysname<br />
+		)<br />
+with encryption<br />
+AS<br />
+<br />
+if object_id(@TableName,'U') is null<br />
+	return 0<br />
+declare @S nvarchar(4000),@ColName nvarchar(4000),@Identity sysname,@IdentityWHERE nvarchar(100)<br />
+,@Insert nvarchar(4000),@UPDATE nvarchar(4000),@SELECTWHERE nvarchar(4000),@SELECT nvarchar(4000)<br />
+,@DELETE nvarchar(4000),@ColName2 nvarchar(4000),@ObjectID int,@UPDATECol nvarchar(4000),@ColAll nvarchar(4000)<br />
+,@InputCol sysname,@Write nvarchar(100),@OutputAll nvarchar(1000)<br />
+<br />
+SELECT @Write='Roy'+char(32)+char(32)+char(32)+convert(varchar(10),getdate(),120)<br />
+<br />
+SELECT <br />
+	@S=isnull(@s+',','')+'@'+Name+char(32)+ TYPE_NAME(user_type_id)<br />
+	+cASe	when user_type_id in(34,35,36,48,52,56,58,59,60,61,62,98,99,104,122,127,189,241,256,241,40,41) then '' <br />
+			when user_type_id in(106,108) then '('+rtrim(Precision)+','+rtrim(Scale)+')'<br />
+			when user_type_id in (231,239) then  cASe when  max_length=-1 then '(max)' else '('+rtrim(max_length/2)+')' end<br />
+			when max_length=-1 then '(Max)'<br />
+			else '('+rtrim(max_length)+')' end<br />
+	+cASe	when is_identity=1 then char(32)+'OUTPUT' <br />
+			else '' end,<br />
+	@ColName=cASe when is_identity=1 then @ColName else isnull(@ColName+',','')+quotename(Name) end,<br />
+	@ColName2=cASe when is_identity=1 then @ColName2 else isnull(@ColName2+',','')+'@'+Name end,<br />
+	@UPDATECol=isnull(@UPDATECol+',','')+cASe when Name!=N'ID' then quotename(Name)+'='+'@'+Name  end,<br />
+	@IdentityWHERE=isnull(@IdentityWHERE,'')+cASe when Name=N'ID' OR COLUMNPROPERTY (object_id, Name , 'IsIdentity' )=1  then quotename(Name)+'='+'@'+Name else '' end,<br />
+	@ColAll=isnull(@ColAll+',','')+quotename(Name),<br />
+	@OutputAll=isnull(@OutputAll+',','')+'@'+Name<br />
+from <br />
+	Sys.columns<br />
+WHERE <br />
+	object_id=object_id(@TableName)<br />
+order by cASe when Name='ID' then 0 else 1 end,Column_id<br />
+<br />
+<br />
+--主键为第一列<br />
+SELECT @Identity=replace(left(@s,charindex(',',@s)-1),char(32)+'output',''),@ObjectID=object_id(@TableName),<br />
+	@TableName=replace(replace(stuff(@TableName,1,charindex('.',@TableName),''),']',''),'[','')<br />
+<br />
+SELECT @Insert='CREATE PROCEDURE c'+@TableName+char(10)+char(9)+char(9)+'('+@s+')'+char(10)+'AS'+char(10)+<br />
+				'INSERT INTO '+@TableName+char(10)+char(9)+'('+@ColName+')'+char(10)+'VALUES'+char(10)+char(9)+'('+@ColName2+')'<br />
+				+cASe	when exists(SELECT 1 from Sys.columns WHERE object_id=@ObjectID and is_identity=1) <br />
+						then char(10)+char(10)+'SET '+left(@Identity,charindex(char(32),@Identity)-1)+'=SCOPE_IDENTITY()' <br />
+						else '' end,<br />
+		@UPDATE='CREATE PROCEDURE u'+@TableName+char(10)+char(9)+char(9)+'('+replace(@s,char(32)+'output','')+')'+char(10)+'AS'+char(10)+<br />
+				'UPDATE '+@TableName+char(10)+'SET '+@UPDATECol+char(10)+'WHERE '+@IdentityWHERE,<br />
+		@SELECTWHERE='CREATE PROCEDURE r'+@TableName+'By'+stuff(left(@Identity,charindex(char(32),@Identity)-1),1,1,'')+char(10)+char(9)+char(9)+'('+@Identity+')'+char(10)+'AS'+char(10)+<br />
+					'SELECT '+char(10)+char(9)+@ColAll+char(10)+'From'+char(10)+char(9)+@TableName+char(10)+'WHERE'+char(10)+char(9)+@IdentityWHERE,<br />
+		@SELECT='CREATE PROCEDURE r'+@TableName+'ForAll'+char(10)+'AS'+char(10)+<br />
+					'SELECT '+char(10)+char(9)+@ColAll+char(10)+'From'+char(10)+char(9)+@TableName,<br />
+		@DELETE='CREATE PROCEDURE d'+@TableName+char(10)+char(9)+'('+@Identity+')'+char(10)+'AS'+char(10)+'DELETE '+@TableName+char(32)+'WHERE'+char(32)+@IdentityWHERE,<br />
+		@InputCol=cASe when exists(SELECT 1 from Sys.columns WHERE object_id=@ObjectID and is_identity=1) then @Identity else '' end<br />
+<br />
+<br />
+<br />
+--Insert<br />
+SELECT @Insert=<br />
+'if object_id('+quotename('c'+@TableName,'''')+',''P'') is not null'+char(13)+char(9)+'DROP PROC '+quotename('c'+@TableName)<br />
++char(10)+'Go'+char(13)+char(10)+'/'+replicate('*',160)+char(10)+<br />
+'%%存储过程名：c'+@TableName+char(10)+char(10)+<br />
+'%%输入参数：'+@ColName2+char(10)+char(10)+<br />
+'%%输出参数：'+@InputCol+char(10)+char(10)+<br />
+'%%功能：新增记录在表'+@TableName+char(10)+replicate('*',160)+char(10)+<br />
+'%%编写：'+@Write+char(10)+char(10)+replicate('*',160)+'/'+char(10)<br />
++@Insert+char(13)+char(10)+'Go'+char(13)+char(10),<br />
+<br />
+--UPDATE<br />
+<br />
+@UPDATE=<br />
+'if object_id('+quotename('u'+@TableName,'''')+',''P'') is not null'+char(13)+char(9)+'DROP PROC '+quotename('u'+@TableName)<br />
++char(10)+'Go'+char(13)+char(10)+'/'+replicate('*',160)+char(10)+<br />
+'%%存储过程名：u'+@TableName+char(10)+char(10)+<br />
+'%%输入参数：'+@OutputAll+char(10)+char(10)+<br />
+'%%输出参数：'+char(10)+char(10)+<br />
+'%%功能：修改记录在表'+@TableName+char(10)+replicate('*',160)+char(10)+<br />
+'%%编写：'+@Write+char(10)+char(10)+replicate('*',160)+'/'+char(10)<br />
++@UPDATE+char(13)+char(10)+'Go'+char(13)+char(10),<br />
+--SELECTWHERE<br />
+@SELECTWHERE=<br />
+'if object_id('+quotename('r'+@TableName+'By'+stuff(left(@Identity,charindex(char(32),@Identity)-1),1,1,''),'''')+',''P'') is not null'+char(13)+char(9)+'DROP PROC '+quotename('r'+@TableName+'By'+stuff(left(@Identity,charindex(char(32),@Identity)-1),1,1,''))<br />
++char(10)+'Go'+char(13)+char(10)+'/'+replicate('*',160)+char(10)<br />
++'%%存储过程名：r'+@TableName+'By'+stuff(left(@Identity,charindex(char(32),@Identity)-1),1,1,'')+char(10)+char(10)<br />
++N'%%输入参数：'+@Identity+char(10)+char(10)<br />
++N'%%输出参数：'+char(10)+char(10)<br />
++N'%%功能：根据条件读取记录在表'+@TableName+char(10)+replicate('*',160)+char(10)<br />
++'%%编写：'+@Write+char(10)+char(10)+replicate('*',160)+'/'+char(10)<br />
++@SELECTWHERE+char(13)+char(10)+'Go'+char(13)+char(10),<br />
+--SELECT <br />
+@SELECT=<br />
+'if object_id('+quotename('r'+@TableName+'ForAll','''')+',''P'') is not null'+char(13)+char(9)+'DROP PROC '+quotename('r'+@TableName+'ForAll')<br />
++char(10)+'Go'+char(13)+char(10)+'/'+replicate('*',160)+char(10)<br />
++'%%存储过程名：r'+@TableName+'ForAll'+char(10)+char(10)<br />
++'%%输入参数：'+char(10)+char(10)<br />
++'%%输出参数：'+char(10)+char(10)<br />
++'%%功能：读取记录在表'+@TableName+char(10)+replicate('*',160)+char(10)<br />
++'%%编写：'+@Write+char(10)+char(10)+replicate('*',160)+'/'+char(10)<br />
++@SELECT+char(13)+char(10)+'Go'+char(13)+char(10),<br />
+@DELETE=<br />
+'if object_id('+quotename('d'+@TableName,'''')+',''P'') is not null'+char(13)+char(9)+'DROP PROC '+quotename('d'+@TableName)<br />
++char(10)+'Go'+char(13)+char(10)+'/'+replicate('*',160)+char(10)<br />
++'%%存储过程名：d'+@TableName+char(10)+char(10)<br />
++'%%输入参数：'+char(10)+char(10)<br />
++'%%输出参数：'+@Identity+char(10)+char(10)<br />
++'%%功能：删除记录在表'+@TableName+char(10)+replicate('*',160)+char(10)<br />
++'%%编写：'+@Write+char(10)+char(10)+replicate('*',160)+'/'+char(10)<br />
++@DELETE+char(13)+char(10)+'Go'+char(13)+char(10)<br />
+<br />
+print 'USE '+db_name()+char(13)+char(10)+'Go'+char(13)+char(10)<br />
+print @Insert<br />
+print @UPDATE<br />
+print @SELECTWHERE<br />
+print @SELECT<br />
+print @DELETE<br />
+<br />
+<br />
+GO<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:11

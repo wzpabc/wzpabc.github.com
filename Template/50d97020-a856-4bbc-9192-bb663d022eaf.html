@@ -1,0 +1,29 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>declare @proc_text varchar(max)  <br />
+DECLARE get_proc_text_cursor CURSOR FOR <br />
+SELECT<br />
+  'if object_id(N'''+ [name] +''') is not null drop proc ' + [name] +  CHAR(10) +  CHAR(13)  +  '  GO '  +  CHAR(10) +  CHAR(13) + definition + CHAR(10)  + CHAR(13) +' GO'   <br />
+FROM<br />
+ sys.sql_modules  <br />
+inner join<br />
+ sysobjects  <br />
+on<br />
+ sys.sql_modules.object_id = sysobjects.id  <br />
+and<br />
+ type='p'  OPEN get_proc_text_cursor   <br />
+<br />
+FETCH NEXT FROM get_proc_text_cursor INTO @proc_text   <br />
+<br />
+WHILE @@FETCH_STATUS = 0  <br />
+<br />
+BEGIN<br />
+  print @proc_text      <br />
+<br />
+FETCH NEXT FROM get_proc_text_cursor INTO @proc_text  <br />
+<br />
+END <br />
+<br />
+CLOSE get_proc_text_cursor  <br />
+<br />
+DEALLOCATE get_proc_text_cursor <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:11

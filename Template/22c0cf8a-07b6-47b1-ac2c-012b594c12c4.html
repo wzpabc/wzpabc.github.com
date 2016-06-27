@@ -1,0 +1,175 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>MS SQL SERVER数据库置疑后恢复步骤 <br />
+--SQL SERVER数据库置疑后恢复步骤   <br />
+--1． 恢复步骤：   <br />
+--a.将smlog_log.ldf文件备份到其它目录下；   <br />
+--b.将源目录下的smlog_log.ldf文件改名为smlog_log_bak.ldf；   <br />
+--c.执行以下语句修改数据库的状态：   <br />
+use Master   <br />
+go   <br />
+update sysdatabases set status=32768 where name='数据库名称'     --修改状态,設為緊急狀態 <br />
+go   <br />
+shutdown with nowait     --停止数据库服务器   <br />
+go   <br />
+--d.退出SQL并在(COMMAND)命令行模式中通过下面的代码重新启动SQL：   <br />
+sqlservr -c -T3608 -T4022     --安全模式启动SQL SERVER<br />
+--e.在查询分析器中执行以下语句来查看刚刚修改过状态的数据库状态：   <br />
+select Name,Status from sysdatabases where Name='数据库名稱'  <br />
+--f.执行以下代码新建日志文件：   <br />
+dbcc traceon(3604)--跟踪   <br />
+dbcc rebuild_log('数据库名称','日志文件全路徑') --文件名要有全路径和扩展名<br />
+--dbcc rebuild_log('prs_msc','d:\mscsql\mssql\data\prs_msc_log.ldf<br />
+--g.将数据库置回正常状态：   <br />
+update sysdatabases set status=0 where name='数据库名称'   <br />
+--h.重新启动数据库后执行以下语句检查数据库：   <br />
+DBCC CHECKDB --如果执行完有错误用以下语句修复   <br />
+--i.要修复数据库必需将数据库改为单用户模式：   <br />
+Exce sp_dboption '数据库名称','single user','true'---('false'恢复多用户)   <br />
+--j.执行以下语句修复数据库：   <br />
+DBCC CHECKDB('数据库名称',REPAIR_ALLOW_DATA_LOSS)   <br />
+REPAIR_ALLOW_DATA_LOSS：是比较高级的修复方式   <br />
+REPAIR_FAST：是简单快速的修复方式<br />
+/*<br />
+處理状态就为"置疑"的數據庫<br />
+备份数据文件,然后按下面的步骤处理:   <br />
+1.新建一个同名的数据库(数据文件与原来的要一致)   <br />
+2.再停掉sql server(注意不要分离数据库)   <br />
+3.用原数据库的数据文件覆盖掉这个新建的数据库   <br />
+4.再重启sql server   <br />
+5.此时打开企业管理器时会出现置疑，先不管，执行下面的语句（注意修改其中的数据库名)   <br />
+6.完成后一般就可以访问数据库中的数据了,这时,数据库本身一般还要问题,解决办法是,利用数据库的脚本创建一个新的数据库,并将数据导进去就行了.<br />
+<br />
+*/<br />
+USE   MASTER   <br />
+GO   <br />
+SP_CONFIGURE 'ALLOW UPDATES',1<br />
+GO<br />
+RECONFIGURE WITH OVERRIDE   <br />
+GO   <br />
+UPDATE SYSDATABASES SET STATUS =32768 WHERE NAME='置疑的数据库名'   <br />
+Go   <br />
+sp_dboption '置疑的数据库名','single user','true'   <br />
+Go   <br />
+DBCC CHECKDB('置疑的数据库名')     <br />
+Go   <br />
+update sysdatabases set status=28 where name='置疑的数据库名'   <br />
+Go   <br />
+sp_configure 'allow updates',0<br />
+GO<br />
+reconfigure with override   <br />
+Go     <br />
+sp_dboption '置疑的数据库名', 'single user','false'   <br />
+Go   <br />
+<br />
+ <br />
+<br />
+/*<br />
+只有mdf文件的恢复技术<br />
+由于种种原因，我们如果当时仅仅备份了mdf文件，那么恢复起来就是一件很麻烦的事情了。<br />
+如果您的mdf文件是当前数据库产生的，那么很侥幸，也许你使用sp_attach_db或者sp_attach_single_file_db可以恢复数据库，但是会出现类似下面的提示信息<br />
+设备激活错误。物理文件名 'C:\Program Files\Microsoft SQL Server\MSSQL\data\test_Log.LDF' 可能有误。<br />
+已创建名为 'C:\Program Files\Microsoft SQL Server\MSSQL\Data\test_log.LDF' 的新日志文件。<br />
+但是，如果您的数据库文件是从其他计算机上复制过来的，那么很不幸，也许上述办法就行不通了。你也许会得到类似下面的错误信息<br />
+服务器: 消息 1813，级别 16，状态 2，行 1<br />
+未能打开新数据库 'test'。CREATE DATABASE 将终止。<br />
+设备激活错误。物理文件名 'd:\test_log.LDF' 可能有误。<br />
+怎么办呢？别着急，下面我们举例说明恢复办法。<br />
+*/<br />
+--A．我们使用默认方式建立一个供恢复使用的数据库(如test)。可以在SQL Server Enterprise Manager里面建立。<br />
+--B．停掉数据库服务器。<br />
+--C．将刚才生成的数据库的日志文件test_log.ldf删除，用要恢复的数据库mdf文件覆盖刚才生成的数据库数据文件test_data.mdf。<br />
+--D．启动数据库服务器。此时会看到数据库test的状态为“置疑”。这时候不能对此数据库进行任何操作。<br />
+--E．设置数据库允许直接操作系统表。此操作可以在SQL Server Enterprise Manager里面选择数据库服务器，按右--键，选择“属性”，在“服务器设置”页面中将“允许对系统目录直接修改”一项选中。也可以使用如下语句来实现。<br />
+use master<br />
+go<br />
+sp_configure 'allow updates',1<br />
+go <br />
+reconfigure with override<br />
+go<br />
+--F．设置test为紧急修复模式<br />
+--在查询管理器里设置如下命令：<br />
+update sysdatabases set status=-32768 where dbid=DB_ID('test')<br />
+--此时可以在SQL Server Enterprise Manager里面看到该数据库处于“只读\置疑\脱机\紧急模式”可以看到数据库里面的表，但是仅仅有系统表<br />
+--G．下面执行真正的恢复操作，重建数据库日志文件<br />
+dbcc rebuild_log('test','C:\Program Files\Microsoft SQL Server\MSSQL\Data\test_log.ldf')<br />
+/*<br />
+执行过程中，如果遇到下列提示信息：<br />
+服务器: 消息 5030，级别 16，状态 1，行 1<br />
+未能排它地锁定数据库以执行该操作。<br />
+DBCC 执行完毕。如果 DBCC 输出了错误信息，请与系统管理员联系。<br />
+说明您的其他程序正在使用该数据库，如果刚才您在F步骤中使用SQL Server Enterprise Manager打开了test库的系统表，那么退出SQL Server Enterprise Manager就可以了。<br />
+正确执行完成的提示应该类似于：<br />
+警告: 数据库 'test' 的日志已重建。已失去事务的一致性。应运行 DBCC CHECKDB 以验证物理一致性。将必须重置数据库选项，并且可能需要删除多余的日志文件。<br />
+DBCC 执行完毕。如果 DBCC 输出了错误信息，请与系统管理员联系。<br />
+此时打开在SQL Server Enterprise Manager里面会看到数据库的状态为“只供DBO使用”。此时可以访问数据库里面的用户表了。<br />
+*/<br />
+--H．验证数据库一致性（可省略）<br />
+dbcc checkdb('test')<br />
+/*一般执行结果如下：<br />
+CHECKDB 发现了 0 个分配错误和 0 个一致性错误（在数据库 'test' 中）。<br />
+DBCC 执行完毕。如果 DBCC 输出了错误信息，请与系统管理员联系。*/<br />
+--I．设置数据库为正常状态<br />
+sp_dboption 'test','dbo use only','false'<br />
+--如果没有出错，那么恭喜，现在就可以正常的使用恢复后的数据库啦。<br />
+--J．最后一步，我们要将步骤E中设置的“允许对系统目录直接修改”一项恢复。因为平时直接操作系统表是一件比较危险的事情。当然，我们可以在SQL Server Enterprise Manager里面恢复，也可以使用如下语句完成<br />
+sp_configure 'allow updates',0<br />
+go <br />
+reconfigure with override<br />
+go<br />
+<br />
+<br />
+--日志文件出现问题（丢失或文件格式非法），怎么使数据库恢复正常   <br />
+--如果用sp_attach_single_file 'TEST','C:\Program Files\Microsoft SQL Server\MSSQL\Data\test_log.mdf'失败则需要用下列步骤完成   <br />
+--1.将置疑的数据库分离，将mdf文件移走或改名！   <br />
+sp_detach_db 'TEST'   <br />
+--2.重新在原来目录下建立同名的数据库TEST   <br />
+--3.停掉SQL Service,将先前的mdf文件拷贝回来覆盖(或改名),删除原来的log文件(或改名)   <br />
+--4.启动SQL Service(否则下面的语句没办法运行)   <br />
+--5.将数据库设成紧急模式(status=32768)   <br />
+sp_configure 'allow updates',1   <br />
+reconfigure with override   <br />
+update sysdatabases set status=32768 where name='TEST'   <br />
+--重新建立日志文件   <br />
+DBCC traceon(3604)   <br />
+dbcc rebuild_log('test','C:\Program Files\Microsoft SQL Server\MSSQL\Data\test_log.ldf')   <br />
+Go   <br />
+--6.重新启动SQL Service   <br />
+--7.将数据库设置成单用户模式(下面三个语句均可)   <br />
+--sp_dboption 'TEST','single user','true'   <br />
+update sysdatabases set status=4096 where name='TEST'   <br />
+--alter database TEST set Single_user   <br />
+    <br />
+--8.检查数据库的完整性和一致性,OK了就可以用了   <br />
+DBCC CheckDB(TEST)   <br />
+    <br />
+--9.将数据的访问权限设置成多用户模式   <br />
+sp_dboption 'TEST','single user','false'   <br />
+--或alter database TEST set multi_user   <br />
+    <br />
+--10.关闭高级选项   <br />
+sp_configure 'allow updates',0   <br />
+reconfigure with override   <br />
+<br />
+--结束 <br />
+<br />
+ <br />
+<br />
+ <br />
+<br />
+ <br />
+<br />
+SQL Server安装挂起<br />
+<br />
+在安装sql server时出现“以前的某个程序安装已在安装计算机上创建挂起的文件操作。运行安装程序之前必须重新启动计算机”错误。无法进行下去。 参考有关资料后,以下步骤基本可以解决： <br />
+<br />
+1）添加/删除程序中彻底删除sql server。 <br />
+<br />
+2）将没有删除的sql server目录也删除掉。 <br />
+<br />
+3）打开注册表编辑器，在HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\ Session Manager中找到PendingFileRenameOperations项目，并删除它。这样就可以清除安装暂挂项目。 <br />
+<br />
+4）删除注册表中跟sql server相关的键 <br />
+<br />
+注意：<br />
+要是不想重新启动就顺利安装，一般来说按照第三步就可以解决……<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:30

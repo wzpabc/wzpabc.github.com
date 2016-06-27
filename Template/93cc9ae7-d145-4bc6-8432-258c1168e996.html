@@ -1,0 +1,164 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>合并列值 <br />
+--*******************************************************************************************<br />
+表结构，数据如下： <br />
+id    value <br />
+----- ------ <br />
+1    aa <br />
+1    bb <br />
+2    aaa <br />
+2    bbb <br />
+2    ccc <br />
+<br />
+需要得到结果： <br />
+id    values <br />
+------ ----------- <br />
+1      aa,bb <br />
+2      aaa,bbb,ccc <br />
+即：group by id, 求 value 的和（字符串相加） <br />
+<br />
+1. 旧的解决方法(在sql server 2000中只能用函数解决。) <br />
+--=============================================================================<br />
+create table tb(id int, value varchar(10)) <br />
+insert into tb values(1, 'aa') <br />
+insert into tb values(1, 'bb') <br />
+insert into tb values(2, 'aaa') <br />
+insert into tb values(2, 'bbb') <br />
+insert into tb values(2, 'ccc') <br />
+go <br />
+--1. 创建处理函数 <br />
+CREATE FUNCTION dbo.f_strUnite(@id int) <br />
+RETURNS varchar(8000) <br />
+AS <br />
+BEGIN <br />
+    DECLARE @str varchar(8000) <br />
+    SET @str = '' <br />
+    SELECT @str = @str + ',' + value FROM tb WHERE id=@id <br />
+    RETURN STUFF(@str, 1, 1, '') <br />
+END <br />
+GO <br />
+-- 调用函数 <br />
+SELECt id, value = dbo.f_strUnite(id) FROM tb GROUP BY id <br />
+drop table tb <br />
+drop function dbo.f_strUnite <br />
+go<br />
+/* <br />
+id          value      <br />
+----------- ----------- <br />
+1          aa,bb <br />
+2          aaa,bbb,ccc <br />
+（所影响的行数为 2 行） <br />
+*/ <br />
+--===================================================================================<br />
+2. 新的解决方法(在sql server 2005中用OUTER APPLY等解决。) <br />
+create table tb(id int, value varchar(10)) <br />
+insert into tb values(1, 'aa') <br />
+insert into tb values(1, 'bb') <br />
+insert into tb values(2, 'aaa') <br />
+insert into tb values(2, 'bbb') <br />
+insert into tb values(2, 'ccc') <br />
+go <br />
+-- 查询处理 <br />
+SELECT * FROM(SELECT DISTINCT id FROM tb)A OUTER APPLY( <br />
+        SELECT [values]= STUFF(REPLACE(REPLACE( <br />
+            ( <br />
+                SELECT value FROM tb N <br />
+                WHERE id = A.id <br />
+                FOR XML AUTO <br />
+            ), ' <N value="', ','), '"/>', ''), 1, 1, '') <br />
+)N <br />
+drop table tb <br />
+<br />
+/* <br />
+id          values <br />
+----------- ----------- <br />
+1          aa,bb <br />
+2          aaa,bbb,ccc <br />
+<br />
+(2 行受影响) <br />
+*/ <br />
+<br />
+--SQL2005中的方法2 <br />
+create table tb(id int, value varchar(10)) <br />
+insert into tb values(1, 'aa') <br />
+insert into tb values(1, 'bb') <br />
+insert into tb values(2, 'aaa') <br />
+insert into tb values(2, 'bbb') <br />
+insert into tb values(2, 'ccc') <br />
+go <br />
+<br />
+select id, [values]=stuff((select ','+[value] from tb t where id=tb.id for xml path('')), 1, 1, '') <br />
+from tb <br />
+group by id <br />
+<br />
+/* <br />
+id          values <br />
+----------- -------------------- <br />
+1          aa,bb <br />
+2          aaa,bbb,ccc <br />
+<br />
+(2 row(s) affected) <br />
+<br />
+*/ <br />
+<br />
+drop table tb <br />
+<br />
+/*<br />
+标题：分拆列值1<br />
+作者：爱新觉罗.毓华(十八年风雨,守得冰山雪莲花开)<br />
+时间：2008-11-20<br />
+地点：广东深圳<br />
+描述<br />
+<br />
+有表tb, 如下:<br />
+id          value<br />
+----------- -----------<br />
+1           aa,bb<br />
+2           aaa,bbb,ccc<br />
+欲按id,分拆value列, 分拆后结果如下:<br />
+id          value<br />
+----------- --------<br />
+1           aa<br />
+1           bb<br />
+2           aaa<br />
+2           bbb<br />
+2           ccc<br />
+*/<br />
+<br />
+--1. 旧的解决方法(sql server 2000)<br />
+SELECT TOP 8000 id = IDENTITY(int, 1, 1) INTO # FROM syscolumns a, syscolumns b <br />
+<br />
+SELECT A.id, value = SUBSTRING(A.[value], B.id, CHARINDEX(',', A.[value] + ',', B.id) - B.id)<br />
+FROM tb A, # B<br />
+WHERE SUBSTRING(',' + A.[value], B.id, 1) = ','<br />
+<br />
+DROP TABLE #<br />
+<br />
+--2. 新的解决方法(sql server 2005) <br />
+create table tb(id int,value varchar(30))<br />
+insert into tb values(1,'aa,bb')<br />
+insert into tb values(2,'aaa,bbb,ccc')<br />
+go<br />
+SELECT A.id, B.value<br />
+FROM(<br />
+    SELECT id, [value] = CONVERT(xml,'<root><v>' + REPLACE([value], ',', '</v><v>') + '</v></root>') FROM tb<br />
+)A<br />
+OUTER APPLY(<br />
+    SELECT value = N.v.value('.', 'varchar(100)') FROM A.[value].nodes('/root/v') N(v)<br />
+)B<br />
+<br />
+DROP TABLE tb<br />
+<br />
+/*<br />
+id          value<br />
+----------- ------------------------------<br />
+1           aa<br />
+1           bb<br />
+2           aaa<br />
+2           bbb<br />
+2           ccc<br />
+<br />
+(5 行受影响)<br />
+*/<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:33

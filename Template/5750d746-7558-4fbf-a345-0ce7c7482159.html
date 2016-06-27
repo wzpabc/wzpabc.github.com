@@ -1,0 +1,141 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>------------------------------------<br />
+<br />
+-- Author: happyflystone   <br />
+<br />
+-- Date:2009-07-20 <br />
+<br />
+-- Parameter: @CardString 被查询的串，形如：13300000000-13300001234,13300002230,13300002300<br />
+<br />
+--            @CardNo     要查询的串<br />
+<br />
+-- Return   : int      0 -- 不存在于搜索串的范围内<br />
+<br />
+--                     1 -- 存在于<br />
+<br />
+-- 转载请注明出处。更多请访问： http://blog.csdn.net/happyflystone<br />
+<br />
+------------------------------------<br />
+<br />
+Create function IsInCardString(@CardString varchar(8000),@CardNo varchar(11)) <br />
+<br />
+returns int<br />
+<br />
+as<br />
+<br />
+begin<br />
+<br />
+    declare @temp table(a varchar(200))<br />
+<br />
+     <br />
+<br />
+    declare @i int<br />
+<br />
+    <br />
+<br />
+    set @CardString = rtrim(ltrim(@CardString))+','<br />
+<br />
+    set @i = charindex(',', @CardString)<br />
+<br />
+    <br />
+<br />
+    while @i >= 1<br />
+<br />
+    begin<br />
+<br />
+        insert @temp values(left(@CardString, @i - 1))<br />
+<br />
+        <br />
+<br />
+        set @CardString = substring(@CardString, @i + 1, len(@CardString) - @i)<br />
+<br />
+        set @i = charindex(',', @CardString)<br />
+<br />
+    end<br />
+<br />
+    <br />
+<br />
+    if exists(select 1<br />
+<br />
+    from (<br />
+<br />
+           select case when charindex('-',a) > 0 then left(a,11) else a end as s,<br />
+<br />
+           case when charindex('-',a) > 0 then right(a,11) else a end as e<br />
+<br />
+           from @temp<br />
+<br />
+              ) a<br />
+<br />
+    where @CardNo between s and e)<br />
+<br />
+              set @i= 1<br />
+<br />
+    else <br />
+<br />
+        set @i= 0<br />
+<br />
+    return @i<br />
+<br />
+end<br />
+<br />
+go<br />
+<br />
+ <br />
+<br />
+ <br />
+<br />
+declare @CardString varchar(1000)<br />
+<br />
+set @CardString = '13300000000-13300001234,13300002230,13300002300,13300002302,13300004101-13300004204,13300004212,13300004310'<br />
+<br />
+ <br />
+<br />
+declare @CardNo varchar(1000)<br />
+<br />
+set @CardNo = '13300000001'　--存在<br />
+<br />
+select dbo.IsInCardString(@CardString,@CardNo)<br />
+<br />
+set @CardNo = '13300001235'  --不存在<br />
+<br />
+select dbo.IsInCardString(@CardString,@CardNo)<br />
+<br />
+/*<br />
+<br />
+ <br />
+<br />
+            <br />
+<br />
+----------- <br />
+<br />
+1<br />
+<br />
+ <br />
+<br />
+（所影响的行数为 1 行）<br />
+<br />
+ <br />
+<br />
+            <br />
+<br />
+----------- <br />
+<br />
+0<br />
+<br />
+ <br />
+<br />
+（所影响的行数为 1 行）<br />
+<br />
+ <br />
+<br />
+*/<br />
+<br />
+ <br />
+<br />
+drop function IsInCardString<br />
+<br />
+<br />
+<br />
+本文来自CSDN博客，转载请标明出处：http://blog.csdn.net/happyflystone/archive/2009/07/21/4365264.aspx<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:06

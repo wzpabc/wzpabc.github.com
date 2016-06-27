@@ -1,0 +1,169 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>DECLARE <br />
+@TA TABLE (IDA INT,VA VARCHAR(10))<br />
+DECLARE<br />
+@TB TABLE (IDB INT,VB VARCHAR(10))<br />
+<br />
+INSERT INTO @TA <br />
+SELECT<br />
+1,'AA' UNION SELECT<br />
+2,'BC' UNION SELECT<br />
+3,'CCC'<br />
+<br />
+INSERT INTO @TB<br />
+SELECT <br />
+1,'2'  UNION SELECT<br />
+3,'58' UNION SELECT<br />
+4,'67' <br />
+<br />
+--内联接简单写法<br />
+SELECT A.IDA,A.VA,B.IDB,B.VB FROM @TA A,@TB B<br />
+WHERE A.IDA=B.IDB<br />
+<br />
+--内联接<br />
+SELECT A.IDA,A.VA,B.IDB,B.VB FROM @TA A INNER JOIN @TB B<br />
+ON A.IDA=B.IDB<br />
+<br />
+SELECT A.IDA,A.VA,B.IDB,B.VB FROM @TA A JOIN @TB B<br />
+ON A.IDA=B.IDB<br />
+<br />
+--左外联接<br />
+SELECT A.IDA,A.VA,B.IDB,B.VB FROM @TA A LEFT JOIN @TB B<br />
+ON A.IDA=B.IDB<br />
+<br />
+SELECT A.IDA,A.VA,B.IDB,B.VB FROM @TA A LEFT OUTER JOIN @TB B<br />
+ON A.IDA=B.IDB<br />
+<br />
+--右外联接<br />
+SELECT A.IDA,A.VA,B.IDB,B.VB FROM @TA A RIGHT JOIN @TB B<br />
+ON A.IDA=B.IDB<br />
+<br />
+SELECT A.IDA,A.VA,B.IDB,B.VB FROM @TA A RIGHT OUTER JOIN @TB B<br />
+ON A.IDA=B.IDB<br />
+<br />
+--完整外联接<br />
+SELECT A.IDA,A.VA,B.IDB,B.VB FROM @TA A FULL JOIN @TB B<br />
+ON A.IDA=B.IDB<br />
+<br />
+SELECT A.IDA,A.VA,B.IDB,B.VB FROM @TA A FULL OUTER JOIN @TB B<br />
+ON A.IDA=B.IDB<br />
+<br />
+<br />
+--交叉联接<br />
+SELECT A.IDA,A.VA,B.IDB,B.VB FROM @TA A CROSS JOIN @TB B<br />
+<br />
+--自联接<br />
+SELECT A.IDA,A.VA,B.IDA,B.VA FROM @TA A,@TA B WHERE A.IDA=B.IDA+1<br />
+<br />
+<br />
+<br />
+查询分析器中执行：<br />
+--建表table1,table2：<br />
+create table table1(id int,name varchar(10))<br />
+create table table2(id int,score int)<br />
+insert into table1 select 1,'lee'<br />
+insert into table1 select 2,'zhang'<br />
+insert into table1 select 4,'wang'<br />
+insert into table2 select 1,90<br />
+insert into table2 select 2,100<br />
+insert into table2 select 3,70<br />
+如表<br />
+-------------------------------------------------<br />
+table1|table2|<br />
+-------------------------------------------------<br />
+idname|idscore|<br />
+1lee|190|<br />
+2zhang|2100|<br />
+4wang|370|<br />
+-------------------------------------------------<br />
+<br />
+以下均在查询分析器中执行<br />
+<br />
+一、外连接<br />
+1.概念：包括左向外联接、右向外联接或完整外部联接<br />
+<br />
+2.左连接：left join 或 left outer join<br />
+(1)左向外联接的结果集包括 LEFT OUTER 子句中指定的左表的所有行，而不仅仅是联接列所匹配的行。如果左表的某行在右表中没有匹配行，则在相关联的结果集行中右表的所有选择列表列均为空值(null)。<br />
+(2)sql语句<br />
+select * from table1 left join table2 on table1.id=table2.id<br />
+-------------结果-------------<br />
+idnameidscore<br />
+------------------------------<br />
+1lee190<br />
+2zhang2100<br />
+4wangNULLNULL<br />
+------------------------------<br />
+注释：包含table1的所有子句，根据指定条件返回table2相应的字段，不符合的以null显示<br />
+<br />
+3.右连接：right join 或 right outer join<br />
+(1)右向外联接是左向外联接的反向联接。将返回右表的所有行。如果右表的某行在左表中没有匹配行，则将为左表返回空值。<br />
+(2)sql语句<br />
+select * from table1 right join table2 on table1.id=table2.id<br />
+-------------结果-------------<br />
+id  name   id   score<br />
+------------------------------<br />
+1   lee    19    0<br />
+2    z     hang  2100<br />
+4    NULL NULL  370<br />
+------------------------------<br />
+注释：包含table2的所有子句，根据指定条件返回table1相应的字段，不符合的以null显示<br />
+<br />
+4.完整外部联接:full join 或 full outer join <br />
+(1)完整外部联接返回左表和右表中的所有行。当某行在另一个表中没有匹配行时，则另一个表的选择列表列包含空值。如果表之间有匹配行，则整个结果集行包含基表的数据值。<br />
+(2)sql语句<br />
+select * from table1 full join table2 on table1.id=table2.id<br />
+-------------结果-------------<br />
+idnameidscore<br />
+------------------------------<br />
+1lee190<br />
+2zhang2100<br />
+4wangNULLNULL<br />
+NULLNULL370<br />
+------------------------------<br />
+注释：返回左右连接的和（见上左、右连接）<br />
+<br />
+二、内连接<br />
+1.概念：内联接是用比较运算符比较要联接列的值的联接<br />
+<br />
+2.内连接：join 或 inner join <br />
+<br />
+3.sql语句<br />
+select * from table1 join table2 on table1.id=table2.id<br />
+-------------结果-------------<br />
+idnameidscore<br />
+------------------------------<br />
+1lee190<br />
+2zhang2100<br />
+------------------------------<br />
+注释：只返回符合条件的table1和table2的列<br />
+<br />
+4.等价（与下列执行效果相同）<br />
+A:select a.*,b.* from table1 a,table2 b where a.id=b.id<br />
+B:select * from table1 cross join table2 where table1.id=table2.id  (注：cross join后加条件只能用where,不能用on)<br />
+<br />
+三、交叉连接(完全)<br />
+<br />
+1.概念：没有 WHERE 子句的交叉联接将产生联接所涉及的表的笛卡尔积。第一个表的行数乘以第二个表的行数等于笛卡尔积结果集的大小。（table1和table2交叉连接产生3*3=9条记录）<br />
+<br />
+2.交叉连接：cross join (不带条件where...)<br />
+<br />
+3.sql语句<br />
+select * from table1 cross join table2<br />
+-------------结果-------------<br />
+idnameidscore<br />
+------------------------------<br />
+1lee190<br />
+2zhang190<br />
+4wang190<br />
+1lee2100<br />
+2zhang2100<br />
+4wang2100<br />
+1lee370<br />
+2zhang370<br />
+4wang370<br />
+------------------------------<br />
+注释：返回3*3=9条记录，即笛卡尔积<br />
+<br />
+4.等价（与下列执行效果相同）<br />
+A:select * from table1,table2<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:31

@@ -1,0 +1,17 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>备份<br />
+BACKUP DATABASE text<br />
+to disk='c:\11.bak' with init<br />
+<br />
+还原<br />
+RESTORE   DATABASE   CDJTLZGIS   <br />
+        FROM   DISK   =   'c:\33.bak'   <br />
+WITH   MOVE   'CDJTLZGIS_Data'   TO   'c:\CDJTLZGIS_Data',   <br />
+MOVE   'CDJTLZGIS_Log'   TO   'c:\CDJTLZGIS_Log'   <br />
+<br />
+<br />
+RESTORE   DATABASE   TestDB     <br />
+FROM   DISK   =   'c:\Northwind.bak'   <br />
+WITH   MOVE   'Northwind'   TO   'c:\testdb.mdf',   <br />
+MOVE   'Northwind_log'   TO   'c:\testdb.ldf'    <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:30

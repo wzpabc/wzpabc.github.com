@@ -1,0 +1,103 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>通常，你需要获得当前日期和计算一些其他的日期，例如，你的程序可能需要判断一个月的第一天或者最后一天。你们大部分人大概都知道怎样把日期进行分割（年、月、日等），然后仅仅用分割出来的年、月、日等放在几个函数中计算出自己所需要的日期！在这篇文章里，我将告诉你如何使用DATEADD和DATEDIFF函数来计算出在你的程序中可能你要用到的一些不同日期。  <br />
+        在使用本文中的例子之前，你必须注意以下的问题。大部分可能不是所有例子在不同的机器上执行的结果可能不一样，这完全由哪一天是一个星期的第一天这个设置决定。第一天（DATEFIRST）设定决定了你的系统使用哪一天作为一周的第一天。所有以下的例子都是以星期天作为一周的第一天来建立，也就是第一天设置为7。假如你的第一天设置不一样，你可能需要调整这些例子，使它和不同的第一天设置相符合。你可以通过@@DATEFIRST函数来检查第一天设置。  <br />
+        为了理解这些例子，我们先复习一下DATEDIFF和DATEADD函数。DATEDIFF函数计算两个日期之间的小时、天、周、月、年等时间间隔总数。DATEADD函数计算一个日期通过给时间间隔加减来获得一个新的日期。要了解更多的DATEDIFF和DATEADD函数以及时间间隔可以阅读微软联机帮助。  <br />
+        使用DATEDIFF和DATEADD函数来计算日期，和本来从当前日期转换到你需要的日期的考虑方法有点不同。你必须从时间间隔这个方面来考虑。比如，从当前日期到你要得到的日期之间有多少时间间隔，或者，从今天到某一天（比如1900-1-1）之间有多少时间间隔，等等。理解怎样着眼于时间间隔有助于你轻松的理解我的不同的日期计算例子。  <br />
+ <br />
+一个月的第一天  <br />
+        第一个例子，我将告诉你如何从当前日期去这个月的最后一天。请注意：这个例子以及这篇文章中的其他例子都将只使用DATEDIFF和DATEADD函数来计算我们想要的日期。每一个例子都将通过计算但前的时间间隔，然后进行加减来得到想要计算的日期。  <br />
+ <br />
+        这是计算一个月第一天的SQL  脚本：  <br />
+        SELECT  DATEADD(mm,  DATEDIFF(mm,0,getdate()),  0)  <br />
+ <br />
+        我们把这个语句分开来看看它是如何工作的。最核心的函数是getdate()，大部分人都知道这个是返回当前的日期和时间的函数。下一个执行的函数DATEDIFF(mm,0,getdate())是计算当前日期和“1900-01-01  00:00:00.000”这个日期之间的月数。记住：时期和时间变量和毫秒一样是从“1900-01-01  00:00:00.000”开始计算的。这就是为什么你可以在DATEDIFF函数中指定第一个时间表达式为“0”。下一个函数是DATEADD，增加当前日期到“1900-01-01”的月数。通过增加预定义的日期“1900-01-01”和当前日期的月数，我们可以获得这个月的第一天。另外，计算出来的日期的时间部分将会是“00:00:00.000”。  <br />
+        这个计算的技巧是先计算当前日期到“1900-01-01”的时间间隔数，然后把它加到“1900-01-01”上来获得特殊的日期，这个技巧可以用来计算很多不同的日期。下一个例子也是用这个技巧从当前日期来产生不同的日期。  <br />
+ <br />
+   <br />
+本周的星期一  <br />
+        这里我是用周(wk)的时间间隔来计算哪一天是本周的星期一。  <br />
+        SELECT  DATEADD(wk,  DATEDIFF(wk,0,getdate()),  0)  <br />
+ <br />
+一年的第一天  <br />
+        现在用年(yy)的时间间隔来显示这一年的第一天。  <br />
+        SELECT  DATEADD(yy,  DATEDIFF(yy,0,getdate()),  0)  <br />
+ <br />
+季度的第一天  <br />
+        假如你要计算这个季度的第一天，这个例子告诉你该如何做。  <br />
+        SELECT  DATEADD(qq,  DATEDIFF(qq,0,getdate()),  0)  <br />
+ <br />
+当天的半夜  <br />
+        曾经需要通过getdate()函数为了返回时间值截掉时间部分，就会考虑到当前日期是不是在半夜。假如这样，这个例子使用DATEDIFF和DATEADD函数来获得半夜的时间点。  <br />
+        SELECT  DATEADD(dd,  DATEDIFF(dd,0,getdate()),  0)  <br />
+ <br />
+深入DATEDIFF和DATEADD函数计算  <br />
+        你可以明白，通过使用简单的DATEDIFF和DATEADD函数计算，你可以发现很多不同的可能有意义的日期。  <br />
+        目前为止的所有例子只是仅仅计算当前的时间和“1900-01-01”之间的时间间隔数量，然后把它加到“1900-01-01”的时间间隔上来计算出日期。假定你修改时间间隔的数量，或者使用不同的时间间隔来调用DATEADD函数，或者减去时间间隔而不是增加，那么通过这些小的调整你可以发现和多不同的日期。  <br />
+    这里有四个例子使用另外一个DATEADD函数来计算最后一天来分别替换DATEADD函数前后两个时间间隔。  <br />
+ <br />
+上个月的最后一天  <br />
+        这是一个计算上个月最后一天的例子。它通过从一个月的最后一天这个例子上减去3毫秒来获得。有一点要记住，在Sql  Server中时间是精确到3毫秒。这就是为什么我需要减去3毫秒来获得我要的日期和时间。  <br />
+ <br />
+        SELECT  dateadd(ms,-3,DATEADD(mm,  DATEDIFF(mm,0,getdate()),  0))  <br />
+        计算出来的日期的时间部分包含了一个Sql  Server可以记录的一天的最后时刻(“23:59:59:997”)的时间。  <br />
+ <br />
+去年的最后一天  <br />
+        连接上面的例子，为了要得到去年的最后一天，你需要在今年的第一天上减去3毫秒。  <br />
+        SELECT  dateadd(ms,-3,DATEADD(yy,  DATEDIFF(yy,0,getdate()),  0))  <br />
+ <br />
+本月的最后一天  <br />
+        现在，为了获得本月的最后一天，我需要稍微修改一下获得上个月的最后一天的语句。修改需要给用DATEDIFF比较当前日期和“1900-01-01”返回的时间间隔上加1。通过加1个月，我计算出下个月的第一天，然后减去3毫秒，这样就计算出了这个月的最后一天。这是计算本月最后一天的SQL脚本。  <br />
+        SELECT  dateadd(ms,-3,DATEADD(mm,  DATEDIFF(m,0,getdate())+1,  0))  <br />
+ <br />
+本年的最后一天  <br />
+        你现在应该掌握这个的做法，这是计算本年最后一天脚本  <br />
+        SELECT  dateadd(ms,-3,DATEADD(yy,  DATEDIFF(yy,0,getdate())+1,  0))。  <br />
+ <br />
+本月的第一个星期一  <br />
+        好了，现在是最后一个例子。这里我要计算这个月的第一个星期一。这是计算的脚本。  <br />
+        Select  DATEADD(wk,  DATEDIFF(wk,0,dateadd(dd,6-datepart(day,getdate()),getdate())),0)                          <br />
+        在这个例子里，我使用了“本周的星期一”的脚本，并作了一点点修改。修改的部分是把原来脚本中“getdate()”部分替换成计算本月的第6天，在计算中用本月的第6天来替换当前日期使得计算可以获得这个月的第一个星期一。  <br />
+ <br />
+总结  <br />
+        我希望这些例子可以在你用DATEADD和DATEDIFF函数计算日期时给你一点启发。通过使用这个计算日期的时间间隔的数学方法，我发现为了显示两个日期之间间隔的有用历法是有价值的。注意，这只是计算出这些日期的一种方法。要牢记，还有很多方法可以得到相同的计算结果。假如你有其他的方法，那很不错，要是你没有，我希望这些例子可以给你一些启发，当你要用DATEADD和DATEDIFF函数计算你程序可能要用到的日期时。  <br />
+ <br />
+---------------------------------------------------------------  <br />
+附录，其他日期处理方法  <br />
+ <br />
+1）去掉时分秒  <br />
+declare  @  datetime  <br />
+set  @  =  getdate()  --'2003-7-1  10:00:00'  <br />
+SELECT  @,DATEADD(day,  DATEDIFF(day,0,@),  0)  <br />
+ <br />
+2）显示星期几  <br />
+select  datename(weekday,getdate())    <br />
+ <br />
+3）如何取得某个月的天数  <br />
+declare  @m  int  <br />
+set  @m=2  --月份  <br />
+select    datediff(day,'2003-'+cast(@m  as  varchar)+'-15'  ,'2003-'+cast(@m+1    as  varchar)+'-15')  <br />
+另外，取得本月天数  <br />
+select    datediff(day,cast(month(GetDate())  as  varchar)+'-'+cast(month(GetDate())  as  varchar)+'-15'  ,cast(month(GetDate())  as  varchar)+'-'+cast(month(GetDate())+1    as  varchar)+'-15')  <br />
+或者使用计算本月的最后一天的脚本，然后用DAY函数区最后一天  <br />
+SELECT  Day(dateadd(ms,-3,DATEADD(mm,  DATEDIFF(m,0,getdate())+1,  0)))  <br />
+ <br />
+4）判断是否闰年  <br />
+SELECT  case  day(dateadd(mm,  2,  dateadd(ms,-3,DATEADD(yy,  DATEDIFF(yy,0,getdate()),  0))))  when  28  then  '平年'  else  '闰年'  end  <br />
+或者  <br />
+select  case  datediff(day,datename(year,getdate())+'-02-01',dateadd(mm,1,datename(year,getdate())+'-02-01'))  <br />
+when  28  then  '平年'  else  '闰年'  end  <br />
+ <br />
+5）一个季度多少天  <br />
+declare  @m  tinyint,@time  smalldatetime  <br />
+select  @m=month(getdate())  <br />
+select  @m=case  when  @m  between  1  and  3  then  1  <br />
+                       when  @m  between  4  and  6  then  4  <br />
+                       when  @m  between  7  and  9  then  7  <br />
+                       else  10  end  <br />
+select  @time=datename(year,getdate())+'-'+convert(varchar(10),@m)+'-01'  <br />
+select  datediff(day,@time,dateadd(mm,3,@time))  <br />
+或<br />
+set @m = convert(int, (@m - 1) / 3) * 3 + 1 <br />
+<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:09

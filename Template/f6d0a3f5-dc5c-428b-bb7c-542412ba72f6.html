@@ -1,0 +1,201 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>---------------------------------<br />
+--  Author: htl258(Tony)<br />
+--  Date  : 2009-08-05 23:13:42<br />
+---------------------------------<br />
+--> 生成测试数据表:tb<br />
+<br />
+If not object_id('roll_call') is null<br />
+    Drop table roll_call<br />
+Go<br />
+create table roll_call<br />
+(<br />
+    [date] datetime not null,<br />
+    StuName char(20) not null,<br />
+    flag   int not null<br />
+)<br />
+<br />
+<br />
+insert into roll_call select '2009-8-1','chenwei',1<br />
+insert into roll_call select '2009-8-2','chenwei',0<br />
+insert into roll_call select '2009-8-3','chenwei',0<br />
+insert into roll_call select '2009-8-4','chenwei',1<br />
+<br />
+insert into roll_call select '2009-8-1','qiyekun',0<br />
+insert into roll_call select '2009-8-2','qiyekun',1<br />
+insert into roll_call select '2009-8-3','qiyekun',1<br />
+insert into roll_call select '2009-8-4','qiyekun',0<br />
+<br />
+insert into roll_call select '2009-8-1','liufeifan',0<br />
+insert into roll_call select '2009-8-2','liufeifan',0<br />
+insert into roll_call select '2009-8-3','liufeifan',0<br />
+insert into roll_call select '2009-8-4','liufeifan',1<br />
+<br />
+insert into roll_call select '2009-8-1','hujintao',0<br />
+insert into roll_call select '2009-8-2','hujintao',0<br />
+insert into roll_call select '2009-8-3','hujintao',1<br />
+insert into roll_call select '2009-8-4','hujintao',1<br />
+<br />
+insert into roll_call select '2009-8-1','wenjiabao',1<br />
+insert into roll_call select '2009-8-2','wenjiabao',0<br />
+insert into roll_call select '2009-8-3','wenjiabao',1<br />
+insert into roll_call select '2009-8-4','wenjiabao',1<br />
+<br />
+insert into roll_call select '2009-8-1','maozhuxi',1<br />
+insert into roll_call select '2009-8-2','maozhuxi',0<br />
+insert into roll_call select '2009-8-3','maozhuxi',0<br />
+insert into roll_call select '2009-8-4','maozhuxi',1<br />
+<br />
+<br />
+insert into roll_call select '2009-8-1','zhouenlai',1<br />
+insert into roll_call select '2009-8-2','zhouenlai',1<br />
+insert into roll_call select '2009-8-3','zhouenlai',1<br />
+insert into roll_call select '2009-8-4','zhouenlai',1<br />
+<br />
+<br />
+insert into roll_call select '2009-8-1','zhurongji',1<br />
+insert into roll_call select '2009-8-2','zhurongji',0<br />
+insert into roll_call select '2009-8-3','zhurongji',0<br />
+insert into roll_call select '2009-8-4','zhurongji',0<br />
+<br />
+select distinct stuname <br />
+from roll_call t<br />
+where exists(<br />
+    select 1<br />
+    from roll_call<br />
+    where stuname=t.stuname<br />
+        and (date=t.date+1 or date=t.date-1)<br />
+        and flag=0)<br />
+    and flag=0<br />
+/*<br />
+stuname<br />
+--------------------<br />
+chenwei             <br />
+hujintao            <br />
+liufeifan           <br />
+maozhuxi            <br />
+zhurongji           <br />
+<br />
+(5 行受影响)<br />
+*/<br />
+<br />
+;With China as<br />
+(<br />
+select * ,row_number () over(partition by stuname order by date) px from roll_call <br />
+),china1 as<br />
+(<br />
+select a.date adate,a.flag aflag,a.StuName astuname,a.px apx,b.px bpx,<br />
+      b.date bdate,b.flag bflag,b.StuName bstuname<br />
+ from China a join China b on a.StuName=b.StuName and a.px=b.px-1<br />
+ )<br />
+ select min(adate) date,astuname from china1 where aflag=0 and bflag=0<br />
+    group by astuname<br />
+<br />
+date                    astuname<br />
+----------------------- --------------------<br />
+2009-08-02 00:00:00.000 chenwei             <br />
+2009-08-01 00:00:00.000 hujintao            <br />
+2009-08-01 00:00:00.000 liufeifan           <br />
+2009-08-02 00:00:00.000 maozhuxi            <br />
+2009-08-02 00:00:00.000 zhurongji           <br />
+<br />
+(5 行受影响)<br />
+<br />
+<br />
+<br />
+<br />
+if exists (select * from dbo.sysobjects where id = object_id(N'[dbo].[f_splitSTR]') and xtype in (N'FN', N'IF', N'TF'))<br />
+drop function [dbo].[f_splitSTR]<br />
+GO<br />
+<br />
+--3.2.1 循环截取法<br />
+CREATE FUNCTION f_splitSTR(<br />
+@s   varchar(8000),   --待分拆的字符串<br />
+@split varchar(10)     --数据分隔符<br />
+)RETURNS @re TABLE(col varchar(100))<br />
+AS<br />
+BEGIN<br />
+    DECLARE @splitlen int<br />
+    SET @splitlen=LEN(@split+'a')-2<br />
+    WHILE CHARINDEX(@split,@s)>0<br />
+    BEGIN<br />
+        INSERT @re VALUES(LEFT(@s,CHARINDEX(@split,@s)-1))<br />
+        SET @s=STUFF(@s,1,CHARINDEX(@split,@s)+@splitlen,'')<br />
+    END<br />
+    INSERT @re VALUES(@s)<br />
+    RETURN<br />
+END<br />
+declare @str as varchar(8000) <br />
+set @str='1-101,2-201,3-306,4-405,5-501,6-602' <br />
+declare @key as datetime <br />
+set @key ='2009/08/12' <br />
+declare @t table <br />
+( <br />
+Day datetime <br />
+,A varchar(10) <br />
+,B int <br />
+)<br />
+insert into @t(A) <br />
+select * from  dbo.f_splitSTR(@str,',')<br />
+update @t<br />
+set Day=@key,,<br />
+   A=LEFT(a,1)<br />
+   ,B=RIGHT(a,3)<br />
+ select * from @t <br />
+ /*<br />
+ <br />
+(6 行受影响)<br />
+<br />
+(6 行受影响)<br />
+Day                     A          B<br />
+----------------------- ---------- -----------<br />
+2009-08-12 00:00:00.000 1          101<br />
+2009-08-12 00:00:00.000 2          201<br />
+2009-08-12 00:00:00.000 3          306<br />
+2009-08-12 00:00:00.000 4          405<br />
+2009-08-12 00:00:00.000 5          501<br />
+2009-08-12 00:00:00.000 6          602<br />
+<br />
+(6 行受影响)<br />
+<br />
+<br />
+ */<br />
+<br />
+<br />
+<br />
+DECLARE @T TABLE (序号 int,数据 varchar(3))<br />
+INSERT INTO @T<br />
+SELECT 1,'x1' UNION ALL<br />
+SELECT 2,'x2' UNION ALL<br />
+SELECT 3,'x3' UNION ALL<br />
+SELECT 4,'x4' UNION ALL<br />
+SELECT 5,'x5'  union all<br />
+select 6,'x6' union all<br />
+SELECT 7,'x7' UNION ALL<br />
+SELECT 8,'x8' UNION ALL<br />
+SELECT 9,'x9' UNION ALL<br />
+SELECT 10,'x10' UNION ALL<br />
+SELECT 11,'x11' UNION ALL<br />
+SELECT 12,'x12' <br />
+<br />
+SELECT <br />
+*<br />
+FROM <br />
+   (SELECT * FROM @T WHERE ((序号 - 1) / 3) % 2 = 0) AS A<br />
+LEFT JOIN <br />
+   (SELECT * FROM @T WHERE ((序号 - 1) / 3) % 2 = 1 ) AS B<br />
+ON <br />
+   (A.序号 - 1) / 3 = (B.序号 - 1) / 3 -1 AND (A.序号 - 1) % 3 = (B.序号 - 1) % 3<br />
+<br />
+/*序号          数据   序号          数据<br />
+----------- ---- ----------- ----<br />
+1           x1   4           x4<br />
+2           x2   5           x5<br />
+3           x3   6           x6<br />
+7           x7   10          x10<br />
+8           x8   11          x11<br />
+9           x9   12          x12<br />
+<br />
+(6 行受影响)<br />
+*/<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:32

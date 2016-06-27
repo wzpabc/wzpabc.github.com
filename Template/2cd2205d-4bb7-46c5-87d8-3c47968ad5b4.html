@@ -1,0 +1,189 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>USE master<br />
+GO<br />
+<br />
+IF DB_ID('Sample_DB') IS NOT NULL <br />
+    DROP DATABASE Sample_DB<br />
+	<br />
+CREATE DATABASE Sample_DB ON PRIMARY<br />
+(<br />
+	NAME=N'Sample_DB',FILENAME=N'C:\SQLData\Sample_DB.mdf',<br />
+	SIZE=3072KB,FILEGROWTH=1024KB<br />
+) LOG ON<br />
+(<br />
+	NAME =N'Sample_DB_log',FILENAME=N'C:\SQLData\Sample_DB_log.ldf',<br />
+	SIZE=1024KB ,FILEGROWTH=10%<br />
+)<br />
+GO<br />
+<br />
+<br />
+USE Sample_DB<br />
+GO<br />
+CREATE PARTITION FUNCTION pf_Quaterly_RangeRight(DATETIME)<br />
+AS RANGE RIGHT FOR VALUES<br />
+('20110101','20110401','20110701','20111001','20120101')<br />
+GO<br />
+<br />
+CREATE PARTITION SCHEME ps_Quaterly_RangeRight<br />
+AS PARTITION pf_Quaterly_RangeRight ALL TO ([PRIMARY])<br />
+GO<br />
+<br />
+<br />
+--创建一个表tbl_MyData并插入275000行数据<br />
+USE Sample_DB<br />
+GO<br />
+<br />
+CREATE TABLE tbl_MyData<br />
+    (<br />
+      RecordDateTime DATETIME NOT NULL ,<br />
+      RecordID INT NOT NULL ,<br />
+      RecordData VARCHAR(40) NOT NULL<br />
+    )<br />
+GO<br />
+<br />
+CREATE CLUSTERED INDEX idx_tbl_MyData_RecordDateTime<br />
+ON tbl_MyData(RecordDateTime,RecordID) ON ps_Quaterly_RangeRight(RecordDateTime)<br />
+<br />
+INSERT  INTO tbl_MyData<br />
+        SELECT  '2011' + RIGHT('0' + CAST(( CASE WHEN ID % 12 = 0 THEN 12<br />
+                                                 ELSE ID % 12<br />
+                                            END ) AS VARCHAR), 2) + RIGHT('0'<br />
+                                                              + CAST(( CASE<br />
+                                                              WHEN ID % 28 = 0<br />
+                                                              THEN 28<br />
+                                                              ELSE ID % 28<br />
+                                                              END ) AS VARCHAR),<br />
+                                                              2) AS RecordDateTime ,<br />
+                ID ,<br />
+                RecordData<br />
+        FROM    ( SELECT TOP 275000<br />
+                            ID = ROW_NUMBER() OVER ( ORDER BY c1.name ) ,<br />
+                            RecordData = NEWID()<br />
+                  FROM      sys.columns AS C1<br />
+                            CROSS JOIN sys.columns AS C2<br />
+                            CROSS JOIN sys.columns AS C3<br />
+                ) AS T<br />
+GO<br />
+<br />
+--检验分区数量<br />
+USE Sample_DB<br />
+GO<br />
+<br />
+SELECT  partition_number ,<br />
+        rows<br />
+FROM    sys.partitions<br />
+WHERE   object_id = OBJECT_ID('tbl_MyData')<br />
+ORDER BY partition_number<br />
+<br />
+<br />
+--移除2011年第一个季度也就是分区1的数据<br />
+USE Sample_DB<br />
+GO<br />
+<br />
+IF OBJECT_ID('tbl_MyStagingData') IS NOT NULL <br />
+    DROP TABLE tbl_MyStagingData<br />
+<br />
+CREATE TABLE tbl_MyStagingData<br />
+    (<br />
+      RecordDateTime DATETIME NOT NULL ,<br />
+      RecordID INT NOT NULL ,<br />
+      RecordData VARCHAR(40) NOT NULL<br />
+    )<br />
+GO<br />
+<br />
+CREATE CLUSTERED INDEX idx_tbl_MyStagingData_RecordDateTime ON tbl_MyStagingData(RecordDateTime,RecordID)<br />
+GO<br />
+<br />
+<br />
+--切换tbl_MyData的分区2到分期表tbl_MyStagingData并清空分期表<br />
+USE Sample_DB<br />
+GO<br />
+<br />
+ALTER TABLE tbl_MyData<br />
+SWITCH PARTITION 2 TO tbl_MyStagingData PARTITION 1<br />
+GO<br />
+TRUNCATE TABLE tbl_MyStagingData<br />
+GO<br />
+<br />
+----检查分区数据<br />
+SELECT  partition_number ,<br />
+        rows<br />
+FROM    sys.partitions<br />
+WHERE   object_id = OBJECT_ID('tbl_MyData')<br />
+ORDER BY partition_number<br />
+<br />
+--把分区2与分区1合并<br />
+USE Sample_DB<br />
+GO<br />
+<br />
+ALTER PARTITION FUNCTION pf_Quaterly_RangeRight()<br />
+MERGE RANGE ('20110101')<br />
+GO<br />
+<br />
+ALTER PARTITION SCHEME ps_Quaterly_RangeRight<br />
+NEXT USED [PRIMARY]<br />
+<br />
+--检查分区数据<br />
+SELECT  partition_number ,<br />
+        rows<br />
+FROM    sys.partitions<br />
+WHERE   object_id = OBJECT_ID('tbl_MyData')<br />
+ORDER BY partition_number<br />
+<br />
+<br />
+USE Sample_DB<br />
+GO<br />
+<br />
+ALTER TABLE tbl_MyStagingData<br />
+ADD CONSTRAINT ck_tbl_MyStagingData_RecordDateTime<br />
+CHECK (RecordDateTime>='20120101' AND RecordDateTime<'20120401')<br />
+<br />
+INSERT  INTO tbl_MyStagingData<br />
+        SELECT  '2012' + RIGHT('0' + CAST(( CASE WHEN ID % 3 = 0 THEN 3<br />
+                                                 ELSE ID % 3<br />
+                                            END ) AS VARCHAR), 2) + RIGHT('0'<br />
+                                                              + CAST(( CASE<br />
+                                                              WHEN ID % 28 = 0<br />
+                                                              THEN 28<br />
+                                                              ELSE ID % 28<br />
+                                                              END ) AS VARCHAR),<br />
+                                                              2) AS RecordDateTime ,<br />
+                ID ,<br />
+                RecordData<br />
+        FROM    ( SELECT TOP 275000<br />
+                            ID = ROW_NUMBER() OVER ( ORDER BY c1.name ) ,<br />
+                            RecordData = NEWID()<br />
+                  FROM      sys.columns AS C1<br />
+                            CROSS JOIN sys.columns AS C2<br />
+                            CROSS JOIN sys.columns AS C3<br />
+                ) AS T<br />
+GO<br />
+<br />
+<br />
+--通过拆分最后一个空的分区来创建一个新的分区，拆分后，把分区tbl_MyStagingData切换到tbl_MyData的分区5中，并设置下一个分区架构使用Primary<br />
+USE Sample_DB<br />
+GO<br />
+<br />
+ALTER PARTITION FUNCTION pf_Quaterly_RangeRight()<br />
+SPLIT RANGE ('20120401')<br />
+GO<br />
+<br />
+ALTER TABLE tbl_MyStagingData<br />
+SWITCH PARTITION 1 TO tbl_MyData PARTITION 5<br />
+<br />
+<br />
+ALTER PARTITION SCHEME ps_Quaterly_RangeRight<br />
+NEXT USED [PRIMARY]<br />
+GO<br />
+<br />
+--验证一下数据<br />
+USE Sample_DB<br />
+GO<br />
+<br />
+<br />
+SELECT  partition_number ,<br />
+        rows<br />
+FROM    sys.partitions<br />
+WHERE   object_id = OBJECT_ID('tbl_MyData')<br />
+ORDER BY partition_number<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:07

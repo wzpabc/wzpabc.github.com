@@ -1,0 +1,74 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--USE tempdb<br />
+--GO<br />
+----检查表是否存在<br />
+--IF OBJECT_ID('[dbo].[tbl_TempDBStats]') IS NOT NULL <br />
+--    DROP TABLE [dbo].[tbl_TempDBStats]<br />
+----创建表用于存放页分配的明细<br />
+--CREATE TABLE [dbo].[tbl_TempDBStats]<br />
+--    (<br />
+--      session_id SMALLINT ,<br />
+--      database_id SMALLINT ,<br />
+--      user_objects_alloc_page_count BIGINT ,<br />
+--      user_objects_dealloc_page_count BIGINT ,<br />
+--      internal_objects_alloc_page_count BIGINT ,<br />
+--      internal_objects_dealloc_page_count BIGINT<br />
+--    )<br />
+--GO<br />
+----收集当前会话在执行查询之前的分配明细<br />
+--INSERT  INTO [dbo].[tbl_TempDBStats]<br />
+--        SELECT  session_id ,<br />
+--                database_id ,<br />
+--                user_objects_alloc_page_count ,<br />
+--                user_objects_dealloc_page_count ,<br />
+--                internal_objects_alloc_page_count ,<br />
+--                internal_objects_dealloc_page_count<br />
+--        FROM    sys.dm_db_session_space_usage<br />
+--        WHERE   session_id = @@SPID<br />
+--GO<br />
+----检查表是否存在<br />
+--IF OBJECT_ID('TempDB.dbo.#tbl_SampleData') IS NOT NULL <br />
+--    DROP TABLE TempDB.dbo.#tbl_SampleData<br />
+--GO<br />
+----产生万数据并插入临时表<br />
+--SELECT TOP 10000000<br />
+--        SC1.object_id ,<br />
+--        SC1.column_id ,<br />
+--        SC1.name ,<br />
+--        SC1.system_type_id<br />
+--INTO    TempDB.dbo.#tbl_SampleData<br />
+--FROM    sys.columns AS SC1<br />
+--        CROSS JOIN sys.columns AS SC2<br />
+--        CROSS JOIN sys.columns AS SC3<br />
+--ORDER BY SC1.column_id<br />
+--GO<br />
+<br />
+----重新收集插入数据后的数据页分配情况<br />
+--INSERT  INTO [dbo].[tbl_TempDBStats]<br />
+--        SELECT  session_id ,<br />
+--                database_id ,<br />
+--                user_objects_alloc_page_count ,<br />
+--                user_objects_dealloc_page_count ,<br />
+--                internal_objects_alloc_page_count ,<br />
+--                internal_objects_dealloc_page_count<br />
+--        FROM    sys.dm_db_session_space_usage<br />
+--        WHERE   session_id = @@SPID<br />
+<br />
+<br />
+--查找Tempdb分配情况<br />
+SELECT  DB_NAME(FSU.database_id) AS DatabaseName ,<br />
+        MF.name AS LogicalFileName ,<br />
+        MF.physical_name AS PhysicalFilePath ,<br />
+        SUM(FSU.unallocated_extent_page_count) * 8.0 / 1024 AS Free_Space_In_MB ,<br />
+        SUM(FSU.version_store_reserved_page_count<br />
+            + FSU.user_object_reserved_page_count<br />
+            + FSU.internal_object_reserved_page_count<br />
+            + FSU.mixed_extent_page_count) * 8.0 / 1024 AS Used_Space_In_MB<br />
+FROM    sys.dm_db_file_space_usage AS FSU<br />
+        INNER JOIN sys.master_files AS MF ON FSU.database_id = MF.database_id<br />
+                                             AND FSU.file_id = MF.file_id<br />
+GROUP BY FSU.database_id ,<br />
+        FSU.file_id ,<br />
+        MF.name ,<br />
+        MF.physical_name<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:32

@@ -1,0 +1,64 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--1. 按拼音排序<br />
+DECLARE @t TABLE(col varchar(2))<br />
+INSERT @t SELECT '中'<br />
+UNION ALL SELECT '国'<br />
+UNION ALL SELECT '人'<br />
+<br />
+SELECT * FROM @t ORDER BY col COLLATE Chinese_PRC_CS_AS_KS_WS<br />
+/*--结果<br />
+col  <br />
+---- <br />
+国<br />
+人<br />
+中<br />
+--*/<br />
+GO<br />
+<br />
+<br />
+/*==========================================*/<br />
+<br />
+<br />
+--2. 汉字首字母查询处理用户定义函数<br />
+CREATE FUNCTION f_GetPY(@str nvarchar(4000))<br />
+RETURNS nvarchar(4000)<br />
+AS<br />
+BEGIN<br />
+    DECLARE @py TABLE(<br />
+        ch char(1),<br />
+        hz1 nchar(1) COLLATE Chinese_PRC_CS_AS_KS_WS,<br />
+        hz2 nchar(1) COLLATE Chinese_PRC_CS_AS_KS_WS)<br />
+    INSERT @py SELECT 'A',N'吖',N'鏊'<br />
+    UNION  ALL SELECT 'B',N'八',N'簿'<br />
+    UNION  ALL SELECT 'C',N'嚓',N'错'<br />
+    UNION  ALL SELECT 'D',N'哒',N'跺'<br />
+    UNION  ALL SELECT 'E',N'屙',N'贰'<br />
+    UNION  ALL SELECT 'F',N'发',N'馥'<br />
+    UNION  ALL SELECT 'G',N'旮',N'过'<br />
+    UNION  ALL SELECT 'H',N'铪',N'蠖'<br />
+    UNION  ALL SELECT 'J',N'丌',N'竣'<br />
+    UNION  ALL SELECT 'K',N'咔',N'廓'<br />
+    UNION  ALL SELECT 'L',N'垃',N'雒'<br />
+    UNION  ALL SELECT 'M',N'妈',N'穆'<br />
+    UNION  ALL SELECT 'N',N'拿',N'糯'<br />
+    UNION  ALL SELECT 'O',N'噢',N'沤'<br />
+    UNION  ALL SELECT 'P',N'趴',N'曝'<br />
+    UNION  ALL SELECT 'Q',N'七',N'群'<br />
+    UNION  ALL SELECT 'R',N'蚺',N'箬'<br />
+    UNION  ALL SELECT 'S',N'仨',N'锁'<br />
+    UNION  ALL SELECT 'T',N'他',N'箨'<br />
+    UNION  ALL SELECT 'W',N'哇',N'鋈'<br />
+    UNION  ALL SELECT 'X',N'夕',N'蕈'<br />
+    UNION  ALL SELECT 'Y',N'丫',N'蕴'<br />
+    UNION  ALL SELECT 'Z',N'匝',N'做'<br />
+    DECLARE @i int<br />
+    SET @i=PATINDEX('%[吖-做]%' COLLATE Chinese_PRC_CS_AS_KS_WS,@str)<br />
+    WHILE @i>0<br />
+        SELECT @str=REPLACE(@str,SUBSTRING(@str,@i,1),ch)<br />
+            ,@i=PATINDEX('%[吖-做]%' COLLATE Chinese_PRC_CS_AS_KS_WS,@str)<br />
+        FROM @py<br />
+        WHERE SUBSTRING(@str,@i,1) BETWEEN hz1 AND hz2<br />
+    RETURN(@str)<br />
+END<br />
+GO<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:08

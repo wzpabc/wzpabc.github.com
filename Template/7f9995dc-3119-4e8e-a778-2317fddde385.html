@@ -1,0 +1,206 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--> Title  : MSSQL計算表達式的值常見解決方案<br />
+<br />
+--> Author : wufeng4552<br />
+<br />
+--> Date   : 2009-11-25 08:15:08<br />
+<br />
+if object_id('[tb]') is not null drop table [tb]<br />
+<br />
+go<br />
+<br />
+create table [tb] (ID int,val nvarchar(14))<br />
+<br />
+insert into [tb]<br />
+<br />
+select 1,'1*5' union all<br />
+<br />
+select 2,'1+5' union all<br />
+<br />
+select 3,'1.0/5' union all<br />
+<br />
+select 4,'1/5' union all<br />
+<br />
+select 5,'2*5+3' union all<br />
+<br />
+select 6,'(8-5)*3'<br />
+<br />
+--方法1 動態T-SQL<br />
+<br />
+declare @sql varchar(8000)<br />
+<br />
+set @sql=''<br />
+<br />
+select @sql=@sql+'select ID='+ltrim(ID)+', val='+val+' union all ' from tb<br />
+<br />
+set @sql=left(@sql,len(@sql)-10)<br />
+<br />
+exec(@sql)<br />
+<br />
+-->查詢結果<br />
+<br />
+/*<br />
+<br />
+ID          val<br />
+<br />
+----------- ---------------------------------------<br />
+<br />
+1           5.000000<br />
+<br />
+2           6.000000<br />
+<br />
+3           0.200000<br />
+<br />
+4           0.000000<br />
+<br />
+5           13.000000<br />
+<br />
+6           9.000000<br />
+<br />
+(6 個資料列受到影響)<br />
+<br />
+*/<br />
+<br />
+--方法2 游標<br />
+<br />
+declare @t table(ID int, val dec(18,2))<br />
+<br />
+declare @s varchar(50),@id int <br />
+<br />
+declare cur cursor for select ID,val from tb<br />
+<br />
+open cur <br />
+<br />
+fetch next from cur into @id,@s<br />
+<br />
+while @@fetch_status=0<br />
+<br />
+begin<br />
+<br />
+    insert @t exec('select '+@ID+','+@s)<br />
+<br />
+    fetch next from cur into @id,@s<br />
+<br />
+end<br />
+<br />
+close cur<br />
+<br />
+deallocate cur <br />
+<br />
+select * from @t<br />
+<br />
+/*<br />
+<br />
+ID          val<br />
+----------- ---------------------------------------<br />
+1           5.00<br />
+2           6.00<br />
+3           0.20<br />
+4           0.00<br />
+5           13.00<br />
+6           9.00<br />
+<br />
+(6 個資料列受到影響)<br />
+<br />
+*/<br />
+<br />
+--方法3 函數<br />
+<br />
+if object_id('f_calc')is not null drop function f_calc<br />
+<br />
+go<br />
+<br />
+create function f_calc(<br />
+<br />
+@str varchar(1000)--要计 oa的表达 |?<br />
+<br />
+)returns sql_variant<br />
+<br />
+as<br />
+<br />
+begin<br />
+<br />
+declare @re sql_variant<br />
+<br />
+declare @err int,@src varchar(255),@desc varchar(255)<br />
+<br />
+declare @obj int<br />
+<br />
+exec @err=sp_oacreate 'MSScriptControl.ScriptControl',@obj out<br />
+<br />
+if @err<>0 goto lb_err<br />
+<br />
+exec @err=sp_oasetproperty @obj,'Language','vbscript'<br />
+<br />
+if @err<>0 goto lb_err<br />
+<br />
+exec @err=sp_oamethod @obj,'Eval',@re out,@str<br />
+<br />
+if @err=0 return(@re)<br />
+<br />
+lb_err:<br />
+<br />
+exec sp_oageterrorinfo NULL, @src out, @desc out <br />
+<br />
+declare @errb varbinary(4),@s varchar(20)<br />
+<br />
+set @errb=cast(@err as varbinary(4))<br />
+<br />
+exec master..xp_varbintohexstr @errb,@s out<br />
+<br />
+return(N'错誤号 '+@s+char(13)+N'错誤源: '+@src+char(13)+N'错误描述: '+@desc)<br />
+<br />
+end<br />
+<br />
+go<br />
+<br />
+--以上方法要啟用OLE Automation Procedures 方法如下<br />
+<br />
+sp_configure 'show advanced options', 1;<br />
+<br />
+GO<br />
+<br />
+RECONFIGURE;<br />
+<br />
+GO<br />
+<br />
+sp_configure 'Ole Automation Procedures', 1;<br />
+<br />
+GO<br />
+<br />
+RECONFIGURE;<br />
+<br />
+GO<br />
+<br />
+select ID,<br />
+<br />
+       dbo.f_calc(val)val<br />
+<br />
+from tb<br />
+<br />
+/*<br />
+<br />
+ID          val<br />
+<br />
+----------- --------------<br />
+<br />
+1           5<br />
+<br />
+2           6<br />
+<br />
+3           .2<br />
+<br />
+4           .2<br />
+<br />
+5           13<br />
+<br />
+6           9<br />
+<br />
+(6 個資料列受到影響)<br />
+<br />
+*/<br />
+<br />
+<br />
+<br />
+本文来自CSDN博客，转载请标明出处：http://blog.csdn.net/wufeng4552/archive/2009/11/25/4868138.aspx<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:31

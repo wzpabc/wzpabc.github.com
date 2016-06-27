@@ -1,0 +1,395 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>表a <br />
+name    num <br />
+aa      1 <br />
+bb      2 <br />
+cc      4 <br />
+dd      4 <br />
+ee      2 <br />
+<br />
+求一条语句实现如下 <br />
+name <br />
+aa,bb,cc,dd,ee <br />
+<br />
+谢谢！<br />
+<br />
+DECLARE @STR VARCHAR(8000)<br />
+<br />
+SELECT @STR=ISNULL(@STR+',','')+name FROM (SELECT DISTINCT NAME FROM A)AS T<br />
+<br />
+SELECT @STR<br />
+<br />
+<br />
+SQL code问题描述：<br />
+无论是在sql 2000，还是在 sql 2005 中,都没有提供字符串的聚合函数，<br />
+  所以，当我们在处理下列要求时，会比较麻烦：<br />
+有表tb, 如下：<br />
+id    value<br />
+----- ------<br />
+1     aa<br />
+1     bb<br />
+2     aaa<br />
+2     bbb<br />
+2     ccc<br />
+需要得到结果：<br />
+id     values<br />
+------ -----------<br />
+1      aa,bb<br />
+2      aaa,bbb,ccc<br />
+即， group by id, 求 value 的和（字符串相加）<br />
+<br />
+1. 旧的解决方法<br />
+<br />
+-- 1. 创建处理函数<br />
+CREATE FUNCTION dbo.f_str(@id int)<br />
+RETURNS varchar(8000)<br />
+AS<br />
+BEGIN<br />
+    DECLARE @r varchar(8000)<br />
+    SET @r = ''<br />
+    SELECT @r = @r + ',' + value<br />
+    FROM tb<br />
+    WHERE id=@id<br />
+    RETURN STUFF(@r, 1, 1, '')<br />
+END<br />
+GO<br />
+-- 调用函数<br />
+<br />
+SELECt id, values=dbo.f_str(id) <br />
+FROM tb <br />
+GROUP BY id<br />
+<br />
+-- 2. 新的解决方法 <br />
+-- 示例数据<br />
+DECLARE @t TABLE(id int, value varchar(10))<br />
+INSERT @t SELECT 1, 'aa'<br />
+UNION ALL SELECT 1, 'bb'<br />
+UNION ALL SELECT 2, 'aaa'<br />
+UNION ALL SELECT 2, 'bbb'<br />
+UNION ALL SELECT 2, 'ccc'<br />
+<br />
+-- 查询处理<br />
+SELECT *<br />
+FROM(<br />
+    SELECT DISTINCT <br />
+        id<br />
+    FROM @t<br />
+)A<br />
+OUTER APPLY(<br />
+    SELECT <br />
+        [values]= STUFF(REPLACE(REPLACE(<br />
+            (<br />
+                SELECT value FROM @t N<br />
+                WHERE id = A.id<br />
+                FOR XML AUTO<br />
+            ), '<N value="', ','), '"/>', ''), 1, 1, '')<br />
+)N<br />
+<br />
+/*--结果<br />
+id          values<br />
+----------- ----------------<br />
+1           aa,bb<br />
+2           aaa,bbb,ccc<br />
+(2 行受影响)<br />
+--*/<br />
+<br />
+--各种字符串分函数<br />
+<br />
+--3.3.1 使用游标法进行字符串合并处理的示例。<br />
+--处理的数据<br />
+CREATE TABLE tb(col1 varchar(10),col2 int)<br />
+INSERT tb SELECT 'a',1<br />
+UNION ALL SELECT 'a',2<br />
+UNION ALL SELECT 'b',1<br />
+UNION ALL SELECT 'b',2<br />
+UNION ALL SELECT 'b',3<br />
+<br />
+--合并处理<br />
+--定义结果集表变量<br />
+DECLARE @t TABLE(col1 varchar(10),col2 varchar(100))<br />
+<br />
+--定义游标并进行合并处理<br />
+DECLARE tb CURSOR LOCAL<br />
+FOR<br />
+SELECT col1,col2 FROM tb ORDER BY  col1,col2<br />
+DECLARE @col1_old varchar(10),@col1 varchar(10),@col2 int,@s varchar(100)<br />
+OPEN tb<br />
+FETCH tb INTO @col1,@col2<br />
+SELECT @col1_old=@col1,@s=''<br />
+WHILE @@FETCH_STATUS=0<br />
+BEGIN<br />
+    IF @col1=@col1_old<br />
+        SELECT @s=@s+','+CAST(@col2 as varchar)<br />
+    ELSE<br />
+    BEGIN<br />
+        INSERT @t VALUES(@col1_old,STUFF(@s,1,1,''))<br />
+        SELECT @s=','+CAST(@col2 as varchar),@col1_old=@col1<br />
+    END<br />
+    FETCH tb INTO @col1,@col2<br />
+END<br />
+INSERT @t VALUES(@col1_old,STUFF(@s,1,1,''))<br />
+CLOSE tb<br />
+DEALLOCATE tb<br />
+--显示结果并删除测试数据<br />
+SELECT * FROM @t<br />
+DROP TABLE tb<br />
+/*--结果<br />
+col1       col2<br />
+---------- -----------<br />
+a          1,2<br />
+b          1,2,3<br />
+--*/<br />
+GO<br />
+<br />
+<br />
+/*==============================================*/<br />
+<br />
+<br />
+--3.3.2 使用用户定义函数，配合SELECT处理完成字符串合并处理的示例<br />
+--处理的数据<br />
+CREATE TABLE tb(col1 varchar(10),col2 int)<br />
+INSERT tb SELECT 'a',1<br />
+UNION ALL SELECT 'a',2<br />
+UNION ALL SELECT 'b',1<br />
+UNION ALL SELECT 'b',2<br />
+UNION ALL SELECT 'b',3<br />
+GO<br />
+<br />
+--合并处理函数<br />
+CREATE FUNCTION dbo.f_str(@col1 varchar(10))<br />
+RETURNS varchar(100)<br />
+AS<br />
+BEGIN<br />
+    DECLARE @re varchar(100)<br />
+    SET @re=''<br />
+    SELECT @re=@re+','+CAST(col2 as varchar)<br />
+    FROM tb<br />
+    WHERE col1=@col1<br />
+    RETURN(STUFF(@re,1,1,''))<br />
+END<br />
+GO<br />
+<br />
+--调用函数<br />
+SELECT col1,col2=dbo.f_str(col1) FROM tb GROUP BY col1<br />
+--删除测试<br />
+DROP TABLE tb<br />
+DROP FUNCTION f_str<br />
+/*--结果<br />
+col1       col2<br />
+---------- -----------<br />
+a          1,2<br />
+b          1,2,3<br />
+--*/<br />
+GO<br />
+<br />
+/*==============================================*/<br />
+<br />
+<br />
+--3.3.3 使用临时表实现字符串合并处理的示例<br />
+--处理的数据<br />
+CREATE TABLE tb(col1 varchar(10),col2 int)<br />
+INSERT tb SELECT 'a',1<br />
+UNION ALL SELECT 'a',2<br />
+UNION ALL SELECT 'b',1<br />
+UNION ALL SELECT 'b',2<br />
+UNION ALL SELECT 'b',3<br />
+<br />
+--合并处理<br />
+SELECT col1,col2=CAST(col2 as varchar(100)) <br />
+INTO #t FROM tb<br />
+ORDER BY col1,col2<br />
+DECLARE @col1 varchar(10),@col2 varchar(100)<br />
+UPDATE #t SET <br />
+    @col2=CASE WHEN @col1=col1 THEN @col2+','+col2 ELSE col2 END,<br />
+    @col1=col1,<br />
+    col2=@col2<br />
+SELECT * FROM #t<br />
+/*--更新处理后的临时表<br />
+col1       col2<br />
+---------- -------------<br />
+a          1<br />
+a          1,2<br />
+b          1<br />
+b          1,2<br />
+b          1,2,3<br />
+--*/<br />
+--得到最终结果<br />
+SELECT col1,col2=MAX(col2) FROM #t GROUP BY col1<br />
+/*--结果<br />
+col1       col2<br />
+---------- -----------<br />
+a          1,2<br />
+b          1,2,3<br />
+--*/<br />
+--删除测试<br />
+DROP TABLE tb,#t<br />
+GO<br />
+<br />
+<br />
+/*==============================================*/<br />
+<br />
+--3.3.4.1 每组 <=2 条记录的合并<br />
+--处理的数据<br />
+CREATE TABLE tb(col1 varchar(10),col2 int)<br />
+INSERT tb SELECT 'a',1<br />
+UNION ALL SELECT 'a',2<br />
+UNION ALL SELECT 'b',1<br />
+UNION ALL SELECT 'b',2<br />
+UNION ALL SELECT 'c',3<br />
+<br />
+--合并处理<br />
+SELECT col1,<br />
+    col2=CAST(MIN(col2) as varchar)<br />
+        +CASE <br />
+            WHEN COUNT(*)=1 THEN ''<br />
+            ELSE ','+CAST(MAX(col2) as varchar)<br />
+        END<br />
+FROM tb<br />
+GROUP BY col1<br />
+DROP TABLE tb<br />
+/*--结果<br />
+col1       col2      <br />
+---------- ----------<br />
+a          1,2<br />
+b          1,2<br />
+c          3<br />
+--*/<br />
+<br />
+--3.3.4.2 每组 <=3 条记录的合并<br />
+--处理的数据<br />
+CREATE TABLE tb(col1 varchar(10),col2 int)<br />
+INSERT tb SELECT 'a',1<br />
+UNION ALL SELECT 'a',2<br />
+UNION ALL SELECT 'b',1<br />
+UNION ALL SELECT 'b',2<br />
+UNION ALL SELECT 'b',3<br />
+UNION ALL SELECT 'c',3<br />
+<br />
+--合并处理<br />
+SELECT col1,<br />
+    col2=CAST(MIN(col2) as varchar)<br />
+        +CASE <br />
+            WHEN COUNT(*)=3 THEN ','<br />
+                +CAST((SELECT col2 FROM tb WHERE col1=a.col1 AND col2 NOT IN(MAX(a.col2),MIN(a.col2))) as varchar)<br />
+            ELSE ''<br />
+        END<br />
+        +CASE <br />
+            WHEN COUNT(*)>=2 THEN ','+CAST(MAX(col2) as varchar)<br />
+            ELSE ''<br />
+        END<br />
+FROM tb a<br />
+GROUP BY col1<br />
+DROP TABLE tb<br />
+/*--结果<br />
+col1       col2<br />
+---------- ------------<br />
+a          1,2<br />
+b          1,2,3<br />
+c          3<br />
+--*/<br />
+GO<br />
+if not object_id('A') is null<br />
+    drop table A<br />
+Go<br />
+Create table A([id] int,[cname] nvarchar(2))<br />
+Insert A<br />
+select 1,N'张三' union all<br />
+select 2,N'李四' union all<br />
+select 3,N'王五' union all<br />
+select 4,N'蔡六'<br />
+Go<br />
+--> --> <br />
+ <br />
+if not object_id('B') is null<br />
+    drop table B<br />
+Go<br />
+Create table B([id] int,[cname] nvarchar(5))<br />
+Insert B<br />
+select 1,N'1,2,3' union all<br />
+select 2,N'3,4'<br />
+Go<br />
+create function F_str(@cname nvarchar(100))<br />
+returns nvarchar(100)<br />
+as<br />
+begin <br />
+select @cname=replace(@cname,ID,[cname]) from A where patindex('%,'+rtrim(ID)+',%',','+@cname+',')>0<br />
+return @cname<br />
+end<br />
+go<br />
+select [id],dbo.F_str([cname])[cname] from B<br />
+<br />
+id          cname<br />
+----------- ----------------------------------------------------------------------------------------------------<br />
+1           张三,李四,王五<br />
+2           王五,蔡六<br />
+<br />
+(2 個資料列受到影響)<br />
+<br />
+<br />
+<br />
+我现在有一字段值为:a,b,c <br />
+分隔符为逗号. <br />
+我现在想实现目地值为: <br />
+字段: <br />
+id  name <br />
+1  a <br />
+2  b <br />
+3  c <br />
+<br />
+在SQL中咋实现呢?<br />
+declare @str varchar(8000) <br />
+<br />
+set @str = 'a1,b1,c2,d1,e3,f5' <br />
+<br />
+set @str =  'select  name='''+replace(@str,',',''''+' union all select ''')+'''' <br />
+<br />
+<br />
+set @str='select id=identity(int,1,1),name into #temp from ('+@str+') a select * from #temp drop table #temp'<br />
+<br />
+exec(@str)<br />
+<br />
+<br />
+--参考:<br />
+CREATE TABLE TB(ID VARCHAR(6), COLOR NVARCHAR(30))<br />
+INSERT TB<br />
+SELECT '173160',  N'#特深蓝色,#特深蓝色' UNION ALL <br />
+SELECT '173160',  N'#特深蓝色,#特深蓝色' UNION ALL <br />
+SELECT '911169',  N'#宝蓝色,#宝蓝色,#花灰色,#花灰色' UNION ALL <br />
+SELECT '911169',  N'#宝蓝色,#宝蓝色,#花灰色,#花灰色' UNION ALL <br />
+SELECT '911169',  N'#宝蓝色,#宝蓝色,#花灰色,#花灰色' UNION ALL <br />
+SELECT '911169',  N'#宝蓝色,#宝蓝色,#花灰色,#花灰色'<br />
+GO<br />
+<br />
+CREATE FUNCTION F_getStr(@color nvarchar(30))<br />
+returns nvarchar(30)<br />
+as<br />
+begin<br />
+  declare @str nvarchar(30),@temp nvarchar(30)<br />
+  set @str=''<br />
+  set @temp=''<br />
+  while charindex(',', @color+',')>0<br />
+  begin<br />
+    set @temp=left(@color, charindex(',', @color+',')-1)<br />
+    if charindex(','+@temp+',', ','+@str+',')=0<br />
+      set @str=@str+','+@temp<br />
+    set @color=stuff(@color, 1, charindex(',', @color+','), '')    <br />
+  end<br />
+  return stuff(@str, 1, 1, '')<br />
+end<br />
+go<br />
+<br />
+SELECT ID,dbo.F_getStr(COLOR) as COLOR FROM TB<br />
+<br />
+DROP TABLE TB<br />
+DROP FUNCTION F_getStr<br />
+/*<br />
+ID     COLOR<br />
+------ ------------------------------<br />
+173160 #特深蓝色<br />
+173160 #特深蓝色<br />
+911169 #宝蓝色,#花灰色<br />
+911169 #宝蓝色,#花灰色<br />
+911169 #宝蓝色,#花灰色<br />
+911169 #宝蓝色,#花灰色<br />
+*/<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:06

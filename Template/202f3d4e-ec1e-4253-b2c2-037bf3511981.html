@@ -1,0 +1,273 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--测试数据   深度排序     <br />
+  DECLARE   @t   TABLE(ID   char(3),PID   char(3),Name   nvarchar(10))   <br />
+  INSERT   @t   SELECT   '001',NULL   ,'山东省'   <br />
+  UNION   ALL   SELECT   '002','001','烟台市'   <br />
+  UNION   ALL   SELECT   '004','002','招远市'   <br />
+  UNION   ALL   SELECT   '003','001','青岛市'   <br />
+  UNION   ALL   SELECT   '005',NULL   ,'四会市'   <br />
+  UNION   ALL   SELECT   '006','005','清远市'   <br />
+  UNION   ALL   SELECT   '007','006','小分市'   <br />
+    <br />
+  --深度排序显示处理   <br />
+  --生成每个节点的编码累计(相同当单编号法的编码)   <br />
+  DECLARE   @t_Level   TABLE(ID   char(3),Level   int,Sort   varchar(8000))   <br />
+  DECLARE   @Level   int   <br />
+  SET   @Level=0   <br />
+  INSERT   @t_Level   SELECT   ID,@Level,ID   <br />
+  FROM   @t   <br />
+  WHERE   PID   IS   NULL   <br />
+  WHILE   @@ROWCOUNT>0   <br />
+  BEGIN   <br />
+  SET   @Level=@Level+1   <br />
+  INSERT   @t_Level   SELECT   a.ID,@Level,b.Sort+a.ID   <br />
+  FROM   @t   a,@t_Level   b   <br />
+  WHERE   a.PID=b.ID   <br />
+  AND   b.Level=@Level-1   <br />
+  END   <br />
+    <br />
+  --显示结果   <br />
+  SELECT   a.*   <br />
+  FROM   @t   a,@t_Level   b   <br />
+  WHERE   a.ID=b.ID   <br />
+  ORDER   BY   b.Sort   <br />
+  /*--结果   <br />
+  ID       PID       Name                 <br />
+  ------   ---------   ----------     <br />
+  001     NULL   山东省   <br />
+  002     001       烟台市   <br />
+  004     002       招远市   <br />
+  003     001       青岛市   <br />
+  005     NULL   四会市   <br />
+  006     005       清远市   <br />
+  007     006       小分市   <br />
+  --*/<br />
+<br />
+--查询指定节点及其所有子节点的函数   <br />
+  CREATE   FUNCTION   f_Cid(@ID   char(3))   <br />
+  RETURNS   @t_Level   TABLE(ID   char(3),Level   int)   <br />
+  AS   <br />
+  BEGIN   <br />
+  DECLARE   @Level   int   <br />
+  SET   @Level=1   <br />
+  INSERT   @t_Level   SELECT   @ID,@Level   <br />
+  WHILE   @@ROWCOUNT>0   <br />
+  BEGIN   <br />
+  SET   @Level=@Level+1   <br />
+  INSERT   @t_Level   SELECT   a.ID,@Level   <br />
+  FROM   tb   a,@t_Level   b   <br />
+  WHERE   a.PID=b.ID   <br />
+  AND   b.Level=@Level-1   <br />
+  END   <br />
+  RETURN   <br />
+  END   <br />
+  GO   <br />
+    <br />
+  --调用函数查询002及其所有子节点   <br />
+  SELECT   a.*   <br />
+  FROM   tb   a,f_Cid('002')   b   <br />
+  WHERE   a.ID=b.ID   <br />
+  /*--结果   <br />
+  ID       PID     Name                 <br />
+  ------   -------   ----------     <br />
+  002     001     烟台市   <br />
+  004     002     招远市   <br />
+  --*/<br />
+<br />
+ <br />
+<br />
+--测试数据<br />
+DECLARE @t TABLE(ID char(3),PID char(3),Name nvarchar(10))<br />
+INSERT @t SELECT '001',NULL ,'山东省'<br />
+UNION ALL SELECT '002','001','烟台市'<br />
+UNION ALL SELECT '004','002','招远市'<br />
+UNION ALL SELECT '003','001','青岛市'<br />
+UNION ALL SELECT '005',NULL ,'四会市'<br />
+UNION ALL SELECT '006','005','清远市'<br />
+UNION ALL SELECT '007','006','小分市'<br />
+<br />
+--深度排序显示处理<br />
+--生成每个节点的编码累计(相同当单编号法的编码)<br />
+DECLARE @t_Level TABLE(ID char(3),Level int,Sort varchar(8000))<br />
+DECLARE @Level int<br />
+SET @Level=0<br />
+INSERT @t_Level SELECT ID,@Level,ID<br />
+FROM @t<br />
+WHERE PID IS NULL<br />
+WHILE @@ROWCOUNT>0<br />
+BEGIN<br />
+    SET @Level=@Level+1<br />
+    INSERT @t_Level SELECT a.ID,@Level,b.Sort+a.ID<br />
+    FROM @t a,@t_Level b<br />
+    WHERE a.PID=b.ID<br />
+        AND b.Level=@Level-1<br />
+END<br />
+<br />
+--显示结果<br />
+SELECT SPACE(b.Level*2)+'|--'+a.Name<br />
+FROM @t a,@t_Level b<br />
+WHERE a.ID=b.ID<br />
+ORDER BY b.Sort<br />
+/*--结果<br />
+|--山东省<br />
+  |--烟台市<br />
+    |--招远市<br />
+  |--青岛市<br />
+|--四会市<br />
+  |--清远市<br />
+    |--小分市<br />
+--*/<br />
+<br />
+<br />
+--树型结构处理之双编号（广度深度排序）<br />
+if OBJECTPROPERTY(object_id('tb'),'isusertable')<>0 <br />
+  drop table tb<br />
+create table tb(ybh nvarchar(10),ebh nvarchar(10),beizhu nvarchar(1000))<br />
+insert tb<br />
+select '0001',null,'云南省'<br />
+union all select '0002','0001','昆明市'<br />
+union all select '0003','0001','昭通市'<br />
+union all select '0009','0001','大理市'<br />
+union all select '0008',null,'四川省'<br />
+union all select '0004',null,'贵州省'<br />
+union all select '0005','0002','五华区'<br />
+union all select '0007','0002','水富县'<br />
+union all select '0006','0005','西园路192号'<br />
+union all select '0010','0006','金色梧桐3-702'<br />
+union all select '0011','0010','昆明越科时空科技有限公司'<br />
+union all select '0015','0007','两碗乡'<br />
+union all select '0013','0015','两碗村'<br />
+union all select '0012','0013','某跨国集团董事长'<br />
+union all select '0014','0008','成都市'<br />
+<br />
+  <br />
+  --深度排序（模拟单编码法)<br />
+   declare @level_tt table(ybh nvarchar(1000),ebh nvarchar(1000),level int)<br />
+  declare @level int<br />
+  set @level=0<br />
+  insert @level_tt(ybh,ebh,level)<br />
+  select ybh,ybh,@level from tb where ebh is null<br />
+  while @@ROWCOUNT>0<br />
+  begin <br />
+          set @level=@level+1<br />
+          insert @level_tt(ybh,ebh,level)<br />
+          select a.ybh,b.ebh+a.ybh,@level<br />
+            from tb a,@level_tt b<br />
+            where a.ebh=b.ybh and b.level=@level-1<br />
+ end<br />
+select space(b.level*2)+'----'+a.beizhu,a.*,b.*<br />
+  from tb a,@level_tt b<br />
+  where a.ybh=b.ybh<br />
+  order by b.ebh<br />
+/*<br />
+(结果)    ybh    ebh    beizhu    ybh    ebh    level<br />
+----云南省    0001    NULL    云南省    0001    0001    0<br />
+  ----昆明市    0002    0001    昆明市    0002    00010002    1<br />
+    ----五华区    0005    0002    五华区    0005    000100020005    2<br />
+      ----西园路192号    0006    0005    西园路192号    0006    0001000200050006    3<br />
+        ----金色梧桐3-702    0010    0006    金色梧桐3-702    0010    00010002000500060010    4<br />
+          ----昆明越科时空科技有限公司    0011    0010    昆明越科时空科技有限公司    0011    000100020005000600100011    5<br />
+    ----水富县    0007    0002    水富县    0007    000100020007    2<br />
+      ----两碗乡    0015    0007    两碗乡    0015    0001000200070015    3<br />
+        ----两碗村    0013    0015    两碗村    0013    00010002000700150013    4<br />
+          ----某跨国集团董事长    0012    0013    某跨国集团董事长    0012    000100020007001500130012    5<br />
+  ----昭通市    0003    0001    昭通市    0003    00010003    1<br />
+  ----大理市    0009    0001    大理市    0009    00010009    1<br />
+----贵州省    0004    NULL    贵州省    0004    0004    0<br />
+----四川省    0008    NULL    四川省    0008    0008    0<br />
+  ----成都市    0014    0008    成都市    0014    00080014    1<br />
+  */<br />
+  <br />
+  --查找子节点（包括本身节点和子节点)<br />
+ declare @level_tt table(ybh nvarchar(1000),ebh nvarchar(1000),level int)<br />
+  declare @level int<br />
+  set @level=0<br />
+  insert @level_tt(ybh,ebh,level)<br />
+  select ybh,ybh,@level from tb where ybh='0005'<br />
+  while @@ROWCOUNT>0<br />
+  begin <br />
+          set @level=@level+1<br />
+          insert @level_tt(ybh,ebh,level)<br />
+          select a.ybh,b.ebh+a.ybh,@level<br />
+            from tb a,@level_tt b<br />
+            where a.ebh=b.ybh and b.level=@level-1<br />
+ end<br />
+select space(b.level*2)+'----'+a.beizhu,a.*,b.*<br />
+  from tb a,@level_tt b<br />
+  where a.ybh=b.ybh<br />
+  order by b.ebh<br />
+/*<br />
+(无列名)    ybh    ebh    beizhu    ybh    ebh    level<br />
+----五华区    0005    0002    五华区    0005    0005    0<br />
+  ----西园路192号    0006    0005    西园路192号    0006    00050006    1<br />
+    ----金色梧桐3-702    0010    0006    金色梧桐3-702    0010    000500060010    2<br />
+      ----昆明越科时空科技有限公司    0011    0010    昆明越科时空科技有限公司    0011    0005000600100011    3<br />
+*/<br />
+  <br />
+<br />
+<br />
+/*<br />
+标题：查询各节点的父路径函数<br />
+作者：爱新觉罗·毓华(十八年风雨,守得冰山雪莲花开)  <br />
+时间：2008-05-12<br />
+地点：广东深圳<br />
+*/<br />
+<br />
+/*<br />
+原始数据及要求结果如下：<br />
+--食品 <br />
+  --水果 <br />
+    --香蕉 <br />
+    --苹果    <br />
+  --蔬菜 <br />
+    --青菜<br />
+id          pid         name                 <br />
+----------- ----------- -------------------- <br />
+1           0           食品<br />
+2           1           水果<br />
+3           1           蔬菜<br />
+4           2           香蕉<br />
+5           2           苹果<br />
+6           3           青菜<br />
+<br />
+要求得到各节点的父路径即如下结果：<br />
+id  pid name  路径                         <br />
+--- --- ----- ---------------<br />
+1   0   食品  食品<br />
+2   1   水果  食品,水果<br />
+3   1   蔬菜  食品,蔬菜<br />
+4   2   香蕉  食品,水果,香蕉<br />
+5   2   苹果  食品,水果,苹果<br />
+6   3   青菜  食品,蔬菜,青菜 <br />
+*/<br />
+<br />
+create table tb (id int , pid int , name nvarchar(20)) <br />
+insert into tb values(1 , 0 , '食品')<br />
+insert into tb values(2 , 1 , '水果')<br />
+insert into tb values(3 , 1 , '蔬菜')<br />
+insert into tb values(4 , 2 , '香蕉')<br />
+insert into tb values(5 , 2 , '苹果')<br />
+insert into tb values(6 , 3 , '青菜')<br />
+go<br />
+<br />
+--查询各节点的父路径函数<br />
+create function f_pid(@id int) returns varchar(100)<br />
+as<br />
+begin<br />
+  declare @re_str as varchar(100)<br />
+  set @re_str = ''<br />
+  select @re_str = name from tb where id = @id<br />
+  while exists (select 1 from tb where id = @id and pid <> 0)<br />
+    begin<br />
+      select @id = b.id , @re_str = b.name + ',' + @re_str from tb a , tb b where a.id = @id and a.pid = b.id<br />
+    end<br />
+  return @re_str<br />
+end<br />
+go<br />
+<br />
+select * , dbo.f_pid(id) 路径 from tb order by id<br />
+<br />
+drop table tb<br />
+drop function f_pid<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:06

@@ -1,0 +1,232 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>请问怎么更改排序规则呢 <br />
+<br />
+<br />
+1.sp_helpsort <br />
+SELECT SERVERPROPERTY ('Collation') <br />
+查看你的排序规则. <br />
+不过你的这个应该和字符集有关.<br />
+<br />
+2.更改服务器排序规则 <br />
+更改 SQL Server 2005 实例的默认排序规则的操作可能会比较复杂，包括以下步骤： <br />
+<br />
+确保具有重新创建用户数据库及这些数据库中的所有对象所需的全部信息或脚本。 <br />
+使用工具（例如大容量复制）导出所有数据。 <br />
+删除所有用户数据库。 <br />
+重新生成在 setup 命令的 SQLCOLLATION 属性中指定新的排序规则的 master 数据库。例如： <br />
+复制代码 <br />
+start /wait setup.exe /qb INSTANCENAME=MSSQLSERVER REINSTALL=SQL_Engine REBUILDDATABASE=1 SAPWD=test SQLCOLLATION=SQL_Latin1_General_CP1_CI_AI <br />
+有关重新生成 master 数据库的详细信息，请参阅如何重新生成 SQL Server 2005 的 Master 数据库。 <br />
+创建所有数据库及这些数据库中的所有对象。 <br />
+导入所有数据。 <br />
+注意：  <br />
+可以为创建的每个新数据库指定默认排序规则，而不更改 SQL Server 2005 实例的默认排序规则。 <br />
+<br />
+3.设置和更改数据库排序规则 <br />
+创建新数据库时，可以使用下列内容之一指定排序规则： <br />
+CREATE DATABASE 语句的 COLLATE 子句。 <br />
+SQL Server Management Studio. <br />
+SQL 管理对象 (SMO) 中的 Database.Collation 属性。 <br />
+如果未指定排序规则，则使用服务器排序规则。 <br />
+可以使用 ALTER DATABASE 语句的 COLLATE 子句来更改在用户数据库中创建的任何新对象的排序规则。使用此语句不能更改任何现有用户定义的表中列的排序规则。使用 ALTER TABLE 的 COLLATE 子句可以更改这些列的排序规则。 <br />
+更改数据库排序规则时，需要更改下列内容： <br />
+数据库的默认排序规则，这一新的默认排序规则将应用于数据库中后续创建的所有列、用户定义的数据类型、变量和参数。根据数据库中定义的对象解析 SQL 语句中指定的对象标识符时，也使用新的默认排序规则。 <br />
+将系统表中的任何 char、varchar、text、nchar、nvarchar 或 ntext 列更改为使用新的排序规则。 <br />
+将存储过程和用户定义函数的所有现有 char、varchar、text、nchar、nvarchar 或 ntext 参数和标量返回值更改为使用新的排序规则。 <br />
+将 char、varchar、text、nchar、nvarchar 或 ntext 系统数据类型和基于这些系统数据类型的所有用户定义的数据类型更改为使用新的默认排序规则。 <br />
+<br />
+SQL code :<br />
+<br />
+1.将数据库的字符集修改为：<br />
+alter database dbname collate Chinese_PRC_CI_AS<br />
+<br />
+2.<br />
+<br />
+--1. 为数据库指定排序规则<br />
+CREATE DATABASE db COLLATE Chinese_PRC_CI_AS<br />
+GO<br />
+<br />
+ALTER DATABASE db COLLATE Chinese_PRC_BIN<br />
+GO<br />
+<br />
+<br />
+/*====================================*/<br />
+<br />
+<br />
+--2. 为表中的列指定排序规则<br />
+CREATE TABLE tb(<br />
+col1 varchar(10),<br />
+col2 varchar(10) COLLATE Chinese_PRC_CI_AS)<br />
+GO<br />
+<br />
+ALTER TABLE tb ADD col3 varchar(10) COLLATE Chinese_PRC_BIN<br />
+GO<br />
+<br />
+ALTER TABLE tb ALTER COLUMN col2 varchar(10) COLLATE Chinese_PRC_BIN<br />
+GO<br />
+<br />
+<br />
+/*====================================*/<br />
+<br />
+<br />
+--3. 为字符变量和参数应用排序规则<br />
+DECLARE @a varchar(10),@b varchar(10)<br />
+SELECT @a='a',@b='A'<br />
+<br />
+--使用排序规则 Chinese_PRC_CI_AS<br />
+SELECT CASE WHEN @a COLLATE Chinese_PRC_CI_AS = @b THEN '@a=@b' ELSE '@a<>@b' END<br />
+--结果:@a=@b<br />
+<br />
+--使用排序规则 Chinese_PRC_BIN<br />
+SELECT CASE WHEN @a COLLATE Chinese_PRC_BIN = @b THEN '@a=@b' ELSE '@a<>@b' END<br />
+--结果:@a<>@b<br />
+<br />
+<br />
+3.<br />
+表<br />
+ALTER   TABLE   tb<br />
+  ALTER   COLUMN   colname   nvarchar(100)   COLLATE   Chinese_PRC_CI_AS  <br />
+--不区分大小写<br />
+ALTER   TABLE   tb  <br />
+  ALTER   COLUMN   colname   nvarchar(100)   COLLATE   Chinese_PRC_CS_AS  <br />
+--区分大小写<br />
+数据库<br />
+ALTER   DATABASE   database  <br />
+COLLATE   Chinese_PRC_CS_AS  <br />
+--区分大小写<br />
+<br />
+ALTER   DATABASE   database COLLATE Chinese_PRC_CI_AS --不区分大小写<br />
+<br />
+<br />
+方法一.安装SQL时选择区分大小写<br />
+或安装完以后重建mastar，选择区分大小<br />
+C:\Program   Files\Microsoft   SQL   Server\80\Tools\Binn\rebuildm.exe<br />
+<br />
+方法二.sql   server   8.0以上的版本才可以，7.0及其以下不支持<br />
+alter   database   数据库   COLLATE   Chinese_PRC_CS_AS<br />
+修改排序规则，改成大小写敏感的排序规则<br />
+如果只修改一个表，用alter   table语句  <br />
+如果修改一个库的默认排序规则，用alter   datebase语句  <br />
+如果修改整个服务器的默认排序规则，用Rebuildm.exe重建master库  <br />
+--指定排序规则就可以了<br />
+<br />
+--示例  <br />
+select   replace('AbacB'   collate   Chinese_PRC_CS_AS_WS,'B','test')  <br />
+<br />
+--如果你是要求表支持,则可以建表时指定排序规则,这样replace就不用写排序规则了  <br />
+<br />
+--示例  <br />
+create   table   tb(a   varchar(20)   collate   Chinese_PRC_CS_AS_WS)  <br />
+insert   tb   values('Abac')  <br />
+<br />
+select   replace(a,'a','test')   from   tb<br />
+<br />
+drop   table   tb<br />
+<br />
+指定排序规则即可<br />
+<br />
+Windows   排序规则名称  <br />
+在   COLLATE   子句中指定   Windows   排序规则名称。Windows   排序规则名称由排序规则指示器和比较风格构成。  <br />
+<br />
+语法  <br />
+<   Windows_collation_name   >   ::   =  <br />
+<br />
+        CollationDesignator_ <ComparisonStyle><br />
+<br />
+        <   ComparisonStyle   >   ::=  <br />
+                CaseSensitivity_AccentSensitivity  <br />
+                [_KanatypeSensitive   [_WidthSensitive   ]   ]  <br />
+                |   _BIN  <br />
+<br />
+参数  <br />
+CollationDesignator  <br />
+<br />
+指定   Windows   排序规则使用的基本排序规则。基本排序规则包括：  <br />
+<br />
+当指定按字典排序时应用其排序规则的字母表或语言<br />
+<br />
+<br />
+用于存储非   Unicode   字符数据的代码页。  <br />
+例如   Latin1_General   或法文，两者都使用代码页   1252，或土耳其文，它使用代码页   1254。  <br />
+<br />
+CaseSensitivity<br />
+<br />
+CI   指定不区分大小写，CS   指定区分大小写。<br />
+<br />
+AccentSensitivity<br />
+<br />
+AI   指定不区分重音，AS   指定区分重音。<br />
+<br />
+KanatypeSensitive<br />
+<br />
+Omitted   指定不区分大小写，KS   指定区分假名类型。<br />
+<br />
+WidthSensitivity<br />
+<br />
+Omitted   指定不区分大小写，WS   指定区分大小写。<br />
+<br />
+BIN<br />
+<br />
+指定使用二进制排序次序。  <br />
+<br />
+<br />
+如果你只是目前查询区分，那么还是不要这样改，免得又反悔，如此查询：<br />
+select   *   from   a  <br />
+/*<br />
+a_nam             a_add            <br />
+----------   ----------  <br />
+1                     aa<br />
+1                     bb<br />
+2                     cc<br />
+2                     vv<br />
+2                     kk<br />
+3                     dd<br />
+3                     ee<br />
+4                     dd<br />
+5                     ee<br />
+6                     yy<br />
+6                     yy<br />
+<br />
+(11   row(s)   affected)<br />
+*/<br />
+现在我们查询a_add   =   'aa'的，'Aa'等等不行！<br />
+Example   1：<br />
+<br />
+select   *   from   a  <br />
+where   a_add   collate   Chinese_PRC_CS_AS_WS   =   'aa'  <br />
+/*<br />
+a_nam             a_add            <br />
+----------   ----------  <br />
+1                     aa<br />
+<br />
+(1   row(s)   affected)<br />
+*/<br />
+<br />
+Example   2：<br />
+<br />
+select   *   from   a  <br />
+where   a_add   collate   Chinese_PRC_CS_AS_WS   =   'Aa'  <br />
+/*<br />
+a_nam             a_add            <br />
+----------   ----------  <br />
+<br />
+(0   row(s)   affected)<br />
+*/<br />
+<br />
+方法三.上面的记不住，那么就用最笨的方法，转化为ascii<br />
+select   *   from   a<br />
+where  <br />
+ascii(substring(a_add,1,1))   =   ascii(substring('Aa',1,1))<br />
+and  <br />
+ascii(substring(a_add,2,1))   =   ascii(substring('Aa',2,1))<br />
+/*<br />
+a_nam             a_add            <br />
+----------   ----------  <br />
+<br />
+(0   row(s)   affected)<br />
+*/<br />
+<br />
+方法三：任何版本都可以<br />
+select   *   from   a  <br />
+where   cast(a_add   as   varbinary(10))=   cast('aa'   as   varbinary(10)) <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:30

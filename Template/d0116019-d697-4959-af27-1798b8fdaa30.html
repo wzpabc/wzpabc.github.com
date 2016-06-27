@@ -1,0 +1,108 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>利用触发器实现标识列连续。(支持批量插入) <br />
+if exists (select * from dbo.sysobjects where id = object_id(N'[dbo].[ttt]') and OBJECTPROPERTY(id, N'IsUserTable') = 1)<br />
+drop table [dbo].[ttt]<br />
+GO<br />
+<br />
+/****** Object:  Table [dbo].[ttt]    Script Date: 2008-12-15 17:11:26 ******/<br />
+CREATE TABLE [dbo].[ttt] (<br />
+    [id] [int] IDENTITY (1, 1) NOT NULL ,<br />
+    [name] [varchar] (50) COLLATE Chinese_PRC_CI_AS NULL ,<br />
+    [time] [datetime] NULL <br />
+) ON [PRIMARY]<br />
+GO<br />
+<br />
+ALTER TABLE [dbo].[ttt] ADD <br />
+    CONSTRAINT [PK_ttt] PRIMARY KEY  CLUSTERED <br />
+    (<br />
+        [id]<br />
+    )  ON [PRIMARY] <br />
+GO<br />
+<br />
+insert into ttt(name,time) values('logan',getdate());<br />
+insert into ttt(name,time) values('peter',getdate());<br />
+insert into ttt(name,time) values('man',getdate());<br />
+insert into ttt(name,time) values('lida',getdate());<br />
+insert into ttt(name,time) values('fcuandy',getdate());<br />
+<br />
+select * from ttt<br />
+/*<br />
+1   logan   2008-12-15 17:36:37.780<br />
+2   peter   2008-12-15 17:36:37.780<br />
+3   man 2008-12-15 17:36:37.780<br />
+4   lida    2008-12-15 17:36:37.780<br />
+5   fcuandy 2008-12-15 17:36:37.793<br />
+*/<br />
+<br />
+<br />
+GO<br />
+CREATE TRIGGER tr ON ttt<br />
+INSTEAD OF INSERT<br />
+AS<br />
+    SET IDENTITY_INSERT ttt ON<br />
+    DECLARE @n INT<br />
+    SELECT @n=MAX(id) FROM ttt<br />
+    ;WITH fc AS<br />
+    (<br />
+        SELECT n=1<br />
+        UNION ALL<br />
+        SELECT nn=n+1 FROM fc WHERE n<@n<br />
+    ),fc1 AS<br />
+    (<br />
+    SELECT n FROM fc a<br />
+    LEFT JOIN ttt b<br />
+        ON a.n = b.id<br />
+        WHERE b.id IS NULL<br />
+    )<br />
+    INSERT ttt(id,name,time) SELECT n,name,time<br />
+        FROM<br />
+        (SELECT ROW_NUMBER() OVER (ORDER BY GETDATE()) idx,n FROM fc1) a<br />
+    INNER JOIN<br />
+        (<br />
+        SELECT idx=ROW_NUMBER() OVER (ORDER BY GETDATE()),name,time FROM inserted<br />
+        ) b<br />
+        ON a.idx=b.idx<br />
+    DECLARE @r INT<br />
+    SELECT @r=@@ROWCOUNT<br />
+    <br />
+    SET IDENTITY_INSERT ttt OFF<br />
+        INSERT ttt(name,time) SELECT name,time FROM <br />
+            (<br />
+                SELECT idx=ROW_NUMBER() OVER (ORDER BY GETDATE()),name,time FROM inserted<br />
+            ) x<br />
+            WHERE idx>@r<br />
+    <br />
+<br />
+GO<br />
+DELETE FROM ttt WHERE name = 'peter' OR name='lida'<br />
+GO<br />
+INSERT ttt SELECT 'xxx',getdate()<br />
+INSERT ttt SELECT 'yyy',GETDATE()<br />
+GO<br />
+SELECT * FROM ttt<br />
+/*<br />
+1   logan   2008-12-15 17:37:20.967<br />
+2   xxx 2008-12-15 17:37:21.013<br />
+3   man 2008-12-15 17:37:20.967<br />
+4   yyy 2008-12-15 17:37:21.030<br />
+5   fcuandy 2008-12-15 17:37:20.967<br />
+*/<br />
+<br />
+DELETE FROM ttt WHERE name ='xxx' OR name='yyy'<br />
+<br />
+INSERT ttt SELECT 'roy_88',GETDATE() UNION ALL SELECT 'limpire',GETDATE() UNION ALL SELECT '熊',GETDATE()<br />
+<br />
+SELECT * FROM ttt<br />
+<br />
+/*<br />
+1   logan   2008-12-15 17:38:29.450<br />
+2   roy_88  2008-12-15 17:38:29.530<br />
+3   man 2008-12-15 17:38:29.467<br />
+4   limpire 2008-12-15 17:38:29.530<br />
+5   fcuandy 2008-12-15 17:38:29.467<br />
+6   熊   2008-12-15 17:38:29.530<br />
+*/<br />
+<br />
+<br />
+本文来自CSDN博客，转载请标明出处：http://blog.csdn.net/fcuandy/archive/2008/12/15/3522876.aspx<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:32

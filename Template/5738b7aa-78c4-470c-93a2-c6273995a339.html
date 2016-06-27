@@ -1,0 +1,357 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>CREATE  FUNCTION [dbo].[f_num_chn] (@num numeric(14,5))   <br />
+RETURNS varchar(100) WITH ENCRYPTION   <br />
+AS   <br />
+BEGIN   <br />
+--版权所有：weihuachao@sina.com   <br />
+  DECLARE @n_data VARCHAR(20),@c_data VARCHAR(100),@n_str VARCHAR(10),@i int   <br />
+  SET @n_data=RIGHT(SPACE(14)+CAST(CAST(ABS(@num*100) AS bigint) AS varchar(20)),14)   <br />
+  SET @c_data=''   <br />
+  SET @i=1   <br />
+  WHILE @i<=14   <br />
+  BEGIN   <br />
+    SET @n_str=SUBSTRING(@n_data,@i,1)   <br />
+    IF @n_str<>' '   <br />
+    BEGIN   <br />
+      IF not ((SUBSTRING(@n_data,@i,2)='00') or   <br />
+        ((@n_str='0') and ((@i=4) or (@i=8) or (@i=12) or (@i=14))))   <br />
+        SET @c_data=@c_data+SUBSTRING('零壹贰叁肆伍陆柒捌玖',CAST(@n_str AS int)+1,1)   <br />
+      IF not ((@n_str='0') and (@i<>4) and (@i<>8) and (@i<>12))   <br />
+        SET @c_data=@c_data+SUBSTRING('仟佰拾亿仟佰拾万仟佰拾圆角分',@i,1)   <br />
+      IF SUBSTRING(@c_data,LEN(@c_data)-1,2)='亿万'   <br />
+        SET @c_data=SUBSTRING(@c_data,1,LEN(@c_data)-1)   <br />
+    END   <br />
+    SET @i=@i+1   <br />
+  END   <br />
+  IF @num<0   <br />
+    SET @c_data='（负数）'+@c_data   <br />
+  IF @num=0   <br />
+    SET @c_data='零圆'   <br />
+  IF @n_str='0'   <br />
+    SET @c_data=@c_data+'整'   <br />
+  RETURN(@c_data)   <br />
+END   <br />
+<br />
+<br />
+<br />
+<br />
+ SQL SERVER函数将人民币数字转换成大写形式 <br />
+闲着也是闲着，欢迎大家多提宝贵意见<br />
+<br />
+--阿拉伯数字转中文大写数字<br />
+Create   function NToCC(@n int)<br />
+returns varchar(2)<br />
+as<br />
+begin<br />
+<br />
+declare @s varchar(2)<br />
+<br />
+if @n=0 <br />
+set @s=''零''<br />
+if @n=1<br />
+set @s=''壹''<br />
+if @n=2<br />
+set @s=''贰''<br />
+if @n=3<br />
+set @s=''叁''<br />
+if @n=4<br />
+set @s=''肆''<br />
+if @n=5<br />
+set @s=''伍''<br />
+if @n=6<br />
+set @s=''陆''<br />
+if @n=7<br />
+set @s=''柒''<br />
+if @n=8<br />
+set @s=''捌''<br />
+if @n=9<br />
+set @s=''玖''<br />
+<br />
+return @s <br />
+<br />
+end<br />
+<br />
+<br />
+---<br />
+<br />
+--可支持到上亿<br />
+Create   function numbertoChineseBigString(@m money)<br />
+returns varchar(255)<br />
+begin<br />
+<br />
+<br />
+declare @i varchar(255)<br />
+declare @f varchar(255)<br />
+declare @r varchar(255)<br />
+declare @s varchar(255)<br />
+<br />
+set @s=convert(varchar(255),@m)<br />
+if charindex(''.'',@s)>0<br />
+begin<br />
+    set @i=substring(@s,1,charindex(''.'',@s)-1)<br />
+    set @f=substring(@s,charindex(''.'',@s)+1,len(@s))<br />
+end<br />
+else <br />
+set @i=@s<br />
+<br />
+set @r=''''<br />
+<br />
+<br />
+declare @k int<br />
+set @k=len(@i)<br />
+while @k>=1 <br />
+begin<br />
+<br />
+--最多9位<br />
+if @k=9<br />
+set @r=@r+<br />
+dbo.NToCC(convert(int,substring(REVERSE(@i),@k,1)))<br />
+--@i<br />
++''亿''<br />
+<br />
+<br />
+if @k=8<br />
+set @r=@r+dbo.NToCC(convert(int,substring(REVERSE(@i),@k,1)))+''千''<br />
+<br />
+<br />
+if @k=7<br />
+set @r=@r+dbo.NToCC(convert(int,substring(REVERSE(@i),@k,1)))+''佰''<br />
+<br />
+if @k=6<br />
+set @r=@r+dbo.NToCC(convert(int,substring(REVERSE(@i),@k,1)))+''拾''<br />
+<br />
+if @k=5<br />
+set @r=@r+dbo.NToCC(convert(int,substring(REVERSE(@i),@k,1)))+''万''<br />
+<br />
+if @k=4<br />
+set @r=@r+dbo.NToCC(convert(int,substring(REVERSE(@i),@k,1)))+''千''<br />
+<br />
+if @k=3<br />
+set @r=@r+dbo.NToCC(convert(int,substring(REVERSE(@i),@k,1)))+''佰''<br />
+<br />
+if @k=2<br />
+set @r=@r+dbo.NToCC(convert(int,substring(REVERSE(@i),@k,1)))+''拾''<br />
+<br />
+if @k=1<br />
+set @r=@r+dbo.NToCC(convert(int,substring(REVERSE(@i),@k,1)))+''元''<br />
+<br />
+<br />
+set @k=@k-1<br />
+<br />
+end<br />
+<br />
+<br />
+<br />
+if convert(float,@f)=0 <br />
+set @r=@r+''整''<br />
+else <br />
+begin<br />
+<br />
+if substring(@s,1,1)>'''' <br />
+set @r=@r+dbo.NToCC(convert(int,substring(@f,1,1)))+''角''<br />
+<br />
+if substring(@s,2,1)>'''' <br />
+set @r=@r+dbo.NToCC(convert(int,substring(@f,2,1)))+''分''<br />
+<br />
+end<br />
+<br />
+set @r=replace(@r,''零千零佰零拾'',''零'')<br />
+set @r=replace(@r,''零佰零拾'',''零'')<br />
+set @r=replace(@r,''零千零佰'',''零'')<br />
+set @r=replace(@r,''零拾'',''零'')<br />
+set @r=replace(@r,''零千'',''零'')<br />
+set @r=replace(@r,''零佰'',''零'')<br />
+set @r=replace(@r,''拾零万'',''拾万'')<br />
+return @r<br />
+<br />
+end<br />
+<br />
+--     select dbo.numbertoChineseBigString(100102)<br />
+<br />
+文章出处：http://www.diybl.com/course/7_databases/sql/sqlServer/2008224/101116.html<br />
+<br />
+<br />
+<br />
+CREATE FUNCTION dbo.L2U(@n_LowerMoney numeric(15,2),@v_TransType int) <br />
+<br />
+RETURNS VARCHAR(200) AS <br />
+<br />
+BEGIN <br />
+<br />
+Declare @v_LowerStr VARCHAR(200) -- 小写金额 <br />
+<br />
+Declare @v_UpperPart VARCHAR(200) <br />
+<br />
+Declare @v_UpperStr VARCHAR(200) -- 大写金额<br />
+<br />
+Declare @i_I int<br />
+<br />
+set @v_LowerStr = LTRIM(RTRIM(ROUND(@n_LowerMoney,2))) --四舍五入为指定的精度并删除数据左右空格<br />
+<br />
+set @i_I = 1<br />
+<br />
+set @v_UpperStr = ''<br />
+<br />
+while ( @i_I <= len(@v_LowerStr))<br />
+<br />
+begin<br />
+<br />
+select @v_UpperPart = case substring(@v_LowerStr,len(@v_LowerStr) - @i_I + 1,1)<br />
+<br />
+WHEN '.' THEN '元'<br />
+<br />
+WHEN '0' THEN '零'<br />
+<br />
+WHEN '1' THEN '壹'<br />
+<br />
+WHEN '2' THEN '贰'<br />
+<br />
+WHEN '3' THEN '叁'<br />
+<br />
+WHEN '4' THEN '肆'<br />
+<br />
+WHEN '5' THEN '伍'<br />
+<br />
+WHEN '6' THEN '陆'<br />
+<br />
+WHEN '7' THEN '柒'<br />
+<br />
+WHEN '8' THEN '捌'<br />
+<br />
+WHEN '9' THEN '玖'<br />
+<br />
+END<br />
+<br />
++ <br />
+<br />
+case @i_I<br />
+<br />
+WHEN 1 THEN '分'<br />
+<br />
+WHEN 2 THEN '角'<br />
+<br />
+WHEN 3 THEN ''<br />
+<br />
+WHEN 4 THEN ''<br />
+<br />
+WHEN 5 THEN '拾'<br />
+<br />
+WHEN 6 THEN '佰'<br />
+<br />
+WHEN 7 THEN '仟'<br />
+<br />
+WHEN 8 THEN '万'<br />
+<br />
+WHEN 9 THEN '拾'<br />
+<br />
+WHEN 10 THEN '佰'<br />
+<br />
+WHEN 11 THEN '仟'<br />
+<br />
+WHEN 12 THEN '亿'<br />
+<br />
+WHEN 13 THEN '拾'<br />
+<br />
+WHEN 14 THEN '佰'<br />
+<br />
+WHEN 15 THEN '仟'<br />
+<br />
+WHEN 16 THEN '万'<br />
+<br />
+ELSE ''<br />
+<br />
+END<br />
+<br />
+set @v_UpperStr = @v_UpperPart + @v_UpperStr<br />
+<br />
+set @i_I = @i_I + 1<br />
+<br />
+end<br />
+<br />
+if ( 0 = @v_TransType)<br />
+<br />
+begin<br />
+<br />
+set @v_UpperStr = REPLACE(@v_UpperStr,'零拾','零') <br />
+<br />
+set @v_UpperStr = REPLACE(@v_UpperStr,'零佰','零') <br />
+<br />
+set @v_UpperStr = REPLACE(@v_UpperStr,'零仟','零') <br />
+<br />
+set @v_UpperStr = REPLACE(@v_UpperStr,'零零零','零')<br />
+<br />
+set @v_UpperStr = REPLACE(@v_UpperStr,'零零','零')<br />
+<br />
+set @v_UpperStr = REPLACE(@v_UpperStr,'零角零分','整')<br />
+<br />
+set @v_UpperStr = REPLACE(@v_UpperStr,'零分','整')<br />
+<br />
+set @v_UpperStr = REPLACE(@v_UpperStr,'零角','零')<br />
+<br />
+set @v_UpperStr = REPLACE(@v_UpperStr,'零亿零万零元','亿元')<br />
+<br />
+set @v_UpperStr = REPLACE(@v_UpperStr,'亿零万零元','亿元')<br />
+<br />
+set @v_UpperStr = REPLACE(@v_UpperStr,'零亿零万','亿')<br />
+<br />
+set @v_UpperStr = REPLACE(@v_UpperStr,'零万零元','万元')<br />
+<br />
+set @v_UpperStr = REPLACE(@v_UpperStr,'万零元','万元')<br />
+<br />
+set @v_UpperStr = REPLACE(@v_UpperStr,'零亿','亿')<br />
+<br />
+set @v_UpperStr = REPLACE(@v_UpperStr,'零万','万')<br />
+<br />
+set @v_UpperStr = REPLACE(@v_UpperStr,'零元','元')<br />
+<br />
+set @v_UpperStr = REPLACE(@v_UpperStr,'零零','零')<br />
+<br />
+end<br />
+<br />
+-- 对壹元以下的金额的处理 <br />
+<br />
+if ( '元' = substring(@v_UpperStr,1,1))<br />
+<br />
+begin<br />
+<br />
+set @v_UpperStr = substring(@v_UpperStr,2,(len(@v_UpperStr) - 1))<br />
+<br />
+end<br />
+<br />
+if ( '零' = substring(@v_UpperStr,1,1))<br />
+<br />
+begin<br />
+<br />
+set @v_UpperStr = substring(@v_UpperStr,2,(len(@v_UpperStr) - 1))<br />
+<br />
+end<br />
+<br />
+if ( '角' = substring(@v_UpperStr,1,1))<br />
+<br />
+begin<br />
+<br />
+set @v_UpperStr = substring(@v_UpperStr,2,(len(@v_UpperStr) - 1))<br />
+<br />
+end<br />
+<br />
+if ( '分' = substring(@v_UpperStr,1,1))<br />
+<br />
+begin<br />
+<br />
+set @v_UpperStr = substring(@v_UpperStr,2,(len(@v_UpperStr) - 1))<br />
+<br />
+end<br />
+<br />
+if ('整' = substring(@v_UpperStr,1,1))<br />
+<br />
+begin<br />
+<br />
+set @v_UpperStr = '零元整'<br />
+<br />
+end<br />
+<br />
+return @v_UpperStr<br />
+<br />
+END<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:11

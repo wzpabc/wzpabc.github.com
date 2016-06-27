@@ -1,0 +1,108 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>构造使用IN子句的动态Transact-SQL方法进行编号查询<br />
+<br />
+--1. 构造使用IN子句的动态Transact-SQL方法进行编号查询<br />
+<br />
+--a. 要查询的字段类型是数字型<br />
+<br />
+--查询的值列表<br />
+DECLARE @idlist varchar(100)<br />
+SET @idlist='1,2,3'<br />
+<br />
+--拼接并执行动态Transact-SQL语句<br />
+EXEC('SELECT * FROM tbname WHERE fdname IN('+@idlist+')')<br />
+GO<br />
+<br />
+--b. 要查询的字段类型是字符型<br />
+--查询的值列表已经加上了字符串边界符<br />
+DECLARE @idlist varchar(100)<br />
+SET @idlist='''a'',''b''''a'',''c'''<br />
+<br />
+--拼接并执行动态Transact-SQL语句<br />
+EXEC('SELECT * FROM tbname WHERE fdname IN('+@idlist+')')<br />
+GO<br />
+<br />
+--查询的值列表没有字符串边界符<br />
+DECLARE @idlist varchar(100)<br />
+SET @idlist='a,b''a,c'<br />
+<br />
+--由于是字段类型是,所以在拼接时,必须为其加上字符串边界符(')<br />
+DECLARE @s varchar(1000)<br />
+SET @s=''''<br />
+    +REPLACE(REPLACE(@idlist,'''',''''''),',',''',''')<br />
+    +''''<br />
+<br />
+--拼接并执行动态Transact-SQL语句<br />
+EXEC('SELECT * FROM tbname WHERE fdname IN('+@s+')')<br />
+GO<br />
+<br />
+/*=====================================================*/<br />
+<br />
+<br />
+--2. 使用LIKE或者PATINDEX进行编号查询<br />
+--查询的值列表<br />
+DECLARE @idlist varchar(100)<br />
+SET @idlist='1,2,3'<br />
+<br />
+--查询<br />
+SELECT * FROM tbname WHERE CHARINDEX(','+RTRIM(fdname)+',',','+@idlist+',')>0<br />
+SELECT * FROM tbname WHERE PATINDEX('%,'+RTRIM(fdname)+',%',','+@idlist+',')>0<br />
+SELECT * FROM tbname WHERE ','+@idlist+',' LIKE '%,'+RTRIM(fdname)+',%'<br />
+GO<br />
+<br />
+/*=====================================================*/<br />
+<br />
+<br />
+--3. 编号查询中常见的错误<br />
+--a. 最容易犯的错误：表达式充当表达式列表。<br />
+DECLARE @s varchar(100)<br />
+SET @s='1'<br />
+SELECT id,name FROM sysobjects WHERE id IN(@s)<br />
+/*--结果<br />
+id          name <br />
+---------------- ------------<br />
+1           sysobjects<br />
+--*/<br />
+<br />
+SET @s='1,2,3'<br />
+SELECT id,name FROM sysobjects WHERE id IN(@s)<br />
+/*--结果<br />
+服务器: 消息 245，级别 16，状态 1，行 3<br />
+将 varchar 值 '1,2,3' 转换为数据类型为 int 的列时发生语法错误。<br />
+--*/<br />
+GO<br />
+<br />
+--b. 生成动态Transact-SQL语句时忽略了数据类型。<br />
+DECLARE @s varchar(100)<br />
+SET @s='U,S'<br />
+EXEC('SELECT id,name FROM sysobjects WHERE id IN('+@s+')')<br />
+/*--结果:<br />
+服务器: 消息 207，级别 16，状态 3，行 1<br />
+列名 'S' 无效。<br />
+服务器: 消息 207，级别 16，状态 1，行 1<br />
+列名 'U' 无效。<br />
+--*/<br />
+GO<br />
+<br />
+--c. 忽略了比较的精确性问题。<br />
+--要查询的数据<br />
+DECLARE @t TABLE(col varchar(10))<br />
+INSERT @t SELECT '1'<br />
+UNION ALL SELECT '11'<br />
+UNION ALL SELECT '111'<br />
+UNION ALL SELECT '22'<br />
+<br />
+--查询<br />
+DECLARE @s varchar(100)<br />
+SET @s='111,22'<br />
+SELECT * FROM @t WHERE CHARINDEX(col,@s)>0<br />
+/*--结果<br />
+col        <br />
+---------- <br />
+1<br />
+11<br />
+111<br />
+22<br />
+-*/<br />
+GO<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:07

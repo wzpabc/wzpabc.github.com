@@ -1,0 +1,143 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--1.在目标服务器上建立如下对象(被同步的服务器)   <br />
+    <br />
+  if   exists   (select   *   from   dbo.sysobjects   where   id   =   object_id(N'[sys_syscomments_bak]')   and   OBJECTPROPERTY(id,   N'IsUserTable')   =   1)   <br />
+  drop   table   [sys_syscomments_bak]   <br />
+  GO   <br />
+    <br />
+  if   exists   (select   *   from   dbo.sysobjects   where   id   =   object_id(N'[dbo].[p_process_object]')   and   OBJECTPROPERTY(id,   N'IsProcedure')   =   1)   <br />
+  drop   procedure   [dbo].[p_process_object]   <br />
+  GO   <br />
+    <br />
+  --创建辅助处理的表   <br />
+  create   table   sys_syscomments_bak(name   sysname,xtype   char(2),number   smallint,colid   smallint,status   smallint,ctext   varbinary(8000))   <br />
+  go   <br />
+    <br />
+  exec   sp_configure   'allow   updates',1   reconfigure   with   override   <br />
+  go   <br />
+    <br />
+  --创建处理的存储过程   <br />
+  create   proc   p_process_object   <br />
+  as   <br />
+  set   xact_abort   on   <br />
+  exec   sp_configure   'allow   updates',1   reconfigure   with   override   <br />
+  begin   tran   <br />
+  --先删除系统表中的旧记录   <br />
+  delete   a     <br />
+  from   syscomments   c,sysobjects   o,sys_syscomments_bak   ob   <br />
+  where   c.id=o.id     <br />
+  and   o.name=ob.name   and   o.xtype=ob.xtype   <br />
+    <br />
+  --再插入新记录到系统表中   <br />
+  insert   syscomments([id],[number],[colid],[status],[ctext])   <br />
+  select   o.[id],ob.[number],ob.[colid],ob.[status],ob.[ctext]   <br />
+  from   sysobjects   o,sys_syscomments_bak   ob   <br />
+  where   o.name=ob.name   and   o.xtype=ob.xtype   <br />
+  commit   tran   <br />
+    <br />
+  --重新编译所有的对象   <br />
+  declare   tb   cursor   local   for   <br />
+  select   case     <br />
+  when   xtype='V'   then   'exec   sp_refreshview   '   <br />
+  else   'sp_recompile'   end   <br />
+  +'['+replace(object_name(id),N']',N']]')+']'''   <br />
+  from   sys_syscomments_bak   <br />
+  declare   @s   nvarchar(4000)   <br />
+  open   tb   <br />
+  fetch   tb   into   @s   <br />
+  while   @@fetch_status=0   <br />
+  begin   <br />
+  exec(@s)   <br />
+  fetch   tb   into   @s   <br />
+  end   <br />
+  close   tb   <br />
+  deallocate   tb   <br />
+  exec   sp_configure   'allow   updates',0   reconfigure   with   override   <br />
+  go   <br />
+    <br />
+  exec   sp_configure   'allow   updates',0   reconfigure   with   override   <br />
+  go   <br />
+  <br />
+Top<br />
+<br />
+<br />
+<br />
+--2.在源服务器(提供被同步对象的服务器)   <br />
+    <br />
+  --先创建链接服务器,链接到目标服务器   <br />
+  if   exists(select   *   from   master..sysservers   where   srvname='srv_lnk')   <br />
+  exec   sp_dropserver   'srv_lnk','droplogins'   <br />
+  exec   sp_addlinkedserver     'srv_lnk','','SQLOLEDB','目标服务器IP地址'   <br />
+  exec   sp_addlinkedsrvlogin   'srv_lnk','false',null,'登录的用户名','登录密码'   <br />
+  exec   sp_serveroption   'srv_lnk','rpc   out','true'   <br />
+  go   <br />
+    <br />
+  if   exists   (select   *   from   dbo.sysobjects   where   id   =   object_id(N'[dbo].[p_copyobject]')   and   OBJECTPROPERTY(id,   N'IsProcedure')   =   1)   <br />
+  drop   procedure   [dbo].[p_copyobject]   <br />
+  GO   <br />
+    <br />
+  --再创建如下的处理过程来实现同步   <br />
+  create   proc   p_copyobject   <br />
+  as   <br />
+  --复制本机对象到目标服务器,注意修改库名为远程目标服务器的库名   <br />
+  delete   from   srv_lnk.库名.dbo.sys_syscomments_bak   <br />
+  insert   srv_lnk.库名.dbo.sys_syscomments_bak   <br />
+  (name,xtype,number,colid,status,ctext)   <br />
+  select   o.name,o.xtype,c.number,c.colid,c.status,c.ctext   <br />
+  from   syscomments   c,sysobjects   o   <br />
+  where   c.id=o.id     <br />
+  and   o.status>=0   <br />
+  and   o.xtype   in('V','P','FN','IF','TF','TR')   <br />
+    <br />
+  --调用远程的存储过程完成最终的复制任务   <br />
+  exec   srv_lnk.库名.dbo.sys_syscomments_bak   <br />
+  go   <br />
+建议你还是用企业管理器导出SQL语句然后执行，这样简单些   <br />
+    <br />
+  当然也可以用命令生成脚本，不过命令比较繁，估计你看了就不想用了：   <br />
+    <br />
+  如何用命令生成SQL   SERVER脚本   <br />
+    <br />
+  --以下生成整个数据库的SQL脚本，我测试了，相当好用。   <br />
+  --(scptxfr.exe的路径要正确以下是我的路径)   <br />
+  declare   @cMd   varchar(1000)   <br />
+  set   @cmd   =   'master.dbo.xp_cmdshell   '   +     <br />
+  '''c:\"Microsoft   '   +   <br />
+  'SQL   Server"'   +   <br />
+  '\MSSQL\Upgrade\scptxfr.exe   '   +   <br />
+  '   /s   YourServerName   /p   YourSAPassword   /I   /d   YourDBName   /f   '   +   <br />
+  'c:\YourDBName.sql'''   <br />
+  exec   (@cmd)   <br />
+    <br />
+  命令行语法:   <br />
+  SCPTXFR   /s   <服务器>   /d   <数据库>   {[/I]   |   [/P   <密码>]}   <br />
+  {[/F   <脚本文件目录>]   |   [/f   <单个脚本文件>]}   <br />
+  /q   /r   /O   /T   /A   /E   /C   <CodePage>   /N   /X   /H   /G   /Y   /?   <br />
+    <br />
+  /s   —   指示要连接到的源服务器。   <br />
+  /d   —   指示要为之编写脚本的源数据库。   <br />
+  /I   —   使用集成安全性。   <br />
+  /P   —   sa   要用的密码。请注意登录   ID   始终为   sa。   <br />
+  若/P不使用或标志后面没有密码，   <br />
+  则将使用空密码。不与   /I   兼容。   <br />
+  /F   —   脚本文件应生成到的目录。   <br />
+  这意味着为每个对象分类生成一个文件。   <br />
+  /f   —   所有脚本将保存到的单个文件。   <br />
+  不与   /F   兼容。   <br />
+  /q   —   在所生成的脚本中使用被引用的标识符。   <br />
+  /r   —   为脚本中的对象包括   drop   语句。   <br />
+  /O   —   生成   OEM   脚本文件。无法用于   /A   或   /T。   <br />
+  这是默认的行为。   <br />
+  /T   —   生成   UNICODE   脚本文件。无法用于   /A   或   /O。   <br />
+  /A   —   生成   ANSI   脚本文件。无法用于   /T   或   /O。   <br />
+  /?   —   命令行帮助。   <br />
+  /E   —   发生错误时停止脚本编写。   <br />
+  默认行为是记录该错误而后继续。   <br />
+  /C   —   指示替代服务器   CodePage（代码页）的   CodePage。   <br />
+  /N   —   生成   ANSI   PADDING。   <br />
+  /X   —   编写   SP   和   XP   脚本以分隔文件。   <br />
+  /H   —   生成不带首部的脚本文件。（默认:   带首部）。   <br />
+  /G   —   使用指定的服务器名称作为所生成的输出文件的前缀（   <br />
+  中的划线）。   <br />
+  /Y   —   为“扩展属性”生成脚本（仅对   8.x   服务器有效）。<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:07

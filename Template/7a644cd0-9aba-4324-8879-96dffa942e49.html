@@ -1,0 +1,20 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>方法1、--在查询分析器，选中所要清理日志的数据库，<br />
+执行如下SQLbackup log 数据库名 with no_logDBCC SHRINKFILE ( 日志文件名或日志文件ID,要缩小的目标大小)        <br />
+--在当前数据库下select fileid,groupid,name from sysfiles where groupid=0<br />
+/*----------------------------------------<br />
+得到以下结果fileid     groupid          name  2          0                test_log */<br />
+--以上结果，fileid为日志文件ID，name为test_log<br />
+--你可以backup log test with no_log  dbcc shrinkfile (2,2)  or  backup log test with no_log  dbcc shrinkfile ('test_log',2)<br />
+--***********************************************************************************************<br />
+--如果以后,不想要它变大,在数据库上点右键->属性->选项->故障恢复 模型->简单模型就可以了!<br />
+--或用SQL语句alter database 数据库名 set recovery simple<br />
+--************************************************************************************************<br />
+如果把还原模型调到简单，这样就不支持时间点还原了，但是日志文件会很小，如果数据比较重要推荐还是把数据库的还原模型调为完全。<br />
+--************************************************************************************************<br />
+<br />
+<br />
+方法2、企业管理器—>右键数据库—>所有任务—>收缩数据库—>文件按钮—>选中日志文件—>设置收缩操作选项—>确定。<br />
+方法3、SQL SERVER企业管理器-》SQL SERVER组-》服务器-》数据库-》选中数据库实体-》右键-》所有任务-》分离数据库，<br />
+然后到数据库所在物理路径下删除.ldf文件，再数据库右键-》所有任务-》附加数据库,即可.<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:09

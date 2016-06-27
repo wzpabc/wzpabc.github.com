@@ -1,0 +1,81 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--参考: <br />
+/* <br />
+作者:邹建 <br />
+*/ <br />
+<br />
+/*--同步两个数据库的示例 <br />
+<br />
+有数据 <br />
+srv1.库名..author有字段:id,name,phone, <br />
+srv2.库名..author有字段:id,name,telphone,adress <br />
+<br />
+要求： <br />
+srv1.库名..author增加记录则srv1.库名..author记录增加 <br />
+srv1.库名..author的phone字段更新，则srv1.库名..author对应字段telphone更新 <br />
+--*/ <br />
+<br />
+--大致的处理步骤 <br />
+--1.在 srv1 上创建连接服务器,以便在 srv1 中操作 srv2,实现同步 <br />
+exec sp_addlinkedserver  'srv2','','SQLOLEDB','srv2的sql实例名或ip' <br />
+exec sp_addlinkedsrvlogin 'srv2','false',null,'用户名','密码' <br />
+go <br />
+<br />
+--2.在 srv1 和 srv2 这两台电脑中,启动 msdtc(分布式事务处理服务),并且设置为自动启动 <br />
+我的电脑--控制面板--管理工具--服务--右键 Distributed Transaction Coordinator--属性--启动--并将启动类型设置为自动启动 <br />
+go <br />
+<br />
+<br />
+--然后创建一个作业定时调用上面的同步处理存储过程就行了 <br />
+<br />
+企业管理器 <br />
+--管理 <br />
+--SQL Server代理 <br />
+--右键作业 <br />
+--新建作业 <br />
+--"常规"项中输入作业名称 <br />
+--"步骤"项 <br />
+--新建 <br />
+--"步骤名"中输入步骤名 <br />
+--"类型"中选择"Transact-SQL 脚本(TSQL)" <br />
+--"数据库"选择执行命令的数据库 <br />
+--"命令"中输入要执行的语句: exec p_process <br />
+--确定 <br />
+--"调度"项 <br />
+--新建调度 <br />
+--"名称"中输入调度名称 <br />
+--"调度类型"中选择你的作业执行安排 <br />
+--如果选择"反复出现" <br />
+--点"更改"来设置你的时间安排 <br />
+<br />
+<br />
+然后将SQL Agent服务启动,并设置为自动启动,否则你的作业不会被执行 <br />
+<br />
+设置方法: <br />
+我的电脑--控制面板--管理工具--服务--右键 SQLSERVERAGENT--属性--启动类型--选择"自动启动"--确定. <br />
+<br />
+<br />
+--3.实现同步处理的方法2,定时同步 <br />
+<br />
+--在srv1中创建如下的同步处理存储过程 <br />
+create proc p_process <br />
+as <br />
+--更新修改过的数据 <br />
+update b set name=i.name,telphone=i.telphone <br />
+from srv2.库名.dbo.author b,author i <br />
+where b.id=i.id and <br />
+(b.name <>i.name or b.telphone <>i.telphone) <br />
+<br />
+--插入新增的数据 <br />
+insert srv2.库名.dbo.author(id,name,telphone) <br />
+select id,name,telphone from author i <br />
+where not exists( <br />
+select * from srv2.库名.dbo.author where id=i.id) <br />
+<br />
+--删除已经删除的数据(如果需要的话) <br />
+delete b <br />
+from srv2.库名.dbo.author b <br />
+where not exists( <br />
+select * from author where id=b.id) <br />
+go <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:33

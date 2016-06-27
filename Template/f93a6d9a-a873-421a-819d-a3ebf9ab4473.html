@@ -1,0 +1,170 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>/*--说明：<br />
+下面的代码演示了如何利用日志还原功能，将主数据库中的数据变化及时反馈到备用数据库中<br />
+备用数据库的数据可以随时用于查询，但不能被更新（备用数据库只读）。<br />
+--*/<br />
+<br />
+--首先,创建一个演示用的数据库(主数据库)<br />
+CREATE DATABASE Db_test<br />
+ON<br />
+( NAME = Db_test_DATA,<br />
+      FILENAME = 'c:\Db_test.mdf' )<br />
+LOG ON <br />
+( NAME = Db_test_LOG,<br />
+   FILENAME = 'c:\Db_test.ldf')<br />
+GO<br />
+<br />
+--对数据库进行备份<br />
+BACKUP DATABASE Db_test TO DISK='c:\test_data.bak' WITH FORMAT<br />
+GO<br />
+<br />
+--把数据库还原成备用数据库(演示主数据库与这个备用数据库之间的同步)<br />
+RESTORE DATABASE Db_test_bak FROM DISK='c:\test_data.bak' <br />
+WITH REPLACE,STANDBY='c:\db_test_bak.ldf'<br />
+,MOVE 'Db_test_DATA' TO 'c:\Db_test_data.mdf'<br />
+,MOVE 'Db_test_LOG' TO 'c:\Db_test_log.ldf'<br />
+GO<br />
+<br />
+--启动 SQL Agent 服务<br />
+EXEC master..xp_cmdshell 'net start sqlserveragent',no_output<br />
+GO<br />
+<br />
+--创建主服务器数据训与备用服务器数据库之间同步的作业<br />
+DECLARE  @jogid uniqueidentifier<br />
+EXEC msdb..sp_add_job<br />
+@job_id = @jogid OUTPUT,<br />
+@job_name = N'数据同步处理'<br />
+<br />
+--创建同步处理步骤<br />
+EXEC msdb..sp_add_jobstep <br />
+@job_id = @jogid,<br />
+@step_name = N'数据同步',<br />
+@subsystem = 'TSQL',<br />
+@command = N'<br />
+--主数据库中进行日志备份<br />
+BACKUP LOG Db_test TO DISK=''c:\test_log.bak'' WITH FORMAT<br />
+<br />
+--备用数据库中还原主数据库的日志备份(应用主数据库中的最新变化<br />
+--实际应该时主数据库备份与备用数据库的还原作业应该分别在主服务器和备用服务器上建立，并且备份文件应该放在主服务器和备用都能访问的共享目录中<br />
+RESTORE LOG Db_test_bak FROM DISK=''c:\test_log.bak'' WITH STANDBY=''c:\test_log.ldf''',<br />
+@retry_attempts = 5,<br />
+@retry_interval = 5<br />
+<br />
+--创建调度(每分钟执行一次)<br />
+EXEC msdb..sp_add_jobschedule<br />
+@job_id = @jogid,<br />
+@name = N'时间安排',<br />
+@freq_type=4,<br />
+@freq_interval=1,<br />
+@freq_subday_type=0x4,<br />
+@freq_subday_interval=1,<br />
+@freq_recurrence_factor=1<br />
+<br />
+-- 添加目标服务器<br />
+EXEC msdb.dbo.sp_add_jobserver <br />
+@job_id = @jogid,<br />
+@server_name = N'(local)' <br />
+GO<br />
+<br />
+--通过上述处理,主数据库与备用数据库之间的同步关系已经设置完成<br />
+--下面开始测试是否能实现同步<br />
+<br />
+--在主数据库中创建一个测试用的表<br />
+CREATE TABLE Db_test.dbo.TB_test(ID int)<br />
+GO<br />
+<br />
+--等待1分钟30秒（由于同步的时间间隔设置为1分钟,所以要延时才能看到效果）<br />
+WAITFOR DELAY '00:01:30'<br />
+GO<br />
+<br />
+--查询一下备用数据库,看看同步是否成功<br />
+SELECT * FROM Db_test_bak.dbo.TB_test<br />
+<br />
+/*--结果:<br />
+ID          <br />
+----------- <br />
+<br />
+（所影响的行数为 0 行）<br />
+--*/<br />
+<br />
+--测试成功<br />
+GO<br />
+<br />
+--最后删除所有的测试<br />
+DROP DATABASE Db_test,Db_test_bak<br />
+EXEC msdb..sp_delete_job @job_name=N'数据同步处理'<br />
+GO<br />
+<br />
+<br />
+/*===========================================================*/<br />
+<br />
+/*--服务器档机处理说明<br />
+使用这种方式建立的数据库同步，当主数据库不可用时（例如，主数据库损坏或者停机检修）<br />
+可以使用以下两种方法使备用数据库可用。<br />
+--*/<br />
+<br />
+--1. 如果主数据库损坏，无法备份出最新的日志，可以直接使用下面的语句使备用数据库可读写（丢失最近一次日志还原后的所有数据）。<br />
+--RESTORE LOG Db_test_bak WITH RECOVERY<br />
+<br />
+<br />
+--2. 如果主数据库可以备份出最新日志，则可以使用下面的语句。<br />
+--先备份主数据库的最新的事务日志<br />
+--BACKUP LOG Db_test TO DISK=''c:\test_log.bak'' WITH FORMAT<br />
+--再在备用数据库中恢复最新的事务日志，并且使备用数据库可读写（升级为主数据库）<br />
+--RESTORE LOG Db_test_bak FROM DISK='c:\test_log.bak'<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+简单地说:<br />
+1. 你的sql服务要使用指定的windows用户登陆, 而不能使用"本地系统帐户"<br />
+2. 用于登陆sql服务的用户要求对共享目录具有所有权限<br />
+3. 如果你的电脑没有加入到域, 还必须保证源和目标服务器的sql服务设置的登陆用户是一样的(用户名和密码都一样)<br />
+<br />
+<br />
+<br />
+网络备份主要是权限设置问题, 参考下面的备份文件共享目录权限设置方法去解决目录的共享权限就可以了<br />
+<br />
+下面假设是假设A服务器上的数据库备份到B服务器上的共享目录权限设置(两台服务器应该在局域网内,允许目录共享访问)::<br />
+<br />
+1.机器A,B创建一个同名的windows用户,用户组设置为administrators,并设置相同的密码,做为备份文件夹文件夹的有效访问用户,操作:<br />
+我的电脑<br />
+--控制面板<br />
+--管理工具<br />
+--计算机管理<br />
+--用户和组<br />
+--右键用户<br />
+--新建用户<br />
+--建立一个隶属于administrator组的登陆windows的用户<br />
+<br />
+2.在B机器器上,新建一个共享目录,做为备份文件的存放目录,操作:<br />
+我的电脑--D:\ 新建一个目录,名为: BAK<br />
+--右键这个新建的目录<br />
+--属性--共享<br />
+--选择"共享该文件夹"<br />
+--通过"权限"按纽来设置具体的用户权限,保证第一步中创建的用户具有对该文件夹的所有权限<br />
+--确定<br />
+<br />
+<br />
+3.设置 MSSQLSERVER 及 SQLSERVERAGENT 服务的启动用户<br />
+开始--程序--管理工具--服务<br />
+--右键 MSSQLSERVER<br />
+--属性--登陆--选择"此账户"<br />
+--输入或者选择第一步中创建的windows登录用户名<br />
+--"密码"中输入该用户的密码<br />
+--确定<br />
+--同样的方法设置 SQLSERVERAGENT<br />
+<br />
+4.在A机器上完成对B机器BAK目录的映射<br />
+<br />
+5.查询分析器中执行下面的语句,检验是否成功:<br />
+  exec master..xp_cmdshell 'dir 映射的盘符'<br />
+<br />
+6.A服务器上做备份计划<br />
+<br />
+备注:创建一个新的用户只是为了让MSSQLSERVER服务的启动帐户与共享目录的有效访问同名且密码相同,这样才能通过验证(所以你也可以用其他有效的用户来代替,只需要满足用户名和密码相同,并且拥有足够的权限)<br />
+<br />
+<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:33

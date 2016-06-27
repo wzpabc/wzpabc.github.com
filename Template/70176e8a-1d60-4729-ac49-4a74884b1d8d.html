@@ -1,0 +1,223 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>/**************************<br />
+系统数据库中查询表的所有字段以及描述（2008，2000区分）以及查询表的外键<br />
+<br />
+***************************/<br />
+----2008下<br />
+<br />
+-------方法一----表的扩展属性01------<br />
+SELECT   *<br />
+FROM   ::fn_listextendedproperty (NULL, 'user', 'dbo', 'table', 't_bill_in', 'column', default)<br />
+<br />
+<br />
+<br />
+SELECT <br />
+    CAST(value AS nvarchar(200)) as tableDescription<br />
+    FROM fn_listextendedproperty ('MS_Description', 'user', 'dbo', 'table', 'T_Bill_Cedula_Detail', default, default);<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+-----方法二----表的扩展属性描述-----<br />
+SELECT <br />
+    表名       = case when a.colorder=1 then d.name else '' end,<br />
+    表说明     = case when a.colorder=1 then isnull(f.value,'') else '' end,<br />
+    字段序号   = a.colorder,<br />
+    字段名     = a.name,<br />
+    标识       = case when COLUMNPROPERTY( a.id,a.name,'IsIdentity')=1 then '√'else '' end,<br />
+    主键       = case when exists(SELECT 1 FROM sysobjects where xtype='PK' and parent_obj=a.id and name in (<br />
+                     SELECT name FROM sysindexes WHERE indid in(<br />
+                        SELECT indid FROM sysindexkeys WHERE id = a.id AND colid=a.colid))) then '√' else '' end,<br />
+    类型       = b.name,<br />
+    占用字节数 = a.length,<br />
+    长度       = COLUMNPROPERTY(a.id,a.name,'PRECISION'),<br />
+    小数位数   = isnull(COLUMNPROPERTY(a.id,a.name,'Scale'),0),<br />
+    允许空     = case when a.isnullable=1 then '√'else '' end,<br />
+    默认值     = isnull(e.text,''),<br />
+    字段说明   = isnull(g.[value],'')<br />
+FROM <br />
+    syscolumns a<br />
+left join <br />
+    systypes b <br />
+on <br />
+    a.xusertype=b.xusertype<br />
+inner join <br />
+    sysobjects d <br />
+on <br />
+    a.id=d.id  and d.xtype='U' and  d.name<>'dtproperties'<br />
+left join <br />
+    syscomments e <br />
+on <br />
+    a.cdefault=e.id<br />
+left join <br />
+    dbo.dtproperties  g <br />
+on <br />
+    a.id=g.id and a.colid=g.objectid  <br />
+left join <br />
+    dbo.dtproperties  f <br />
+on <br />
+    d.id=f.id and f.objectid=0<br />
+where <br />
+    d.name='要查询的表'    --如果只查询指定表,加上此条件<br />
+order by <br />
+    a.id,a.colorder<br />
+<br />
+----方法03----表字段的描述（简易）<br />
+Select <br />
+col.[name]  as '字段名',   <br />
+col.[length]as '长度'  , <br />
+ type.[name] as '类型'  ,  <br />
+ pro.value   as '描述'  <br />
+ From syscolumns as col  <br />
+Left Join systypes as type on col.xtype = type.xtype  <br />
+Left Join dbo.dtproperties as pro on col.id = pro.id and col.colid = pro.objectid   <br />
+where col.id = (Select id From Sysobjects Where name = 'T_DeptClass')<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+---2000下------------------------<br />
+SELECT <br />
+    表名       = case when a.colorder=1 then d.name else '' end,<br />
+    表说明     = case when a.colorder=1 then isnull(f.value,'') else '' end,<br />
+    字段序号   = a.colorder,<br />
+    字段名     = a.name,<br />
+    标识       = case when COLUMNPROPERTY( a.id,a.name,'IsIdentity')=1 then '√'else '' end,<br />
+    主键       = case when exists(SELECT 1 FROM sysobjects where xtype='PK' and parent_obj=a.id and name in (<br />
+                     SELECT name FROM sysindexes WHERE indid in(<br />
+                        SELECT indid FROM sysindexkeys WHERE id = a.id AND colid=a.colid))) then '√' else '' end,<br />
+    类型       = b.name,<br />
+    占用字节数 = a.length,<br />
+    长度       = COLUMNPROPERTY(a.id,a.name,'PRECISION'),<br />
+    小数位数   = isnull(COLUMNPROPERTY(a.id,a.name,'Scale'),0),<br />
+    允许空     = case when a.isnullable=1 then '√'else '' end,<br />
+    默认值     = isnull(e.text,''),<br />
+    字段说明   = isnull(g.[value],'')<br />
+FROM <br />
+    syscolumns a<br />
+left join <br />
+    systypes b <br />
+on <br />
+    a.xusertype=b.xusertype<br />
+inner join <br />
+    sysobjects d <br />
+on <br />
+    a.id=d.id  and d.xtype='U' and  d.name<>'dtproperties'<br />
+left join <br />
+    syscomments e <br />
+on <br />
+    a.cdefault=e.id<br />
+left join <br />
+    sysproperties g <br />
+on <br />
+    a.id=g.id and a.colid=g.smallid  <br />
+left join <br />
+    sysproperties f <br />
+on <br />
+    d.id=f.id and f.smallid=0<br />
+where <br />
+    d.name='要查询的表'    --如果只查询指定表,加上此条件<br />
+order by <br />
+    a.id,a.colorder<br />
+<br />
+=-----------方法02---表的描述2000下----<br />
+Select <br />
+col.[name]  as '字段名',   <br />
+col.[length]as '长度'  , <br />
+ type.[name] as '类型'  ,  <br />
+ pro.value   as '描述'  <br />
+ From syscolumns as col  <br />
+Left Join systypes as type on col.xtype = type.xtype  <br />
+Left Join sysProperties as pro on col.id = pro.id and col.colid = pro.smallid  <br />
+where col.id = (Select id From Sysobjects Where name = 'T_DeptClass')<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+-----------------查询一个表的所有外键<br />
+SELECT 主键列ID=b.rkey <br />
+    ,主键列名=(SELECT name FROM syscolumns WHERE colid=b.rkey AND id=b.rkeyid) <br />
+    ,外键表ID=b.fkeyid <br />
+    ,外键表名称=object_name(b.fkeyid) <br />
+    ,外键列ID=b.fkey <br />
+    ,外键列名=(SELECT name FROM syscolumns WHERE colid=b.fkey AND id=b.fkeyid) <br />
+    ,级联更新=ObjectProperty(a.id,'CnstIsUpdateCascade') <br />
+    ,级联删除=ObjectProperty(a.id,'CnstIsDeleteCascade') <br />
+FROM sysobjects a <br />
+    join sysforeignkeys b on a.id=b.constid <br />
+    join sysobjects c on a.parent_obj=c.id <br />
+where a.xtype='f' AND c.xtype='U' <br />
+    and object_name(b.rkeyid)='titles'<br />
+<br />
+SELECT *<br />
+FROM information_schema.columns<br />
+WHERE TABLE_CATALOG='数据库名' <br />
+    AND TABLE_NAME = '表名'<br />
+    AND COLUMN_NAME='列名'<br />
+<br />
+select *<br />
+from syscolumns<br />
+where id=object_id('tableName') and name='fieldName'<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+------------2005以及2008中，查询表的字段---------------------<br />
+<br />
+DECLARE @tableName nvarchar(100)<br />
+SET @tableName ='tab'<br />
+SELECT  (    <br />
+       CASE WHEN a.colorder=1 THEN d.name ELSE '' END)表名,<br />
+        a.colorder 字段序号, a.name 字段名, <br />
+        (CASE WHEN COLUMNPROPERTY( a.id,a.name,'IsIdentity')=1 THEN '√' ELSE '' END) 标识, <br />
+        (CASE WHEN (    SELECT COUNT(*)     FROM sysobjects     WHERE (name IN               (SELECT name               FROM sysindexes               WHERE (id = a.id) AND (indid IN                         (SELECT indid                         FROM sysindexkeys                       WHERE (id = a.id) AND (colid IN                     (SELECT colid                     FROM syscolumns                     WHERE (id = a.id) AND (name = a.name))))))) AND             (xtype = 'PK'))>0 THEN '√' ELSE '' END) 主键, <br />
+        b.name 类型, <br />
+        a.length 占用字节数, <br />
+        COLUMNPROPERTY(a.id,a.name,'PRECISION') AS 长度, <br />
+        ISNULL(COLUMNPROPERTY(a.id,a.name,'Scale'),0) AS 小数位数, <br />
+        (CASE WHEN a.isnullable=1 THEN '√' ELSE '' END) 允许空, <br />
+        ISNULL(e.text,'') 默认值, ISNULL(g.[value],'') AS 字段说明 <br />
+        FROM syscolumns a <br />
+        LEFT JOIN systypes b ON a.xtype=b.xusertype <br />
+        INNER JOIN sysobjects d ON a.id=d.id AND d.xtype='U' AND d.name <>'dtproperties' <br />
+        LEFT JOIN syscomments e ON a.cdefault=e.id <br />
+        LEFT JOIN sys.extended_properties g  ON a.id=g.major_id AND a.colid = g.major_id WHERE d.name=@tableName <br />
+        ORDER BY a.id,a.colorder <br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+SELECT <br />
+    CAST(value AS nvarchar(200)) as tableDescription<br />
+    FROM fn_listextendedproperty ('MS_Description', 'user', 'dbo', 'table', 't_bank', default, default);<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+declare @tablename varchar(100)<br />
+set @tablename=''<br />
+SELECT <br />
+       objname<br />
+    ,CAST(value AS nvarchar(200)) as fieldDescription<br />
+    FROM fn_listextendedproperty ('MS_Description', 'user', 'dbo', 'table', @TableName , 'column', default) AS E<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:07

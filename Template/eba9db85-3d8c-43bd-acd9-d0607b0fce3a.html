@@ -1,0 +1,43 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>SELECT  DB_NAME(R.database_id) AS DatabaseName ,<br />
+        S.original_login_name AS LoginName ,<br />
+        S.host_name AS ClientMachine ,<br />
+        S.program_name AS ApplicationName ,<br />
+        R.start_time AS RequestStartTime ,<br />
+        ST.text AS SQLQuery ,<br />
+        QP.query_plan AS ExecutionPlan ,<br />
+        R.cpu_time AS CPUTime ,<br />
+        R.total_elapsed_time AS TotalTimeElapsed ,<br />
+        R.open_transaction_count AS TotalTransactionOpened ,<br />
+        R.reads ,<br />
+        R.logical_reads ,<br />
+        R.writes AS TotalWrites<br />
+FROM    sys.dm_exec_requests AS R<br />
+        INNER JOIN sys.dm_exec_sessions AS S ON R.session_id = S.session_id --AND S.session_id>50<br />
+        CROSS APPLY sys.dm_exec_sql_text(R.sql_handle) AS ST<br />
+        CROSS APPLY sys.dm_exec_query_plan(R.plan_handle) AS QP<br />
+ORDER BY TotalTimeElapsed DESC <br />
+GO<br />
+<br />
+<br />
+--监控当前打开的游标<br />
+<br />
+SELECT  S.host_name AS ClientMachine ,<br />
+        S.program_name AS ApplicationName ,<br />
+        S.original_login_name AS LoginName ,<br />
+        C.name AS CursorName ,<br />
+        C.properties AS CursorOptions ,<br />
+        C.creation_time AS CursorCreatinTime ,<br />
+        ST.text AS SQLQuery ,<br />
+        C.is_open AS IsCursorOpen ,<br />
+        C.worker_time / 1000 AS DurationInMiliSeconds ,<br />
+        C.reads AS NumberOfReads ,<br />
+        C.writes AS NumberOfWrites<br />
+FROM    sys.dm_exec_cursors (0) AS C<br />
+        INNER JOIN sys.dm_exec_sessions AS S ON C.session_id = S.session_id<br />
+        CROSS APPLY sys.dm_exec_sql_text(C.sql_handle) AS ST<br />
+ORDER BY DurationInMiliSeconds DESC <br />
+GO<br />
+<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:12

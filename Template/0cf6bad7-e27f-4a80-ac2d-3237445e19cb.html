@@ -1,0 +1,85 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>SQL Server 并没有内置邮件服务器（Mail Server），它跟我们发送邮件一样，需要用户名和密码通过 SMTP（Simple Message Transfer Protocol）去连接邮件服务器。我们想让 SQL Server 来发送邮件，首先要告诉它用户名称，密码，服务器地址，网络传送协议，邮件服务器的端口。。。等信息。<br />
+　　以下脚本实现了数据库邮件的配置：<br />
+--下面是具体的配置邮件步骤 <br />
+--在 sa 系统帐户下运行。 <br />
+--<br />
+--1. 启用 SQL Server 2005 邮件功能。 <br />
+use master<br />
+go<br />
+exec sp_configure 'show advanced options',1<br />
+go<br />
+reconfigure<br />
+go<br />
+exec sp_configure 'Database mail XPs',1<br />
+go<br />
+reconfigure<br />
+go<br />
+--2. 在 SQL Server 2005 中添加邮件帐户（account） <br />
+exec msdb..sysmail_add_account_sp<br />
+        @account_name            = 'jgj'      -- 邮件帐户名称（SQL Server 使用）<br />
+       ,@email_address           = [email='jiaguijun@trusee.com']'jiaguijun@trusee.com'[/email] -- 发件人邮件地址<br />
+       ,@display_name            = null                      -- 发件人姓名<br />
+       ,@replyto_address         = null<br />
+       ,@description             = null<br />
+       ,@mailserver_name         = '203.86.70.229'           -- 邮件服务器地址<br />
+       ,@mailserver_type         = 'SMTP'                    -- 邮件协议（SQL 2005 只支持 SMTP）<br />
+       ,@port                    = 25                        -- 邮件服务器端口<br />
+       ,@username                = [email='jiaguijun@trusee.com']'jiaguijun@trusee.com'[/email] -- 用户名<br />
+       ,@password                = 'xxxxxx'      -- 密码<br />
+       ,@use_default_credentials = 0<br />
+       ,@enable_ssl              = 0<br />
+       ,@account_id              = null<br />
+--3. 在 SQL Server 2005 中添加 profile <br />
+exec msdb..sysmail_add_profile_sp @profile_name = 'dba_profile'      -- profile 名称 <br />
+                                 ,@description  = 'dba mail profile' -- profile 描述 <br />
+                                 ,@profile_id   = null<br />
+-- 在 SQL Server 2005 中映射 account 和 profile <br />
+exec msdb..sysmail_add_profileaccount_sp  @profile_name    = 'dba_profile' -- profile 名称 <br />
+                                         ,@account_name    = 'jgj'     -- account 名称 <br />
+                                         ,@sequence_number = 1             -- account 在 profile 中顺序 <br />
+--5. 利用 SQL Server 2005 Database Mail 功能发送邮件。 <br />
+exec msdb..sp_send_dbmail @profile_name =  'dba_profile'     -- profile 名称 <br />
+                         ,@recipients   =  [email='jiaguijun@trusee.com']'jiaguijun@trusee.com'[/email]  -- 收件人邮箱 <br />
+                         ,@subject      =  'SQL Server 2005 Mail 测试' -- 邮件标题 <br />
+                         ,@body         =  'Hello Mail!测试'   -- 邮件内容 <br />
+                         ,@body_format  =  'TEXT'      -- 邮件格式 <br />
+--6. 查看邮件发送情况： <br />
+use msdb<br />
+go<br />
+select * from sysmail_allitems<br />
+select * from sysmail_mailitems<br />
+select * from sysmail_event_log<br />
+--如果不是以 sa 帐户发送邮件，则可能会出现错误： <br />
+--<br />
+--Msg 229, Level 14, State 5, Procedure sp_send_dbmail, Line 1<br />
+--EXECUTE permission denied on object 'sp_send_dbmail', database 'msdb', schema 'dbo'.<br />
+--<br />
+--这是因为，当前 SQL Server 登陆帐户（login），在 msdb 数据库中没有发送数据库邮件的权限，需要加入 msdb 数据库用户，并通过加入 sp_addrolemember 角色赋予权限。假设该SQL Server 登陆帐户名字为 “dba” <br />
+--<br />
+--use msdb<br />
+--go<br />
+--<br />
+--create user dba for login dba<br />
+--go<br />
+--<br />
+--exec dbo.sp_addrolemember @rolename   = 'DatabaseMailUserRole',<br />
+--                          @membername = 'dba'<br />
+--go<br />
+--<br />
+--此时，再次发送数据库邮件，仍可能有错误： <br />
+--<br />
+--Msg 14607, Level 16, State 1, Procedure sp_send_dbmail, Line 119<br />
+--profile name is not valid<br />
+--<br />
+--虽然，数据库用户 “dba” 已经在 msdb 中拥有发送邮件的权限了，但这还不够，他还需要有使用 profile：“dba_profile” 的权限。 <br />
+--<br />
+--use msdb<br />
+--go<br />
+--<br />
+--exec sysmail_add_principalprofile_sp  @principal_name = 'dba'<br />
+--                                     ,@profile_name   = 'dba_profile'<br />
+--                                     ,@is_default     = 1<br />
+--<br />
+--从上面的参数 @is_default=1 可以看出，一个数据库用户可以在多个 mail profile 拥有发送权限。<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:32

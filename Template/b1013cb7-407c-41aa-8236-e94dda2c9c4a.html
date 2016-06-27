@@ -1,0 +1,195 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>Transact-SQL语句进行导入导出：<br />
+<br />
+1.在SQL SERVER里查询access数据:<br />
+-- ======================================================<br />
+SELECT * <br />
+FROM OpenDataSource( 'Microsoft.Jet.OLEDB.4.0',<br />
+'Data Source="c:\DB.mdb";User ID=Admin;Password=')...表名<br />
+<br />
+select *  from opendatasource('Microsoft.Jet.OLEDB.4.0','Data Source="D:\db.mdb";User ID=Admin;Password=')...Student where name = '我'<br />
+select * from newTable<br />
+-------------------------------------------------------------------------------------------------<br />
+2.将access导入SQL server <br />
+-- ======================================================<br />
+在SQL SERVER 里运行:<br />
+SELECT *<br />
+INTO newtable<br />
+FROM OPENDATASOURCE ('Microsoft.Jet.OLEDB.4.0', <br />
+      'Data Source="c:\DB.mdb";User ID=Admin;Password=' )...表名<br />
+-------------------------------------------------------------------------------------------------<br />
+3.将SQL SERVER表里的数据插入到Access表中<br />
+-- ======================================================<br />
+在SQL SERVER 里运行：<br />
+insert into OpenDataSource( 'Microsoft.Jet.OLEDB.4.0',<br />
+  'Data Source=" c:\DB.mdb";User ID=Admin;Password=')...表名 <br />
+(列名1,列名2)<br />
+select 列名1,列名2  from  sql表<br />
+<br />
+实例：<br />
+insert into  OPENROWSET('Microsoft.Jet.OLEDB.4.0', <br />
+   'C:\db.mdb';'admin';'', Test) <br />
+select id,name from Test<br />
+INSERT INTO OPENROWSET('Microsoft.Jet.OLEDB.4.0', 'c:\trade.mdb'; 'admin'; '', 表名)<br />
+SELECT *<br />
+FROM sqltablename<br />
+<br />
+<br />
+insert into  OpenDataSource('Microsoft.Jet.OLEDB.4.0','Data Source="D:\db.mdb";User ID=Admin;Password=')...Student(studentid,name) select staffid,name from staff<br />
+insert into  OPENROWSET('Microsoft.Jet.OLEDB.4.0', <br />
+   'D:\db.mdb';'admin';'', Student) <br />
+select accountid,name from tblbaccount<br />
+<br />
+select * from openrowset('Microsoft.Jet.OLEDB.4.0','D:\db.mdb';'admin';'',Student)<br />
+-------------------------------------------------------------------------------------------------<br />
+<br />
+二、SQL SERVER 和EXCEL的数据导入导出<br />
+1、在SQL SERVER里查询Excel数据:<br />
+-- ======================================================<br />
+SELECT * <br />
+FROM OpenDataSource( 'Microsoft.Jet.OLEDB.4.0',<br />
+'Data Source="c:\book1.xls";User ID=Admin;Password=;Extended properties=Excel 5.0')...[Sheet1$]<br />
+下面是个查询的示例，它通过用于 Jet 的 OLE DB 提供程序查询 Excel 电子表格。<br />
+SELECT * <br />
+FROM OpenDataSource ( 'Microsoft.Jet.OLEDB.4.0',<br />
+  'Data Source="c:\Finance\account.xls";User ID=Admin;Password=;Extended properties=Excel 5.0')...xactions<br />
+<br />
+SELECT * <br />
+FROM OpenDataSource ( 'Microsoft.Jet.OLEDB.4.0',<br />
+  'Data Source="D:\财务统计科目.xls";User ID=Admin;Password=;Extended properties=Excel 5.0')...vib<br />
+-------------------------------------------------------------------------------------------------<br />
+<br />
+2、将Excel的数据导入SQL server :<br />
+-- ======================================================<br />
+SELECT * into newtable<br />
+FROM OpenDataSource( 'Microsoft.Jet.OLEDB.4.0',<br />
+  'Data Source="c:\book1.xls";User ID=Admin;Password=;Extended properties=Excel 5.0')...[Sheet1$]<br />
+实例:<br />
+SELECT * into newtable<br />
+FROM OpenDataSource( 'Microsoft.Jet.OLEDB.4.0',<br />
+  'Data Source="c:\Finance\account.xls";User ID=Admin;Password=;Extended properties=Excel 5.0')...xactions<br />
+-------------------------------------------------------------------------------------------------<br />
+<br />
+3、将SQL SERVER中查询到的数据导成一个Excel文件<br />
+-- ======================================================<br />
+T-SQL代码：<br />
+EXEC master..xp_cmdshell 'bcp 库名.dbo.表名out c:\Temp.xls -c -q -S"servername" -U"sa" -P""'<br />
+参数：S 是SQL服务器名；U是用户；P是密码<br />
+<br />
+EXEC master..xp_cmdshell 'bcp axzq.dbo.Staff out d:staff.xls -c -q -S"." -U"sa" -P"gazx"'<br />
+<br />
+说明：还可以导出文本文件等多种格式<br />
+实例:EXEC master..xp_cmdshell 'bcp saletesttmp.dbo.CusAccount out c:\temp1.xls -c -q -S"pmserver" -U"sa" -P"sa"'<br />
+EXEC master..xp_cmdshell 'bcp "SELECT au_fname, au_lname FROM pubs..authors ORDER BY au_lname" queryout C:\ authors.xls -c -Sservername -Usa -Ppassword'<br />
+<br />
+EXEC master..xp_cmdshell 'bcp "select name from axzq..staff order by name"  queryout d:staffName.xls -c -q -S"." -U"sa" -P"gazx"'<br />
+<br />
+在VB6中应用ADO导出EXCEL文件代码： <br />
+Dim cn  As New ADODB.Connection<br />
+cn.open "Driver={SQL Server};Server=WEBSVR;DataBase=WebMis;UID=sa;WD=123;"<br />
+cn.execute "master..xp_cmdshell 'bcp "SELECT col1, col2 FROM 库名.dbo.表名" queryout E:\DT.xls -c -Sservername -Usa -Ppassword'"<br />
+------------------------------------------------------------------------------------------------<br />
+<br />
+4、在SQL SERVER里往Excel插入数据:<br />
+-- ======================================================<br />
+insert into OpenDataSource( 'Microsoft.Jet.OLEDB.4.0',<br />
+'Data Source="c:\Temp.xls";User ID=Admin;Password=;Extended properties=Excel 5.0')...table1 (A1,A2,A3) values (1,2,3)<br />
+<br />
+T-SQL代码：<br />
+INSERT INTO  <br />
+OPENDATASOURCE('Microsoft.JET.OLEDB.4.0',  <br />
+'Extended Properties=Excel 8.0;Data source=C:\training\inventur.xls')...[Filiale1$]  <br />
+(bestand, produkt) VALUES (20, 'Test')  <br />
+-------------------------------------------------------------------------------------------------<br />
+<br />
+总结：利用以上语句，我们可以方便地将SQL SERVER、ACCESS和EXCEL电子表格软件中的数据进行转换，为我们提供了极大方便！<br />
+EXEC   master..xp_cmdshell   'bcp   "select OrderID,ShipName, ShipAddress, ShipCity, ShipRegion, ShipPostalCode, ShipCountry from Northwind.dbo.orders"   queryout   "d:\Oreders.txt" -t"|"    -c   -q   -S"127.0.0.1"   -U"sa"   -P""'  <br />
+SELECT  *    <br />
+  FROM  OpenDataSource('Microsoft.Jet.OLEDB.4.0','Data  Source="xxxx.xls";Extended  Properties="Excel  8.0";IMEX=1;Persist  Security  Info=False')...[a1$] <br />
+<br />
+二、SQL SERVER 和EXCEL的数据导入导出<br />
+1、在SQL SERVER里查询Excel数据:<br />
+-- ======================================================<br />
+SELECT * <br />
+FROM OpenDataSource( 'Microsoft.Jet.OLEDB.4.0',<br />
+'Data Source="c:\book1.xls";User ID=Admin;Password=;Extended properties=Excel 5.0')...[Sheet1$]<br />
+下面是个查询的示例，它通过用于 Jet 的 OLE DB 提供程序查询 Excel 电子表格。<br />
+SELECT * <br />
+FROM OpenDataSource ( 'Microsoft.Jet.OLEDB.4.0',<br />
+  'Data Source="c:\Finance\account.xls";User ID=Admin;Password=;Extended properties=Excel 5.0')...xactions<br />
+<br />
+SELECT * <br />
+FROM OpenDataSource ( 'Microsoft.Jet.OLEDB.4.0',<br />
+  'Data Source="d:\staff.xls";User ID=Admin;Password=;Extended properties=Excel 5.0')...staff<br />
+-------------------------------------------------------------------------------------------------<br />
+<br />
+2、将Excel的数据导入SQL server :<br />
+-- ======================================================<br />
+SELECT * into newtable<br />
+FROM OpenDataSource( 'Microsoft.Jet.OLEDB.4.0',<br />
+  'Data Source="c:\book1.xls";User ID=Admin;Password=;Extended properties=Excel 5.0')...[Sheet1$]<br />
+实例:<br />
+SELECT * into newtable<br />
+FROM OpenDataSource( 'Microsoft.Jet.OLEDB.4.0',<br />
+  'Data Source="c:\Finance\account.xls";User ID=Admin;Password=;Extended properties=Excel 5.0')...xactions<br />
+-------------------------------------------------------------------------------------------------<br />
+<br />
+3、将SQL SERVER中查询到的数据导成一个Excel文件<br />
+-- ======================================================<br />
+T-SQL代码：<br />
+EXEC master..xp_cmdshell 'bcp 库名.dbo.表名out c:\Temp.xls -c -q -S"servername" -U"sa" -P""'<br />
+参数：S 是SQL服务器名；U是用户；P是密码<br />
+说明：还可以导出文本文件等多种格式<br />
+实例:EXEC master..xp_cmdshell 'bcp saletesttmp.dbo.CusAccount out c:\temp1.xls -c -q -S"pmserver" -U"sa" -P"sa"'<br />
+EXEC master..xp_cmdshell 'bcp "SELECT au_fname, au_lname FROM pubs..authors ORDER BY au_lname" queryout C:\ authors.xls -c -Sservername -Usa -Ppassword'<br />
+在VB6中应用ADO导出EXCEL文件代码： <br />
+Dim cn  As New ADODB.Connection<br />
+cn.open "Driver={SQL Server};Server=WEBSVR;DataBase=WebMis;UID=sa;WD=123;"<br />
+cn.execute "master..xp_cmdshell 'bcp "SELECT col1, col2 FROM 库名.dbo.表名" queryout E:\DT.xls -c -Sservername -Usa -Ppassword'"<br />
+------------------------------------------------------------------------------------------------<br />
+<br />
+4、在SQL SERVER里往Excel插入数据:<br />
+-- ======================================================<br />
+insert into OpenDataSource( 'Microsoft.Jet.OLEDB.4.0',<br />
+'Data Source="c:\Temp.xls";User ID=Admin;Password=;Extended properties=Excel 5.0')...table1 (A1,A2,A3) values (1,2,3)<br />
+<br />
+T-SQL代码：<br />
+INSERT INTO  <br />
+OPENDATASOURCE('Microsoft.JET.OLEDB.4.0',  <br />
+'Extended Properties=Excel 8.0;Data source=C:\training\inventur.xls')...[Filiale1$]  <br />
+(bestand, produkt) VALUES (20, 'Test')  <br />
+<br />
+<br />
+<br />
+--开启xp_cmdshell<br />
+--SQL Server blocked access to procedure 'xp_cmdshell'<br />
+sp_configure 'show advanced options', 1<br />
+go<br />
+reconfigure<br />
+go<br />
+sp_configure 'xp_cmdshell', 1<br />
+go<br />
+reconfigure<br />
+go<br />
+<br />
+--开启sp_OACreate<br />
+--SQL Server blocked access to procedure 'sys.sp_OACreate'<br />
+sp_configure 'show advanced options', 1;<br />
+go<br />
+reconfigure;<br />
+go<br />
+sp_configure 'ole automation procedures', 1;<br />
+go<br />
+reconfigure;<br />
+go<br />
+<br />
+<br />
+sp_configure 'Ad Hoc Distributed Queries',1;<br />
+go<br />
+reconfigure<br />
+go<br />
+<br />
+<br />
+<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:32

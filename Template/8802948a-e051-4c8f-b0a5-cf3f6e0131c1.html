@@ -1,0 +1,33 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p> <br />
+ --BCP OUT<br />
+ SELECT <br />
+'IF exists(SELECT TOP 1 1 FROM  '+TABLE_CATALOG+'.'+TABLE_SCHEMA+'.'+TABLE_NAME+') ' + char(10)<br />
+         + 'BEGIN ' + char(10)<br />
+         + '	PRINT ''@ECHO EXPORTING TABLE '+TABLE_NAME+''' ' + char(10)<br />
+         + '	PRINT ''bcp '+TABLE_CATALOG+'.'+TABLE_SCHEMA+'.'+TABLE_NAME+' format nul -c -T -t^| -ffmt_'+TABLE_NAME+'.fmt'' ' + char(10)<br />
+         + '	PRINT ''bcp '+TABLE_CATALOG+'.'+TABLE_SCHEMA+'.'+TABLE_NAME+' out data_'+TABLE_NAME+'.txt -c -T -t^|'' ' + char(10)<br />
+         + '	PRINT ''@ECHO EXPORTED TABLE '+TABLE_NAME+''' ' + char(10)<br />
+         + 'end ' + char(10)<br />
+         + 'ELSE ' + char(10)<br />
+         + '	BEGIN ' + char(10)<br />
+         + '		PRINT ''@ECHO TABLE '+TABLE_NAME+' EMPTY SKIP'' ' + char(10)<br />
+         + '	END;'<br />
+ FROM  INFORMATION_SCHEMA.TABLES AS t WHERE t.TABLE_TYPE='BASE TABLE' AND t.TABLE_SCHEMA='DBO'  <br />
+ GO<br />
+ --BCP  IN<br />
+ <br />
+  SELECT <br />
+'IF exists(SELECT TOP 1 1 FROM  '+TABLE_CATALOG+'.'+TABLE_SCHEMA+'.'+TABLE_NAME+') ' + char(10)<br />
+         + 'BEGIN ' + char(10)<br />
+         + '	PRINT ''@ECHO IMPORTING TABLE '+TABLE_NAME+''' ' + char(10) <br />
+         + '	PRINT ''bcp '+TABLE_CATALOG+'.'+TABLE_SCHEMA+'.'+TABLE_NAME+' IN data_'+TABLE_NAME+'.txt -ffmt_'+TABLE_NAME+'.fmt -T '' ' + char(10)<br />
+         + '	PRINT ''@ECHO IMPORTED TABLE '+TABLE_NAME+''' ' + char(10)<br />
+         + 'end ' + char(10)<br />
+         + 'ELSE ' + char(10)<br />
+         + '	BEGIN ' + char(10)<br />
+         + '		PRINT ''@ECHO TABLE '+TABLE_NAME+' EMPTY SKIP'' ' + char(10)<br />
+         + '	END;'<br />
+ FROM  INFORMATION_SCHEMA.TABLES AS t WHERE t.TABLE_TYPE='BASE TABLE' AND t.TABLE_SCHEMA='DBO'  <br />
+ <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:31

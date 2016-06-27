@@ -1,0 +1,47 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>if   exists   (select   *   from   dbo.sysobjects   where   id   =   object_id(N'[dbo].[f_convert]')   and   xtype   in   (N'FN',   N'IF',   N'TF'))   <br />
+  drop   function   [dbo].[f_convert]   <br />
+  GO   <br />
+    <br />
+  /*--全角/半角转换   <br />
+    <br />
+  转换说明   <br />
+  全角字符从的unicode编码从65281~65374   <br />
+  半角字符从的unicode编码从       33~126   <br />
+  空格比较特殊,全角为   12288,半角为   32   <br />
+  而且除空格外,全角/半角按unicode编码排序在顺序上是对应的   <br />
+  所以可以直接通过用+-法来处理非空格数据,对空格单独处理   <br />
+  like的时候,指定排序规则   COLLATE   Latin1_General_BIN   <br />
+  是保证字符顺序按unicode编码排序   <br />
+  (此函数部分思路参考了CSDN上大力的转换函数)   <br />
+  --邹建   2005.01(引用请保留此信息)--*/   <br />
+    <br />
+  /*--调用示例   <br />
+    <br />
+  declare   @s1   varchar(8000)   <br />
+  select   @s1='中   　２-３４５６a７８ＳＴＵＶabｎ中国ｏｐｗｘｙｚ'   <br />
+  select   dbo.f_convert(@s1,0),dbo.f_convert(@s1,1)   <br />
+  --*/   <br />
+  CREATE   FUNCTION   f_Convert(   <br />
+  @str   NVARCHAR(4000),   --要转换的字符串   <br />
+  @flag   bit                         --转换标志,0转换成半角,1转换成全角   <br />
+  )RETURNS   nvarchar(4000)   <br />
+  AS   <br />
+  BEGIN   <br />
+  DECLARE   @pat   nvarchar(8),@step   int,@i   int,@spc   int   <br />
+  IF   @flag=0   <br />
+  SELECT   @pat=N'%[！-～]%',@step=-65248,   <br />
+  @str=REPLACE(@str,N'　',N'   ')   <br />
+  ELSE   <br />
+  SELECT   @pat=N'%[!-~]%',@step=65248,   <br />
+  @str=REPLACE(@str,N'   ',N'　')   <br />
+  SET   @i=PATINDEX(@pat   COLLATE   LATIN1_GENERAL_BIN,@str)   <br />
+  WHILE   @i>0   <br />
+  SELECT   @str=REPLACE(@str,   <br />
+  SUBSTRING(@str,@i,1),   <br />
+  NCHAR(UNICODE(SUBSTRING(@str,@i,1))+@step))   <br />
+  ,@i=PATINDEX(@pat   COLLATE   LATIN1_GENERAL_BIN,@str)   <br />
+  RETURN(@str)   <br />
+  END   <br />
+  GO   <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:32

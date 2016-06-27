@@ -1,0 +1,39 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>---测试数据---<br />
+if object_id('[tb]') is not null drop table [tb]<br />
+go<br />
+create table [tb]([url] varchar(61))<br />
+insert [tb]<br />
+select 'http://news.sina.com.cn/h/2009-05-19/032817840950.shtml' union all<br />
+select 'http://news.sina.com.cn/h/2009-05-19/sfsfsf.apsx?id=123123123'<br />
+ <br />
+---更新---<br />
+update tb<br />
+set url=left(url,len(url)-charindex('/',reverse(url))+1)<br />
+<br />
+---查询---<br />
+select * from [tb]<br />
+<br />
+---结果---<br />
+url                                                           <br />
+------------------------------------------------------------- <br />
+http://news.sina.com.cn/h/2009-05-19/<br />
+http://news.sina.com.cn/h/2009-05-19/<br />
+<br />
+1. 1<>1 的用处：<br />
+用于只取结构不取数据的场合,例如：<br />
+create table table_temp tablespace tbs_temp as<br />
+select * from table_ori where 1<>1 <br />
+建成一个与table_ori 结构相同的表table_temp，但是不要table_ori 里的数据。<br />
+（除了表结构，其它结构也同理)<br />
+<br />
+2.1=1用于动态SQL,例如:<br />
+lv_string = 'select tbl_name,tbl_desc from tbl_test where 1=1 '+l_condition;<br />
+当用户选择了查询的名称'abc'时<br />
+l_condition ='and tbl_name = ''abc''';<br />
+但是当用户没有选择名称查询时l_condition就为空串''这样 <br />
+lv_string = 'select tbl_name,tbl_desc from tbl_test where 1=1 ',<br />
+运行也不会出错，相当于没有限制名称条件。但是如果没有1=1的条件，则<br />
+lv_string = 'select tbl_name,tbl_desc from tbl_test where ';<br />
+这样就会报错。<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:07

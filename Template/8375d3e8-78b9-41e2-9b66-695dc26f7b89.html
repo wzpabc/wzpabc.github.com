@@ -1,0 +1,57 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--库存先进先出简单例子：<br />
+<br />
+create table t(<br />
+id int identity(1,1),<br />
+name varchar(50),--商品名称<br />
+j int,        --入库数量<br />
+c int,        --出库数量<br />
+jdate datetime --入库时间<br />
+)<br />
+insert into t(name,j,c,jdate) select  'A',100,0,'2007-12-01'<br />
+insert into t(name,j,c,jdate) select  'A',200,0,'2008-01-07'<br />
+insert into t(name,j,c,jdate) select  'B',320,0,'2007-12-21'<br />
+insert into t(name,j,c,jdate) select  'A',100,0,'2008-01-15'<br />
+insert into t(name,j,c,jdate) select  'B',90,0,'2008-02-03'<br />
+insert into t(name,j,c,jdate) select  'A',460,0,'2008-02-01'<br />
+insert into t(name,j,c,jdate) select  'A',510,0,'2008-03-01'<br />
+go<br />
+<br />
+<br />
+<br />
+create proc wsp<br />
+@name varchar(50),--商品名称<br />
+@cost int         --销售量<br />
+as<br />
+--先得出该货物的库存是否够<br />
+declare @spare float --剩余库存<br />
+select @spare=sum(j)-sum(c) from t where name=@name <br />
+if(@spare>=@cost)<br />
+begin<br />
+    --根据入库日期采用先进先出原则对货物的库存进行处理<br />
+    update t set c=<br />
+    case when (select @cost-isnull(sum(j),0)+isnull(sum(c),0) from t where name=@name and jdate<=a.jdate and j!=c)>=0<br />
+    then a.j <br />
+    else <br />
+        case when (select @cost-isnull(sum(j),0)+isnull(sum(c),0) from t where name=@name and jdate<a.jdate and j!=c)<0 then 0 <br />
+        else (select @cost-isnull(sum(j),0)+isnull(sum(c),0)+a.c from t where name=@name and jdate<a.jdate and j!=c) <br />
+        end <br />
+    end<br />
+    from t a where name=@name and j!=c <br />
+end<br />
+else<br />
+    raiserror('库存不足',16,1)    <br />
+    return <br />
+go<br />
+<br />
+<br />
+--测试：<br />
+<br />
+exec wsp @name='A',@cost=180<br />
+select * from t<br />
+<br />
+<br />
+--drop table t<br />
+--drop proc wsp<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:08

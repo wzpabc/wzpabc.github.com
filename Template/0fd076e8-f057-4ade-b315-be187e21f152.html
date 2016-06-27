@@ -1,0 +1,40 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--创建测试表<br />
+CREATE TABLE t1(ID int IDENTITY,A int)<br />
+GO<br />
+--插入记录<br />
+INSERT t1 VALUES(1)<br />
+GO<br />
+<br />
+--1. 将IDENTITY(标识)列变为普通列<br />
+ALTER TABLE t1 ADD ID_temp int<br />
+GO<br />
+<br />
+UPDATE t1 SET ID_temp=ID<br />
+ALTER TABLE t1 DROP COLUMN ID<br />
+EXEC sp_rename N't1.ID_temp',N'ID',N'COLUMN'<br />
+INSERT t1 VALUES(100,9)<br />
+GO<br />
+<br />
+--2. 将普通列变为标识列<br />
+CREATE TABLE t1_temp(ID int,A int IDENTITY)<br />
+SET IDENTITY_INSERT t1_temp ON<br />
+INSERT t1_temp(ID,A) SELECT * FROM t1<br />
+SET IDENTITY_INSERT t1_temp OFF<br />
+DROP TABLE T1<br />
+GO<br />
+<br />
+EXEC sp_rename N't1_temp',N't1'<br />
+INSERT t1 VALUES(109999)<br />
+GO<br />
+<br />
+--显示处理结果<br />
+SELECT * FROM t1<br />
+/*--结果:<br />
+ID          A <br />
+----------------- ----------- <br />
+1           1<br />
+100         9<br />
+109999      10<br />
+--*/<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:11

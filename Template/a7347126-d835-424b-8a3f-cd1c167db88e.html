@@ -1,0 +1,130 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--> 测试数据：[TB]<br />
+if object_id('[TB]') is not null drop table [TB]<br />
+create table [TB]([id] int,[point] int,[name] varchar(4))<br />
+insert [TB]<br />
+select 1,100,'张三' union all<br />
+select 2,80,'李四' union all<br />
+select 3,80,'王五' union all<br />
+select 4,75,'杨六' union all<br />
+select 5,75,'方七'<br />
+<br />
+select id=(select count([point])+1 from TB where T.[point]<[point]),point,name<br />
+from TB t<br />
+<br />
+/*<br />
+id          point       name<br />
+----------- ----------- ----<br />
+1           100         张三<br />
+2           80          李四<br />
+2           80          王五<br />
+4           75          杨六<br />
+4           75          方七<br />
+<br />
+(5 行受影响)<br />
+<br />
+<br />
+*/<br />
+<br />
+drop table TB<br />
+<br />
+--> 测试数据：[TB]<br />
+if object_id('[TB]') is not null drop table [TB]<br />
+create table [TB]([id] int,[point] int,[name] Nvarchar(4))<br />
+insert [TB]<br />
+select 1,100,N'张三' union all<br />
+select 2,80,N'李四' union all<br />
+select 3,80,N'王五' union all<br />
+select 4,75,N'杨六' union all<br />
+select 5,75,N'方七'<br />
+<br />
+select id=(select count(distinct point) from TB where T.[point]<=[point]),<br />
+       point,<br />
+       [name]<br />
+from TB t<br />
+/*<br />
+id          point       name<br />
+----------- ----------- ----<br />
+1           100         张三<br />
+2           80          李四<br />
+2           80          王五<br />
+3           75          杨六<br />
+3           75          方七<br />
+<br />
+(5 個資料列受到影響)<br />
+*/<br />
+<br />
+<br />
+<br />
+<br />
+---测试数据---<br />
+if object_id('[tb]') is not null drop table [tb]<br />
+go<br />
+create table [tb]([a] int,[b] varchar(2))<br />
+insert [tb]<br />
+select 1100,'aa' union all<br />
+select 1100,'bb' union all<br />
+select 1101,'cc' union all<br />
+select 1101,'dd' union all<br />
+select 1102,'ee' union all<br />
+select 1103,'ff'<br />
+ <br />
+---查询---<br />
+select<br />
+  ltrim(a)+right('00'+ltrim((select count(1)+1 from tb where a=t.a and b<t.b)),2) as a,<br />
+  b<br />
+from<br />
+  tb t<br />
+<br />
+---结果---<br />
+a                b    <br />
+---------------- ---- <br />
+110001           aa<br />
+110002           bb<br />
+110101           cc<br />
+110102           dd<br />
+110201           ee<br />
+110301           ff<br />
+<br />
+（所影响的行数为 6 行）<br />
+<br />
+<br />
+-------------------------------------<br />
+--  Author : liangCK 梁爱兰<br />
+--  Comment: 小梁 爱 兰儿<br />
+--  Date   : 2009-08-18 17:15:23<br />
+-------------------------------------<br />
+ <br />
+--> 生成测试数据: @T<br />
+DECLARE @T TABLE (a INT,b VARCHAR(2))<br />
+INSERT INTO @T<br />
+SELECT 1100,'aa' UNION ALL<br />
+SELECT 1100,'bb' UNION ALL<br />
+SELECT 1101,'cc' UNION ALL<br />
+SELECT 1101,'dd' UNION ALL<br />
+SELECT 1102,'ee' UNION ALL<br />
+SELECT 1103,'ff'<br />
+<br />
+--SQL查询如下:<br />
+<br />
+SELECT<br />
+    rtrim(a)+RIGHT(100+row_number() over(partition by a order by a),2) as a,<br />
+    b<br />
+FROM @T<br />
+<br />
+/*<br />
+a                b<br />
+---------------- ----<br />
+110001           aa<br />
+110002           bb<br />
+110101           cc<br />
+110102           dd<br />
+110201           ee<br />
+110301           ff<br />
+<br />
+(6 行受影响)<br />
+<br />
+<br />
+*/<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:12

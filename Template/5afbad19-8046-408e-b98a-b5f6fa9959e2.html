@@ -1,0 +1,258 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>/*<br />
+将表数据旋转90度(2007-11-19于海南三亚)<br />
+<br />
+将下表数据：<br />
+A                    b           c           d           e           <br />
+-------------------- ----------- ----------- ----------- ----------- <br />
+x                    1           2           3           4<br />
+y                    5           6           7           8<br />
+z                    9           10          11          12<br />
+<br />
+转化成如下结果：<br />
+a                    x          y          z          <br />
+-------------------- ---------- ---------- ---------- <br />
+b                    1          5          9<br />
+c                    2          6          10<br />
+d                    3          7          11<br />
+e                    4          8          12<br />
+<br />
+*/<br />
+<br />
+--生成测试数据<br />
+create table test1(A varchar(20),b int,c int,d int,e int)<br />
+insert into test1 select 'x',1,2 ,3 ,4<br />
+insert into test1 select 'y',5,6 ,7 ,8<br />
+insert into test1 select 'z',9,10,11,12<br />
+go<br />
+<br />
+--生成中间数据表<br />
+declare @s varchar(8000)<br />
+set @s = 'create table test2(a varchar(20)'<br />
+select @s = @s + ',' + A + ' varchar(10)' from test1<br />
+set @s = @s + ')'<br />
+exec(@s)<br />
+print @s<br />
+--借助中间表实现行列转换<br />
+declare @name varchar(20)<br />
+<br />
+declare t_cursor cursor for <br />
+select name from syscolumns <br />
+where id=object_id('test1') and colid > 1 order by colid<br />
+<br />
+open t_cursor<br />
+<br />
+fetch next from t_cursor into @name<br />
+<br />
+while @@fetch_status = 0<br />
+begin<br />
+    exec('select ' + @name + ' as t into test3 from test1')<br />
+    set @s='insert into test2 select ''' + @name + ''''<br />
+    select @s = @s + ',''' + rtrim(t) + '''' from test3<br />
+    exec(@s)<br />
+    exec('drop table test3')<br />
+    fetch next from t_cursor into @name<br />
+end<br />
+close t_cursor<br />
+deallocate t_cursor<br />
+<br />
+--查看行列互换处理结果<br />
+select * from test1<br />
+select * from test2<br />
+<br />
+--删除表<br />
+drop table test1<br />
+drop table test2<br />
+----------------------------------------------------------------------------<br />
+/*固定的写法:*/<br />
+select t1.* , t2.y , t3.z from<br />
+(select a = 'b' , x = b from test1 where a = 'x') t1, <br />
+(select a = 'b' , y = b from test1 where a = 'y') t2,<br />
+(select a = 'b' , z = b from test1 where a = 'z') t3<br />
+where t1.a = t2.a and t1.a = t2.a<br />
+union all<br />
+select t1.* , t2.y , t3.z from<br />
+(select a = 'c' , x = c from test1 where a = 'x') t1, <br />
+(select a = 'c' , y = c from test1 where a = 'y') t2,<br />
+(select a = 'c' , z = c from test1 where a = 'z') t3<br />
+where t1.a = t2.a and t1.a = t2.a<br />
+union all<br />
+select t1.* , t2.y , t3.z from<br />
+(select a = 'd' , x = d from test1 where a = 'x') t1, <br />
+(select a = 'd' , y = d from test1 where a = 'y') t2,<br />
+(select a = 'd' , z = d from test1 where a = 'z') t3<br />
+where t1.a = t2.a and t1.a = t2.a<br />
+union all<br />
+select t1.* , t2.y , t3.z from<br />
+(select a = 'e' , x = e from test1 where a = 'x') t1, <br />
+(select a = 'e' , y = e from test1 where a = 'y') t2,<br />
+(select a = 'e' , z = e from test1 where a = 'z') t3<br />
+where t1.a = t2.a and t1.a = t2.a<br />
+<br />
+----------------------------------------------------------------------------<br />
+/*<br />
+表tb,数据如下:<br />
+项目种类  业绩  提成<br />
+洗吹类　　200   10<br />
+外卖      100   5<br />
+合计      300   15<br />
+转换成:<br />
+项目种类  洗吹类  外卖  合计<br />
+业绩      200     100   300<br />
+提成      10      5     15<br />
+*/<br />
+<br />
+create table tb<br />
+(<br />
+  项目种类 varchar(10),<br />
+  业绩     int,<br />
+  提成     int<br />
+)<br />
+<br />
+insert into tb(项目种类,业绩,提成) values('洗吹类',200,10)<br />
+insert into tb(项目种类,业绩,提成) values('外卖'  ,100,5)<br />
+insert into tb(项目种类,业绩,提成) values('合计'  ,300,15)<br />
+go<br />
+<br />
+select 项目种类,sum(洗吹类) as 洗吹类 , sum(外卖) as 外卖 , sum(合计) as 合计 from<br />
+(<br />
+  select 项目种类 = '业绩',<br />
+         洗吹类   = case when 项目种类 = '洗吹类' then 业绩 else 0 end,<br />
+         外卖     = case when 项目种类 = '外卖'   then 业绩 else 0 end,<br />
+         合计     = case when 项目种类 = '合计'   then 业绩 else 0 end<br />
+  from tb<br />
+union all<br />
+  select 项目种类 = '提成' ,<br />
+         洗吹类   = case when 项目种类 = '洗吹类' then 提成 else 0 end,<br />
+         外卖     = case when 项目种类 = '外卖'   then 提成 else 0 end,<br />
+         合计     = case when 项目种类 = '合计'   then 提成 else 0 end<br />
+  from tb<br />
+) m<br />
+group by 项目种类<br />
+order by 项目种类 desc<br />
+<br />
+drop table tb<br />
+<br />
+/*<br />
+项目种类 洗吹类      外卖        合计          <br />
+-------- ----------- ----------- ----------- <br />
+业绩     200         100         300<br />
+提成     10          5           15<br />
+<br />
+（所影响的行数为 2 行）<br />
+*/<br />
+<br />
+--------------------------------------------------------------------------<br />
+/*<br />
+数据库中tb表格如下<br />
+ <br />
+月份    工资   福利  奖金<br />
+1月     100    200   300<br />
+2月     110    210   310<br />
+3月     120    220   320<br />
+4月     130    230   330<br />
+<br />
+我想得到的结果是<br />
+<br />
+项目   1月    2月  3月  4月<br />
+工资   100    110  120  130<br />
+福利   200    210  220  230<br />
+奖金   300    310  320  330<br />
+<br />
+就是说完全把表格的行列颠倒，有点像那种旋转矩阵，请问如何用sql 语句实现？<br />
+*/<br />
+<br />
+if exists (select * from dbo.sysobjects<br />
+where id = object_id(N'[dbo].[p_zj]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)<br />
+drop procedure [dbo].[p_zj]<br />
+GO<br />
+/*--行列互换的通用存储过程(原著:邹建):将指定的表,按指定的字段进行行列互换*/<br />
+<br />
+create proc p_zj<br />
+       @tbname sysname, --要处理的表名<br />
+       @fdname sysname, --做为转换的列名<br />
+       @new_fdname sysname='' --为转换后的列指定列名<br />
+as<br />
+declare @s1 varchar(8000) , @s2 varchar(8000),<br />
+        @s3 varchar(8000) , @s4 varchar(8000),<br />
+        @s5 varchar(8000) , @i varchar(10)<br />
+select @s1 = '' , @s2 = '' , @s3 = '' , @s4 = '' , @s5 = '' , @i = '0'<br />
+select @s1 = @s1 + ',@' + @i + ' varchar(8000)',<br />
+       @s2 = @s2 + ',@' + @i + '=''' + case isnull(@new_fdname , '') when '' then ''<br />
+       else @new_fdname + '=' end + '''''' + name + '''''''',<br />
+       @s3 = @s3 + 'select @' + @i + '=@' + @i + '+'',['' + [' + @fdname + <br />
+       ']+'']=''+cast([' + name + '] as varchar) from [' + @tbname + ']',<br />
+       @s4 = @s4 + ',@' + @i + '=''select ''+@' + @i,<br />
+       @s5 = @s5 + '+'' union all ''+@' + @i,<br />
+       @i=cast(@i as int)+1<br />
+from syscolumns<br />
+where object_id(@tbname)=id and name<>@fdname<br />
+<br />
+select @s1=substring(@s1,2,8000),<br />
+       @s2=substring(@s2,2,8000),<br />
+       @s4=substring(@s4,2,8000),<br />
+       @s5=substring(@s5,16,8000)<br />
+exec('declare ' + @s1 + 'select ' + @s2 + @s3 + 'select ' + @s4 + '<br />
+exec(' + @s5 + ')')<br />
+go<br />
+<br />
+--用上面的存储过程测试：<br />
+<br />
+create table Test(月份 varchar(4), 工资 int, 福利 int, 奖金 int)<br />
+insert Test <br />
+select '1月',100,200,300 union all<br />
+select '2月',110,210,310 union all<br />
+select '3月',120,220,320 union all<br />
+select '4月',130,230,330<br />
+go<br />
+<br />
+exec p_zj 'Test', '月份' , '项目'<br />
+<br />
+drop table Test<br />
+drop proc p_zj<br />
+<br />
+/*<br />
+项目   1月         2月         3月         4月          <br />
+---- ----------- ----------- ----------- ----------- <br />
+福利   200         210         220         230<br />
+工资   100         110         120         130<br />
+奖金   300         310         320         330<br />
+<br />
+（所影响的行数为 3 行）<br />
+*/<br />
+<br />
+/*<br />
+静态写法(SQL2005)<br />
+*/<br />
+--测试环境<br />
+create table Test(月份 varchar(4), 工资 int, 福利 int, 奖金 int)<br />
+insert Test<br />
+select '1月',100,200,300 union all<br />
+select '2月',110,210,310 union all<br />
+select '3月',120,220,320 union all<br />
+select '4月',130,230,330<br />
+go<br />
+--测试语句<br />
+SELECT * FROM <br />
+(<br />
+  SELECT 考核月份,月份,金额 FROM <br />
+     (SELECT 月份, 工资, 福利, 奖金 FROM Test) p<br />
+  UNPIVOT<br />
+     (金额 FOR 考核月份 IN (工资, 福利, 奖金))AS unpvt<br />
+) T<br />
+PIVOT<br />
+(MAX(金额)  FOR 月份 in ([1月],[2月],[3月],[4月]))AS pt<br />
+<br />
+--测试结果<br />
+<br />
+/*<br />
+考核月份  1月     2月      3月     4月<br />
+-------  -----  -----   ------  -------<br />
+福利200210220230<br />
+工资100110120130<br />
+奖金300310320330<br />
+*/<br />
+<br />
+--删除环境<br />
+Drop table Test<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:11

@@ -1,0 +1,31 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>/******* 导出到excel */<br />
+EXEC master..xp_cmdshell 'bcp SettleDB.dbo.shanghu out c:\temp1.xls -c -q -S"GNETDATA/GNETDATA" -U"sa" -P""' <br />
+<br />
+/*********** 导入Excel */<br />
+SELECT * <br />
+FROM OpenDataSource( 'Microsoft.Jet.OLEDB.4.0', <br />
+'Data Source="c:\test.xls";User ID=Admin;Password=;Extended properties=Excel 5.0')...xactions <br />
+<br />
+/*动态文件名 <br />
+declare @fn varchar(20),@s varchar(1000) <br />
+set @fn = 'c:\test.xls' <br />
+set @s ='''Microsoft.Jet.OLEDB.4.0'', <br />
+''Data Source="'+@fn+'";User ID=Admin;Password=;Extended properties=Excel 5.0''' <br />
+set @s = 'SELECT * FROM OpenDataSource ('+@s+')...sheet1$' <br />
+exec(@s) <br />
+*/ <br />
+<br />
+SELECT cast(cast(科目编号 as numeric(10,2)) as nvarchar(255))+'　' 转换后的别名 <br />
+FROM OpenDataSource( 'Microsoft.Jet.OLEDB.4.0', <br />
+'Data Source="c:\test.xls";User ID=Admin;Password=;Extended properties=Excel 5.0')...xactions <br />
+<br />
+/********************** EXCEL导到远程SQL */<br />
+insert OPENDATASOURCE( <br />
+'SQLOLEDB', <br />
+'Data Source=远程ip;User ID=sa;Password=密码' <br />
+).库名.dbo.表名 (列名1,列名2) <br />
+SELECT 列名1,列名2 <br />
+FROM OpenDataSource( 'Microsoft.Jet.OLEDB.4.0', <br />
+'Data Source="c:\test.xls";User ID=Admin;Password=;Extended properties=Excel 5.0')...xactions <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:31

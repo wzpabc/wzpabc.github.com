@@ -1,0 +1,177 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>set ANSI_NULLS ON<br />
+set QUOTED_IDENTIFIER ON<br />
+go<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+ALTER PROC [dbo].[PROCE_PageView2000]<br />
+(<br />
+@tbname     nvarchar(100),               --要分页显示的表名<br />
+@FieldKey   nvarchar(1000),      --用于定位记录的主键(惟一键)字段,可以是逗号分隔的多个字段<br />
+@PageCurrent int=1,               --要显示的页码<br />
+@PageSize   int=10,                --每页的大小(记录数)<br />
+@FieldShow nvarchar(1000)='',      --以逗号分隔的要显示的字段列表,如果不指定,则显示所有字段<br />
+@FieldOrder nvarchar(1000)='',      --以逗号分隔的排序字段列表,可以指定在字段后面指定DESC/ASC<br />
+@WhereString    nvarchar(1000)=N'',     --查询条件<br />
+@RecordCount int OUTPUT             --总记录数<br />
+)<br />
+AS<br />
+SET NOCOUNT ON<br />
+--检查对象是否有效<br />
+--IF OBJECT_ID(@tbname) IS NULL<br />
+--BEGIN<br />
+--    RAISERROR(N'对象"%s"不存在',1,16,@tbname)<br />
+--    RETURN<br />
+--END<br />
+--IF OBJECTPROPERTY(OBJECT_ID(@tbname),N'IsTable')=0<br />
+--    AND OBJECTPROPERTY(OBJECT_ID(@tbname),N'IsView')=0<br />
+--    AND OBJECTPROPERTY(OBJECT_ID(@tbname),N'IsTableFunction')=0<br />
+--BEGIN<br />
+--    RAISERROR(N'"%s"不是表、视图或者表值函数',1,16,@tbname)<br />
+--    RETURN<br />
+--END<br />
+<br />
+--分页字段检查<br />
+IF ISNULL(@FieldKey,N'')=''<br />
+BEGIN<br />
+    RAISERROR(N'分页处理需要主键（或者惟一键）',1,16)<br />
+    RETURN<br />
+END<br />
+<br />
+--其他参数检查及规范<br />
+IF ISNULL(@PageCurrent,0)<1 SET @PageCurrent=1<br />
+IF ISNULL(@PageSize,0)<1 SET @PageSize=10<br />
+IF ISNULL(@FieldShow,N'')=N'' SET @FieldShow=N'*'<br />
+IF ISNULL(@FieldOrder,N'')=N''<br />
+    SET @FieldOrder=N''<br />
+ELSE<br />
+    SET @FieldOrder=N'ORDER BY '+LTRIM(@FieldOrder)<br />
+IF ISNULL(@WhereString,N'')=N''<br />
+    SET @WhereString=N''<br />
+ELSE<br />
+    SET @WhereString=N'WHERE ('+@WhereString+N')'<br />
+<br />
+--如果@RecordCount为NULL值,则计算总页数(这样设计可以只在第一次计算总页数,以后调用时,把总页数传回给存储过程,避免再次计算总页数,对于不想计算总页数的处理而言,可以给@RecordCount赋值)<br />
+IF @RecordCount IS NULL<br />
+BEGIN<br />
+    DECLARE @sql nvarchar(4000)<br />
+    SET @sql=N'SELECT @RecordCount=COUNT(*)'<br />
+        +N' FROM '+@tbname<br />
+        +N' '+@WhereString<br />
+    EXEC sp_executesql @sql,N'@RecordCount int OUTPUT',@RecordCount OUTPUT<br />
+END<br />
+<br />
+--计算分页显示的TOPN值<br />
+DECLARE @TopN varchar(20),@TopN1 varchar(20)<br />
+SELECT @TopN=@PageSize,<br />
+    @TopN1=(@PageCurrent-1)*@PageSize<br />
+<br />
+--第一页直接显示<br />
+IF @PageCurrent=1<br />
+    EXEC(N'SELECT TOP '+@TopN<br />
+        +N' '+@FieldShow<br />
+        +N' FROM '+@tbname<br />
+        +N' '+@WhereString<br />
+        +N' '+@FieldOrder)<br />
+ELSE<br />
+BEGIN<br />
+    --处理别名<br />
+    IF @FieldShow=N'*'<br />
+        SET @FieldShow=N'a.*'<br />
+<br />
+    --生成主键(惟一键)处理条件<br />
+    DECLARE @Where1 nvarchar(4000),@Where2 nvarchar(4000),<br />
+        @s nvarchar(1000),@Field sysname<br />
+    SELECT @Where1=N'',@Where2=N'',@s=@FieldKey<br />
+    WHILE CHARINDEX(N',',@s)>0<br />
+        SELECT @Field=LEFT(@s,CHARINDEX(N',',@s)-1),<br />
+            @s=STUFF(@s,1,CHARINDEX(N',',@s),N''),<br />
+            @Where1=@Where1+N' AND a.'+@Field+N'=b.'+@Field,<br />
+            @Where2=@Where2+N' AND b.'+@Field+N' IS NULL',<br />
+            @WhereString=REPLACE(@WhereString,@Field,N'a.'+@Field),<br />
+            @FieldOrder=REPLACE(@FieldOrder,@Field,N'a.'+@Field),<br />
+            @FieldShow=REPLACE(@FieldShow,@Field,N'a.'+@Field)<br />
+    SELECT @WhereString=REPLACE(@WhereString,@s,N'a.'+@s),<br />
+        @FieldOrder=REPLACE(@FieldOrder,@s,N'a.'+@s),<br />
+        @FieldShow=REPLACE(@FieldShow,@s,N'a.'+@s),<br />
+        @Where1=STUFF(@Where1+N' AND a.'+@s+N'=b.'+@s,1,5,N''),    <br />
+        @Where2=CASE<br />
+            WHEN @WhereString='' THEN N'WHERE ('<br />
+            ELSE @WhereString+N' AND ('<br />
+            END+N'b.'+@s+N' IS NULL'+@Where2+N')'<br />
+<br />
+    --执行查询<br />
+    EXEC(N'SELECT TOP '+@TopN<br />
+        +N' '+@FieldShow<br />
+        +N' FROM '+@tbname<br />
+        +N' a LEFT JOIN(SELECT TOP '+@TopN1<br />
+        +N' '+@FieldKey<br />
+        +N' FROM '+@tbname<br />
+        +N' a '+@WhereString<br />
+        +N' '+@FieldOrder<br />
+        +N')b ON '+@Where1<br />
+        +N' '+@Where2<br />
+        +N' '+@FieldOrder)<br />
+END<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+ <br />
+<br />
+<br />
+MSSQL2005<br />
+<br />
+set ANSI_NULLS ON<br />
+set QUOTED_IDENTIFIER ON<br />
+go<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+ALTER PROCEDURE [dbo].[PROCE_SQL2005PAGECHANGE]<br />
+(<br />
+ @TableName varchar(50),            --表名<br />
+ @ReFieldsStr varchar(200) = '*',   --字段名(全部字段为*)<br />
+ @OrderString varchar(200),         --排序字段(必须!支持多字段不用加order by)<br />
+ @WhereString varchar(500) =N'',  --条件语句(不用加where)<br />
+ @PageSize int,                     --每页多少条记录<br />
+ @PageIndex int = 1 ,               --指定当前为第几页<br />
+ @TotalRecord int output            --返回总记录数<br />
+)<br />
+AS<br />
+ <br />
+BEGIN    <br />
+<br />
+    --处理开始点和结束点<br />
+    Declare @StartRecord int;<br />
+    Declare @EndRecord int; <br />
+    Declare @TotalCountSql nvarchar(500); <br />
+    Declare @SqlString nvarchar(2000);    <br />
+    set @StartRecord = (@PageIndex-1)*@PageSize + 1<br />
+    set @EndRecord = @StartRecord + @PageSize - 1 <br />
+    SET @TotalCountSql= N'select @TotalRecord = count(*) from ' + @TableName;--总记录数语句<br />
+    SET @SqlString = N'(select row_number() over (order by '+ @OrderString +') as rowId,'+@ReFieldsStr+' from '+ @TableName;--查询语句<br />
+    --<br />
+    IF (@WhereString! = '' or @WhereString!=null)<br />
+        BEGIN<br />
+            SET @TotalCountSql=@TotalCountSql + '  where '+ @WhereString;<br />
+            SET @SqlString =@SqlString+ '  where '+ @WhereString;            <br />
+        END<br />
+    --第一次执行得到<br />
+    --IF(@TotalRecord is null)<br />
+    --   BEGIN<br />
+           EXEC sp_executesql @totalCountSql,N'@TotalRecord int out',@TotalRecord output;--返回总记录数<br />
+    --  END<br />
+    ----执行主语句<br />
+    set @SqlString ='select * from ' + @SqlString + ') as t where rowId between ' + ltrim(str(@StartRecord)) + ' and ' +  ltrim(str(@EndRecord));<br />
+    Exec(@SqlString)    <br />
+END<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:32

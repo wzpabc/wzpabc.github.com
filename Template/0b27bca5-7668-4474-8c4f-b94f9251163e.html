@@ -1,0 +1,62 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--常规SQL SERVER数据库置疑后恢复步骤   <br />
+--1． 恢复步骤：   <br />
+--a.将smlog_log.ldf文件备份到其它目录下；   <br />
+--b.将源目录下的smlog_log.ldf文件改名为smlog_log_bak.ldf；   <br />
+--c.执行以下语句修改数据库的状态：   <br />
+use Master   <br />
+go   <br />
+update sysdatabases set status=32768 where name='数据库名称'     --修改状态,設為緊急狀態 <br />
+go   <br />
+shutdown with nowait     --停止数据库服务器   <br />
+go   <br />
+--d.退出SQL并在(COMMAND)命令行模式中通过下面的代码重新启动SQL：   <br />
+sqlservr -c -T3608 -T4022     --安全模式启动SQL SERVER<br />
+--e.在查询分析器中执行以下语句来查看刚刚修改过状态的数据库状态：   <br />
+select Name,Status from sysdatabases where Name='数据库名稱'  <br />
+--f.执行以下代码新建日志文件：   <br />
+dbcc traceon(3604)--跟踪   <br />
+dbcc rebuild_log('数据库名称','日志文件全路徑') --文件名要有全路径和扩展名<br />
+--dbcc rebuild_log('prs_msc','d:\mscsql\mssql\data\prs_msc_log.ldf<br />
+--g.将数据库置回正常状态：   <br />
+update sysdatabases set status=0 where name='数据库名称'   <br />
+--h.重新启动数据库后执行以下语句检查数据库：   <br />
+DBCC CHECKDB --如果执行完有错误用以下语句修复   <br />
+--i.要修复数据库必需将数据库改为单用户模式：   <br />
+Exce sp_dboption '数据库名称','single user','true'---('false'恢复多用户)   <br />
+--j.执行以下语句修复数据库：   <br />
+DBCC CHECKDB('数据库名称',REPAIR_ALLOW_DATA_LOSS)   <br />
+REPAIR_ALLOW_DATA_LOSS：是比较高级的修复方式   <br />
+REPAIR_FAST：是简单快速的修复方式<br />
+/*<br />
+處理状态就为"置疑"的數據庫<br />
+备份数据文件,然后按下面的步骤处理:   <br />
+1.新建一个同名的数据库(数据文件与原来的要一致)   <br />
+2.再停掉sql server(注意不要分离数据库)   <br />
+3.用原数据库的数据文件覆盖掉这个新建的数据库   <br />
+4.再重启sql server   <br />
+5.此时打开企业管理器时会出现置疑，先不管，执行下面的语句（注意修改其中的数据库名)   <br />
+6.完成后一般就可以访问数据库中的数据了,这时,数据库本身一般还要问题,解决办法是,利用数据库的脚本创建一个新的数据库,并将数据导进去就行了.<br />
+<br />
+*/<br />
+USE   MASTER   <br />
+GO   <br />
+SP_CONFIGURE 'ALLOW UPDATES',1<br />
+GO<br />
+RECONFIGURE WITH OVERRIDE   <br />
+GO   <br />
+UPDATE SYSDATABASES SET STATUS =32768 WHERE NAME='置疑的数据库名'   <br />
+Go   <br />
+sp_dboption '置疑的数据库名','single user','true'   <br />
+Go   <br />
+DBCC CHECKDB('置疑的数据库名')     <br />
+Go   <br />
+update sysdatabases set status=28 where name='置疑的数据库名'   <br />
+Go   <br />
+sp_configure 'allow updates',0<br />
+GO<br />
+reconfigure with override   <br />
+Go     <br />
+sp_dboption '置疑的数据库名', 'single user','false'   <br />
+Go   <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:31

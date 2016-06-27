@@ -1,0 +1,159 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--各种字符串分函数<br />
+<br />
+if exists (select * from dbo.sysobjects where id = object_id(N'[dbo].[f_splitSTR]') and xtype in (N'FN', N'IF', N'TF'))<br />
+drop function [dbo].[f_splitSTR]<br />
+GO<br />
+<br />
+--3.2.1 循环截取法<br />
+CREATE FUNCTION f_splitSTR(<br />
+@s   varchar(8000),   --待分拆的字符串<br />
+@split varchar(10)     --数据分隔符<br />
+)RETURNS @re TABLE(col varchar(100))<br />
+AS<br />
+BEGIN<br />
+    DECLARE @splitlen int<br />
+    SET @splitlen=LEN(@split+'a')-2<br />
+    WHILE CHARINDEX(@split,@s)>0<br />
+    BEGIN<br />
+        INSERT @re VALUES(LEFT(@s,CHARINDEX(@split,@s)-1))<br />
+        SET @s=STUFF(@s,1,CHARINDEX(@split,@s)+@splitlen,'')<br />
+    END<br />
+    INSERT @re VALUES(@s)<br />
+    RETURN<br />
+END<br />
+GO<br />
+<br />
+<br />
+/*==============================================*/<br />
+<br />
+if exists (select * from dbo.sysobjects where id = object_id(N'[dbo].[f_splitSTR]') and xtype in (N'FN', N'IF', N'TF'))<br />
+drop function [dbo].[f_splitSTR]<br />
+GO<br />
+<br />
+--3.2.3.1 使用临时性分拆辅助表法<br />
+CREATE FUNCTION f_splitSTR(<br />
+@s   varchar(8000),  --待分拆的字符串<br />
+@split varchar(10)     --数据分隔符<br />
+)RETURNS @re TABLE(col varchar(100))<br />
+AS<br />
+BEGIN<br />
+    --创建分拆处理的辅助表(用户定义函数中只能操作表变量)<br />
+    DECLARE @t TABLE(ID int IDENTITY,b bit)<br />
+    INSERT @t(b) SELECT TOP 8000 0 FROM syscolumns a,syscolumns b<br />
+<br />
+    INSERT @re SELECT SUBSTRING(@s,ID,CHARINDEX(@split,@s+@split,ID)-ID)<br />
+    FROM @t<br />
+    WHERE ID<=LEN(@s+'a') <br />
+        AND CHARINDEX(@split,@split+@s,ID)=ID<br />
+    RETURN<br />
+END<br />
+GO<br />
+<br />
+/*==============================================*/<br />
+<br />
+if exists (select * from dbo.sysobjects where id = object_id(N'[dbo].[f_splitSTR]') and xtype in (N'FN', N'IF', N'TF'))<br />
+drop function [dbo].[f_splitSTR]<br />
+GO<br />
+<br />
+if exists (select * from dbo.sysobjects where id = object_id(N'[dbo].[tb_splitSTR]') and objectproperty(id,N'IsUserTable')=1)<br />
+drop table [dbo].[tb_splitSTR]<br />
+GO<br />
+<br />
+--3.2.3.2 使用永久性分拆辅助表法<br />
+--字符串分拆辅助表<br />
+SELECT TOP 8000 ID=IDENTITY(int,1,1) INTO dbo.tb_splitSTR<br />
+FROM syscolumns a,syscolumns b<br />
+GO<br />
+<br />
+--字符串分拆处理函数<br />
+CREATE FUNCTION f_splitSTR(<br />
+@s     varchar(8000),  --待分拆的字符串<br />
+@split  varchar(10)     --数据分隔符<br />
+)RETURNS TABLE<br />
+AS<br />
+RETURN(<br />
+    SELECT col=CAST(SUBSTRING(@s,ID,CHARINDEX(@split,@s+@split,ID)-ID) as varchar(100))<br />
+    FROM tb_splitSTR<br />
+    WHERE ID<=LEN(@s+'a') <br />
+        AND CHARINDEX(@split,@split+@s,ID)=ID)<br />
+GO<br />
+<br />
+<br />
+/*==============================================*/<br />
+<br />
+if exists (select * from dbo.sysobjects where id = object_id(N'[dbo].[f_splitSTR]') and xtype in (N'FN', N'IF', N'TF'))<br />
+drop function [dbo].[f_splitSTR]<br />
+GO<br />
+<br />
+--3.2.5 将数据项按数字与非数字再次拆份<br />
+CREATE FUNCTION f_splitSTR(<br />
+@s   varchar(8000),    --待分拆的字符串<br />
+@split varchar(10)     --数据分隔符<br />
+)RETURNS @re TABLE(No varchar(100),Value varchar(20))<br />
+AS<br />
+BEGIN<br />
+    --创建分拆处理的辅助表(用户定义函数中只能操作表变量)<br />
+    DECLARE @t TABLE(ID int IDENTITY,b bit)<br />
+    INSERT @t(b) SELECT TOP 8000 0 FROM syscolumns a,syscolumns b<br />
+<br />
+    INSERT @re <br />
+    SELECT    No=REVERSE(STUFF(col,1,PATINDEX('%[^-^.^0-9]%',col+'a')-1,'')),<br />
+        Value=REVERSE(LEFT(col,PATINDEX('%[^-^.^0-9]%',col+'a')-1))<br />
+    FROM(<br />
+        SELECT col=REVERSE(SUBSTRING(@s,ID,CHARINDEX(@split,@s+@split,ID)-ID))<br />
+        FROM @t<br />
+        WHERE ID<=LEN(@s+'a') <br />
+            AND CHARINDEX(@split,@split+@s,ID)=ID)a<br />
+    RETURN<br />
+END<br />
+GO<br />
+<br />
+<br />
+/*==============================================*/<br />
+<br />
+if exists (select * from dbo.sysobjects where id = object_id(N'[dbo].[f_splitSTR]') and xtype in (N'FN', N'IF', N'TF'))<br />
+drop function [dbo].[f_splitSTR]<br />
+GO<br />
+<br />
+--3.2.6 分拆短信数据<br />
+CREATE FUNCTION f_splitSTR(@s varchar(8000))<br />
+RETURNS @re TABLE(split varchar(10),value varchar(100))<br />
+AS<br />
+BEGIN<br />
+    DECLARE @splits TABLE(split varchar(10),splitlen as LEN(split))<br />
+    INSERT @splits(split)<br />
+    SELECT 'AC' UNION ALL<br />
+    SELECT 'BC' UNION ALL<br />
+    SELECT 'CC' UNION ALL<br />
+    SELECT 'DC'    <br />
+    DECLARE @pos1 int,@pos2 int,@split varchar(10),@splitlen int<br />
+    SELECT TOP 1 <br />
+        @pos1=1,@split=split,@splitlen=splitlen<br />
+    FROM @splits<br />
+    WHERE @s LIKE split+'%'<br />
+    WHILE @pos1>0<br />
+    BEGIN<br />
+        SELECT TOP 1<br />
+            @pos2=CHARINDEX(split,@s,@splitlen+1)<br />
+        FROM @splits<br />
+        WHERE CHARINDEX(split,@s,@splitlen+1)>0<br />
+        ORDER BY CHARINDEX(split,@s,@splitlen+1)<br />
+        IF @@ROWCOUNT=0<br />
+        BEGIN<br />
+            INSERT @re VALUES(@split,STUFF(@s,1,@splitlen,''))<br />
+            RETURN<br />
+        END<br />
+        ELSE<br />
+        BEGIN<br />
+            INSERT @re VALUES(@split,SUBSTRING(@s,@splitlen+1,@pos2-@splitlen-1))<br />
+            SELECT TOP 1 <br />
+                @pos1=1,@split=split,@splitlen=splitlen,@s=STUFF(@s,1,@pos2-1,'')<br />
+            FROM @splits<br />
+            WHERE STUFF(@s,1,@pos2-1,'') LIKE split+'%'<br />
+        END<br />
+    END<br />
+    RETURN<br />
+END<br />
+GO<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:33

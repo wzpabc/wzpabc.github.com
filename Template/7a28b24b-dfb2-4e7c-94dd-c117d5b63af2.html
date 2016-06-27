@@ -1,0 +1,59 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>declare @sdate datetime <br />
+declare @edate datetime <br />
+set @sdate = '2009-8-30' <br />
+set @edate = '2009-9-5' <br />
+<br />
+<br />
+select <br />
+    dateadd(dd,num,@sdate) <br />
+from <br />
+    (select isnull((select count(1) from sysobjects where id <t.id),0) as num from sysobjects t) a <br />
+where <br />
+    dateadd(dd,num,@sdate) <=@edate <br />
+<br />
+/* <br />
+                                                      <br />
+------------------------------------------------------ <br />
+2009-08-30 00:00:00.000 <br />
+2009-08-31 00:00:00.000 <br />
+2009-09-01 00:00:00.000 <br />
+2009-09-02 00:00:00.000 <br />
+2009-09-03 00:00:00.000 <br />
+2009-09-04 00:00:00.000 <br />
+2009-09-05 00:00:00.000 <br />
+<br />
+（所影响的行数为 7 行） <br />
+*/<br />
+<br />
+--功能：找出在2个日期之间的日期<br />
+--startdate:2009年9月15日  endDate:2009年10月3日 <br />
+<br />
+declare @startdate datetime,@enddate datetime<br />
+set @startdate='2009-08-30'<br />
+set @enddate='2009-09-05'<br />
+<br />
+select convert(varchar(10),dateadd(day,number,@startdate),120) <br />
+from<br />
+    master..spt_values <br />
+where <br />
+    datediff(day,dateadd(day,number,@startdate), @enddate)>=0<br />
+    and number>0 <br />
+    and type='p'<br />
+<br />
+/*----------<br />
+2009-08-31<br />
+2009-09-01<br />
+2009-09-02<br />
+2009-09-03<br />
+2009-09-04<br />
+2009-09-05<br />
+<br />
+(6 行受影响)<br />
+<br />
+/*<br />
+<br />
+<br />
+<br />
+本文来自CSDN博客，转载请标明出处：http://blog.csdn.net/fredrickhu/archive/2009/09/24/4587448.aspx<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:11

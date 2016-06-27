@@ -1,0 +1,7 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>declare @s varchar(50)<br />
+set @s='Level 1-2,Tower E5,Plaza,No.44 East Chang An Ave.  东长安街44号东方广场东5座1-2层'<br />
+while PATINDEX('%[吖-做]%',@s)>0<br />
+    set @s=stuff(@s,PATINDEX('%[吖-做]%',@s),1,'')<br />
+select @s<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:33

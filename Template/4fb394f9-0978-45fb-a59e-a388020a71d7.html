@@ -1,0 +1,23 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>SQL Select语句完整的执行顺序： <br />
+<br />
+1、from子句组装来自不同数据源的数据； <br />
+2、where子句基于指定的条件对记录行进行筛选； <br />
+3、group by子句将数据划分为多个分组； <br />
+4、使用聚集函数进行计算； <br />
+5、使用having子句筛选分组； <br />
+6、计算所有的表达式； <br />
+7、使用order by对结果集进行排序。 <br />
+<br />
+<br />
+另外:一个查询语句各个部分的执行顺序: <br />
+--8)  SELECT (9) DISTINCT (11) <TOP_specification> <select_list> <br />
+--(1)  FROM <left_table> <br />
+--(3)    <join_type> JOIN <right_table> <br />
+--(2)      ON <join_condition> <br />
+--(4)  WHERE <where_condition> <br />
+--(5)  GROUP BY <group_by_list> <br />
+--(6)  WITH {CUBE | ROLLUP} <br />
+--(7)  HAVING <having_condition> <br />
+--(10) ORDER BY <order_by_list> <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:31

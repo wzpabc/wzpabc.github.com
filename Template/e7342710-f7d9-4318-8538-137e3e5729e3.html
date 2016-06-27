@@ -1,0 +1,95 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--监控当前正在运行的事务<br />
+SELECT  ST.transaction_id AS TransactionID ,<br />
+        DB_NAME(DT.database_id) AS DatabaseName ,<br />
+        AT.transaction_begin_time AS TransactionStartTime ,<br />
+        DATEDIFF(SECOND, AT.transaction_begin_time, GETDATE()) AS TransactionDuration ,<br />
+        CASE AT.transaction_type<br />
+          WHEN 1 THEN 'Read/Write Transaction'<br />
+          WHEN 2 THEN 'Read-Only Transaction'<br />
+          WHEN 3 THEN 'System Transaction'<br />
+          WHEN 4 THEN 'Distributed Transaction'<br />
+        END AS TransactionType ,<br />
+        CASE AT.transaction_state<br />
+          WHEN 0 THEN 'Transaction Not Initialized'<br />
+          WHEN 1 THEN 'Transaction Initialized & Not Started'<br />
+          WHEN 2 THEN 'Active Transaction'<br />
+          WHEN 3 THEN 'Transaction Ended'<br />
+          WHEN 4 THEN 'Distributed Transaction Initiated Commit Process'<br />
+          WHEN 5 THEN 'Transaction in Prepared State & Waiting Resolution'<br />
+          WHEN 6 THEN 'Transaction Committed'<br />
+          WHEN 7 THEN 'Transaction Rolling Back'<br />
+          WHEN 8 THEN 'Transaction Rolled Back'<br />
+        END AS TransactionState<br />
+FROM    sys.dm_tran_session_transactions AS ST<br />
+        INNER JOIN sys.dm_tran_active_transactions AS AT ON ST.transaction_id = AT.transaction_id<br />
+        INNER JOIN sys.dm_tran_database_transactions AS DT ON ST.transaction_id = DT.transaction_id<br />
+ORDER BY TransactionStartTime<br />
+GO<br />
+<br />
+--查询被阻塞和正在阻塞的查询<br />
+SELECT  R.session_id AS BlockedSessionID ,<br />
+        S.session_id AS BlockingSessionID ,<br />
+        Q1.text AS BlockedSession_TSQL ,<br />
+        Q2.text AS BlockingSession_TSQL ,<br />
+        C1.most_recent_sql_handle AS BlockedSession_SQLHandle ,<br />
+        C2.most_recent_sql_handle AS BlockingSession_SQLHandle ,<br />
+        S.original_login_name AS BlockingSession_LoginName ,<br />
+        S.program_name AS BlockingSession_ApplicationName ,<br />
+        S.host_name AS BlockingSession_HostName<br />
+FROM    sys.dm_exec_requests AS R<br />
+        INNER JOIN sys.dm_exec_sessions AS S ON R.blocking_session_id = S.session_id<br />
+        INNER JOIN sys.dm_exec_connections AS C1 ON R.session_id = C1.most_recent_session_id<br />
+        INNER JOIN sys.dm_exec_connections AS C2 ON S.session_id = C2.most_recent_session_id<br />
+        CROSS APPLY sys.dm_exec_sql_text(C1.most_recent_sql_handle) AS Q1<br />
+        CROSS APPLY sys.dm_exec_sql_text(C2.most_recent_sql_handle) AS Q2<br />
+<br />
+<br />
+<br />
+--建议需要更新的统计信息<br />
+SELECT DISTINCT<br />
+        OBJECT_NAME(SI.object_id) AS Table_Name ,<br />
+        SI.name AS Statistics_Name ,<br />
+        STATS_DATE(SI.object_id, SI.index_id) AS Last_Stat_Update_Date ,<br />
+        SSI.rowmodctr AS RowModCTR ,<br />
+        SP.rows AS Total_Rows_In_Table ,<br />
+        'UPDATE STATISTICS [' + SCHEMA_NAME(SO.schema_id) + '].['<br />
+        + OBJECT_NAME(SI.object_id) + ']' + SPACE(2) + SI.name AS Update_Stats_Script<br />
+FROM    sys.indexes AS SI( NOLOCK )<br />
+        INNER JOIN sys.objects AS SO( NOLOCK ) ON SI.object_id = SO.object_id<br />
+        INNER JOIN sys.sysindexes SSI( NOLOCK ) ON SI.object_id = SSI.id<br />
+                                                    AND SI.index_id = SSI.indid<br />
+        INNER JOIN sys.partitions AS SP ON SI.object_id = SP.object_id<br />
+WHERE   SSI.rowmodctr > 0<br />
+        AND STATS_DATE(SI.object_id, SI.index_id) IS NOT NULL<br />
+        AND SO.type = 'U'<br />
+ORDER BY RowModCTR DESC<br />
+<br />
+--当在数据库开启了Auto_Update_Statistics之后，还有数据的话，那就有必要更新统计信息。下面有一些规则：<br />
+--1、  表大小从0增长。<br />
+--2、  当表的数据小于等于500时没有问题，并且ColModCtr从超过500行之后开始增长。<br />
+--3、  当表的行数超过500行时，在统计信息对象的引导列的ColModCtr值超过500+20%的行数时，就需要更新。<br />
+<br />
+--所以上面的查询可以为：<br />
+<br />
+SELECT * FROM <br />
+(<br />
+SELECT DISTINCT<br />
+        OBJECT_NAME(SI.object_id) AS Table_Name ,<br />
+        SI.name AS Statistics_Name ,<br />
+        STATS_DATE(SI.object_id, SI.index_id) AS Last_Stat_Update_Date ,<br />
+        SSI.rowmodctr AS RowModCTR ,<br />
+        SP.rows AS Total_Rows_In_Table ,<br />
+        'UPDATE STATISTICS [' + SCHEMA_NAME(SO.schema_id) + '].['<br />
+        + OBJECT_NAME(SI.object_id) + ']' + SPACE(2) + SI.name AS Update_Stats_Script<br />
+FROM    sys.indexes AS SI( NOLOCK )<br />
+        INNER JOIN sys.objects AS SO( NOLOCK ) ON SI.object_id = SO.object_id<br />
+        INNER JOIN sys.sysindexes SSI( NOLOCK ) ON SI.object_id = SSI.id<br />
+                                                    AND SI.index_id = SSI.indid<br />
+        INNER JOIN sys.partitions AS SP ON SI.object_id = SP.object_id<br />
+WHERE   SSI.rowmodctr > 0<br />
+        AND STATS_DATE(SI.object_id, SI.index_id) IS NOT NULL<br />
+        AND SO.type = 'U'<br />
+) AS t WHERE RowModCTR>=500+0.2*Total_Rows_In_Table<br />
+ORDER BY RowModCTR DESC<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:30

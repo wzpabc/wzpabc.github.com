@@ -1,0 +1,159 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>SQL事务日志还原实例 收藏 <br />
+USE master<br />
+GO<br />
+-- 创建测试数据库<br />
+CREATE DATABASE db_test GO<br />
+<br />
+-- 对数据库进行备份<br />
+BACKUP DATABASE db_test<br />
+TO DISK = 'c:\db_test.bak'<br />
+WITH FORMAT<br />
+GO<br />
+<br />
+-- 创建测试表<br />
+CREATE TABLE db_test.dbo.tb_test(<br />
+    ID int)<br />
+<br />
+-- 延时 1 秒钟,再进行后面的操作(这是由于SQL Server的时间精度最大为百分之三秒,不延时的话,可能会导致还原到时间点的操作失败)<br />
+WAITFOR DELAY '00:00:01'<br />
+GO<br />
+<br />
+-- 假设我们现在误操作删除了 db_test.dbo.tb_test 这个表<br />
+DROP TABLE db_test.dbo.tb_test<br />
+GO<br />
+<br />
+--在删除操作后,发现不应该删除表 db_test.dbo.tb_test<br />
+<br />
+--下面演示了如何恢复这个误删除的表 db_test.dbo.tb_test<br />
+<br />
+--首先,备份事务日志(使用事务日志才能还原到指定的时间点)<br />
+BACKUP LOG db_test<br />
+TO DISK = 'c:\db_test_log.bak'<br />
+WITH FORMAT<br />
+GO<br />
+<br />
+-- 获取可尝试的时间范围<br />
+IF OBJECT_ID(N'tempdb..#') IS NOT NULL<br />
+    DROP TABLE #<br />
+CREATE TABLE #(<br />
+    BackupName nvarchar(128) ,<br />
+    BackupDescription nvarchar(255) ,<br />
+    BackupType smallint ,<br />
+    ExpirationDate datetime ,<br />
+    Compressed tinyint ,<br />
+    Position smallint ,<br />
+    DeviceType tinyint ,<br />
+    UserName nvarchar(128) ,<br />
+    ServerName nvarchar(128) ,<br />
+    DatabaseName nvarchar(128) ,<br />
+    DatabaseVersion int ,<br />
+    DatabaseCreationDate datetime ,<br />
+    BackupSize numeric(20,0) ,<br />
+    FirstLSN numeric(25,0) ,<br />
+    LastLSN numeric(25,0) ,<br />
+    CheckpointLSN numeric(25,0) ,<br />
+    DatabaseBackupLSN numeric(25,0) ,<br />
+    BackupStartDate datetime ,<br />
+    BackupFinishDate datetime ,<br />
+    SortOrder smallint ,<br />
+    CodePage smallint ,<br />
+    UnicodeLocaleId int ,<br />
+    UnicodeComparisonStyle int ,<br />
+    CompatibilityLevel tinyint ,<br />
+    SoftwareVendorId int ,<br />
+    SoftwareVersionMajor int ,<br />
+    SoftwareVersionMinor int ,<br />
+    SoftwareVersionBuild int ,<br />
+    MachineName nvarchar(128) ,<br />
+    Flags int ,<br />
+    BindingID uniqueidentifier ,<br />
+    RecoveryForkID uniqueidentifier ,<br />
+    Collation nvarchar(128) ,<br />
+    FamilyGUID uniqueidentifier ,<br />
+    HasBulkLoggedData bit ,<br />
+    IsSnapshot bit ,<br />
+    IsReadOnly bit ,<br />
+    IsSingleUser bit ,<br />
+    HasBackupChecksums bit ,<br />
+    IsDamaged bit ,<br />
+    BeginsLogChain bit ,<br />
+    HasIncompleteMetaData bit ,<br />
+    IsForceOffline bit ,<br />
+    IsCopyOnly bit ,<br />
+    FirstRecoveryForkID uniqueidentifier ,<br />
+    ForkPointLSN numeric(25,0) NULL,<br />
+    RecoveryModel nvarchar(60) ,<br />
+    DifferentialBaseLSN numeric(25,0) NULL,<br />
+    DifferentialBaseGUID uniqueidentifier ,<br />
+    BackupTypeDescription nvarchar(60) ,<br />
+    BackupSetGUID uniqueidentifier NULL<br />
+)<br />
+INSERT # EXEC(N'<br />
+RESTORE HEADERONLY<br />
+FROM DISK = ''c:\db_test.bak''<br />
+WITH FILE = 1<br />
+RESTORE HEADERONLY<br />
+FROM DISK = ''c:\db_test_log.bak''<br />
+WITH FILE = 1<br />
+')<br />
+--SELECT <br />
+--    * <br />
+--FROM #<br />
+<br />
+-- 定义尝试的时间范围，以及尝试时间点的间隔<br />
+DECLARE<br />
+    @start_date datetime,<br />
+    @stop_date datetime,<br />
+    @try_step_millsecond int,<br />
+    @msg nvarchar(1000)<br />
+SELECT<br />
+    @start_date = MIN(BackupFinishDate),  -- 尝试查找误删除数据的开始时间<br />
+    @stop_date = MAX(BackupFinishDate),   -- 尝试查找误删除数据的结束时间<br />
+    @try_step_millsecond = 500            -- 每 500 毫秒为一个时间点找一次数据<br />
+FROM #<br />
+<br />
+-- 还原完全备份<br />
+RESTORE DATABASE db_test<br />
+FROM DISK = 'c:\db_test.bak'<br />
+WITH REPLACE, <br />
+    NORECOVERY<br />
+<br />
+-- 还原日志备份到各点，以寻找出所需数据<br />
+WHILE @start_date < @stop_date<br />
+BEGIN<br />
+    SELECT<br />
+        @start_date = DATEADD(ms, @try_step_millsecond, @start_date),<br />
+        @msg = N'尝试时间点: ' + CONVERT(varchar(50), @start_date, 121)<br />
+<br />
+    RAISERROR(@msg, 10, 1) WITH NOWAIT<br />
+    BEGIN TRY<br />
+        -- 还原日志到指定的点，并通过 STANDBY 使数据库能只读访问<br />
+        RESTORE LOG db_test<br />
+        FROM DISK = 'c:\db_test_log.bak'<br />
+        WITH STOPAT = @start_date,<br />
+            STANDBY = 'c:\db_test_redo.bak'<br />
+<br />
+        -- 检查需要的数据是否存在<br />
+        IF OBJECT_ID(N'db_test.dbo.tb_test') IS NOT NULL<br />
+        BEGIN<br />
+            -- 显示还原的时间点<br />
+            SELECT Restoreto = @start_date<br />
+            -- 完成数据库还原，使数据库可读写<br />
+            RESTORE LOG db_test<br />
+            WITH RECOVERY<br />
+<br />
+            SELECT<br />
+                @start_date = @stop_date<br />
+        END<br />
+    END TRY<br />
+    BEGIN CATCH<br />
+    END CATCH<br />
+END<br />
+GO<br />
+<br />
+--最后删除测试环境<br />
+DROP DATABASE db_test<br />
+DROP TABLE #<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:31

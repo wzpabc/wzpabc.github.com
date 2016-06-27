@@ -1,0 +1,69 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>使用Log Explorer查看和恢复数据 <br />
+<br />
+Log Explorer 4.1.可用于SQL Server2005的日志查看工具<br />
+<br />
+下载地址:<br />
+http://download.csdn.net/source/620271<br />
+<br />
+使用方法:<br />
+<br />
+打开Log Explorer -> Attach Log File -> 选择SQL Server服务器和登陆方式 -> Connect -> <br />
+在Database Name中选择数据库 -> Attach-> 左面对话框中Browse-> View Log-> 就可以看到log记录了 <br />
+<br />
+想恢复的话: 右键Log记录 Undo Transation-> 选择保存文件名和路径-> 然后打开该文件到查询分析器里执行 <br />
+T-sql代码就可以了 <br />
+<br />
+例如 如果Log是delete table where ...的话,生成的文件代码就是insert table .... <br />
+     然后将此insert table的代码放到查询分析器里执行.就可以恢复数据.<br />
+<br />
+<br />
+----------------------------------------------------------------------<br />
+--如何恢复被delete/update的数据<br />
+----------------------------------------------------------------------  <br />
+1　连接到被删除数据库的Db<br />
+打开log explorer  选择  "file"->"attach log file"->选择服务器和登陆方式->"connect"->选择"数据库"->"attach"<br />
+2   查看日志<br />
+ 在左面操作项目的对话框中选择"browse"项目->"view log"->就可以看到当前的Log记录了<br />
+3   恢复数据<br />
+     右键某一条log记录,选择"undo transation"->"选择保存文件名和路径"->然后打开该文件到查询分析器里执行<br />
+T-sql代码就可以了<br />
+例如: 如果log是delete table where ...的话,生成的文件代码就是insert table ....<br />
+<br />
+<br />
+<br />
+<br />
+----------------------------------------------------------------------<br />
+--Log Explorer恢复被drop table和truncate table后的数据<br />
+----------------------------------------------------------------------<br />
+1  连接到被删除数据库的Db<br />
+     操作同上<br />
+2   恢复方法<br />
+    1)  选择"salvaage dropped/truncate"菜单,在右边的对话框中选择表名,和droped/trucated的日期,<br />
+    File Name中选择生成insert语句脚步的存放位置,condition选择是droped还是truncated,<br />
+    最后点击"create" 就会生成insert语句,把生成的语句到查询分析器里面执行一下就可以了<br />
+    2) 选择"ViewDDL Commands"菜单->选"truncate table" 操作项->点击"Salvage"->生成语句->查询分析器里执行<br />
+<br />
+<br />
+----------------------------------------------------------------------<br />
+--log explorer使用的几个问题<br />
+----------------------------------------------------------------------<br />
+1) 对数据库做完全/差异/日志备份<br />
+备份时如果选用了删除事务日志中不活动的条目<br />
+再用Log explorer打试图看日志时,提示No log recorders found that match the filter，would you like to view unfiltered data 选择yes 就看不到刚才的记录了<br />
+<br />
+如果不选用了删除事务日志中不活动的条目<br />
+再用Log explorer打试图看日志时，就能看到原来的日志并做恢复<br />
+2)  修改了其中一个表中的部分数据，此时用Log explorer看日志，可以作日志恢复<br />
+3)  然后恢复备份，(注意:恢复是断开log explorer与数据库的连接，或连接到其他数据上，<br />
+否则会出现数据库正在使用无法恢复)<br />
+恢复完后，再打开log explorer 提示No log recorders found that match the filter，would you like to view unfiltered data,选择yes 就看不到刚才在2中修改的日志记录，所以无法做恢复.<br />
+4)  不要用SQL的备份功能备份,搞不好你的日志就破坏了.<br />
+<br />
+正确的备份方法是:<br />
+停止SQL服务,复制数据文件及日志文件进行文件备份.<br />
+<br />
+然后启动SQL服务,用log explorer恢复数据<br />
+<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:31

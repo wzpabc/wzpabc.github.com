@@ -1,0 +1,247 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>先建一表，放初始化资料<br />
+因为农历的日期，是由天文学家推算出来的，到现在只有到2049年的，以后的有了还可以加入！<br />
+CREATE TABLE SolarData<br />
+(<br />
+    yearId int not null,<br />
+    data char(7) not null,<br />
+    dataInt int not null<br />
+)<br />
+--插入数据<br />
+INSERT INTO <br />
+SolarData SELECT 1900,'0x04bd8',19416 UNION ALL SELECT 1901,'0x04ae0',19168<br />
+UNION ALL SELECT 1902,'0x0a570',42352 UNION ALL SELECT 1903,'0x054d5',21717<br />
+UNION ALL SELECT 1904,'0x0d260',53856 UNION ALL SELECT 1905,'0x0d950',55632<br />
+UNION ALL SELECT 1906,'0x16554',91476 UNION ALL SELECT 1907,'0x056a0',22176<br />
+UNION ALL SELECT 1908,'0x09ad0',39632 UNION ALL SELECT 1909,'0x055d2',21970<br />
+UNION ALL SELECT 1910,'0x04ae0',19168 UNION ALL SELECT 1911,'0x0a5b6',42422<br />
+UNION ALL SELECT 1912,'0x0a4d0',42192 UNION ALL SELECT 1913,'0x0d250',53840<br />
+UNION ALL SELECT 1914,'0x1d255',119381 UNION ALL SELECT 1915,'0x0b540',46400<br />
+UNION ALL SELECT 1916,'0x0d6a0',54944 UNION ALL SELECT 1917,'0x0ada2',44450<br />
+UNION ALL SELECT 1918,'0x095b0',38320 UNION ALL SELECT 1919,'0x14977',84343<br />
+UNION ALL SELECT 1920,'0x04970',18800 UNION ALL SELECT 1921,'0x0a4b0',42160<br />
+UNION ALL SELECT 1922,'0x0b4b5',46261 UNION ALL SELECT 1923,'0x06a50',27216<br />
+UNION ALL SELECT 1924,'0x06d40',27968 UNION ALL SELECT 1925,'0x1ab54',109396<br />
+UNION ALL SELECT 1926,'0x02b60',11104 UNION ALL SELECT 1927,'0x09570',38256<br />
+UNION ALL SELECT 1928,'0x052f2',21234 UNION ALL SELECT 1929,'0x04970',18800<br />
+UNION ALL SELECT 1930,'0x06566',25958 UNION ALL SELECT 1931,'0x0d4a0',54432<br />
+UNION ALL SELECT 1932,'0x0ea50',59984 UNION ALL SELECT 1933,'0x06e95',28309<br />
+UNION ALL SELECT 1934,'0x05ad0',23248 UNION ALL SELECT 1935,'0x02b60',11104<br />
+UNION ALL SELECT 1936,'0x186e3',100067 UNION ALL SELECT 1937,'0x092e0',37600<br />
+UNION ALL SELECT 1938,'0x1c8d7',116951 UNION ALL SELECT 1939,'0x0c950',51536<br />
+UNION ALL SELECT 1940,'0x0d4a0',54432 UNION ALL SELECT 1941,'0x1d8a6',120998<br />
+UNION ALL SELECT 1942,'0x0b550',46416 UNION ALL SELECT 1943,'0x056a0',22176<br />
+UNION ALL SELECT 1944,'0x1a5b4',107956 UNION ALL SELECT 1945,'0x025d0',9680<br />
+UNION ALL SELECT 1946,'0x092d0',37584 UNION ALL SELECT 1947,'0x0d2b2',53938<br />
+UNION ALL SELECT 1948,'0x0a950',43344 UNION ALL SELECT 1949,'0x0b557',46423<br />
+UNION ALL SELECT 1950,'0x06ca0',27808 UNION ALL SELECT 1951,'0x0b550',46416<br />
+UNION ALL SELECT 1952,'0x15355',86869 UNION ALL SELECT 1953,'0x04da0',19872<br />
+UNION ALL SELECT 1954,'0x0a5d0',42448 UNION ALL SELECT 1955,'0x14573',83315<br />
+UNION ALL SELECT 1956,'0x052d0',21200 UNION ALL SELECT 1957,'0x0a9a8',43432<br />
+UNION ALL SELECT 1958,'0x0e950',59728 UNION ALL SELECT 1959,'0x06aa0',27296<br />
+UNION ALL SELECT 1960,'0x0aea6',44710 UNION ALL SELECT 1961,'0x0ab50',43856<br />
+UNION ALL SELECT 1962,'0x04b60',19296 UNION ALL SELECT 1963,'0x0aae4',43748<br />
+UNION ALL SELECT 1964,'0x0a570',42352 UNION ALL SELECT 1965,'0x05260',21088<br />
+UNION ALL SELECT 1966,'0x0f263',62051 UNION ALL SELECT 1967,'0x0d950',55632<br />
+UNION ALL SELECT 1968,'0x05b57',23383 UNION ALL SELECT 1969,'0x056a0',22176<br />
+UNION ALL SELECT 1970,'0x096d0',38608 UNION ALL SELECT 1971,'0x04dd5',19925<br />
+UNION ALL SELECT 1972,'0x04ad0',19152 UNION ALL SELECT 1973,'0x0a4d0',42192<br />
+UNION ALL SELECT 1974,'0x0d4d4',54484 UNION ALL SELECT 1975,'0x0d250',53840<br />
+UNION ALL SELECT 1976,'0x0d558',54616 UNION ALL SELECT 1977,'0x0b540',46400<br />
+UNION ALL SELECT 1978,'0x0b5a0',46496 UNION ALL SELECT 1979,'0x195a6',103846<br />
+UNION ALL SELECT 1980,'0x095b0',38320 UNION ALL SELECT 1981,'0x049b0',18864<br />
+UNION ALL SELECT 1982,'0x0a974',43380 UNION ALL SELECT 1983,'0x0a4b0',42160<br />
+UNION ALL SELECT 1984,'0x0b27a',45690 UNION ALL SELECT 1985,'0x06a50',27216<br />
+UNION ALL SELECT 1986,'0x06d40',27968 UNION ALL SELECT 1987,'0x0af46',44870<br />
+UNION ALL SELECT 1988,'0x0ab60',43872 UNION ALL SELECT 1989,'0x09570',38256<br />
+UNION ALL SELECT 1990,'0x04af5',19189 UNION ALL SELECT 1991,'0x04970',18800<br />
+UNION ALL SELECT 1992,'0x064b0',25776 UNION ALL SELECT 1993,'0x074a3',29859<br />
+UNION ALL SELECT 1994,'0x0ea50',59984 UNION ALL SELECT 1995,'0x06b58',27480<br />
+UNION ALL SELECT 1996,'0x055c0',21952 UNION ALL SELECT 1997,'0x0ab60',43872<br />
+UNION ALL SELECT 1998,'0x096d5',38613 UNION ALL SELECT 1999,'0x092e0',37600<br />
+UNION ALL SELECT 2000,'0x0c960',51552 UNION ALL SELECT 2001,'0x0d954',55636<br />
+UNION ALL SELECT 2002,'0x0d4a0',54432 UNION ALL SELECT 2003,'0x0da50',55888<br />
+UNION ALL SELECT 2004,'0x07552',30034 UNION ALL SELECT 2005,'0x056a0',22176<br />
+UNION ALL SELECT 2006,'0x0abb7',43959 UNION ALL SELECT 2007,'0x025d0',9680<br />
+UNION ALL SELECT 2008,'0x092d0',37584 UNION ALL SELECT 2009,'0x0cab5',51893<br />
+UNION ALL SELECT 2010,'0x0a950',43344 UNION ALL SELECT 2011,'0x0b4a0',46240<br />
+UNION ALL SELECT 2012,'0x0baa4',47780 UNION ALL SELECT 2013,'0x0ad50',44368<br />
+UNION ALL SELECT 2014,'0x055d9',21977 UNION ALL SELECT 2015,'0x04ba0',19360<br />
+UNION ALL SELECT 2016,'0x0a5b0',42416 UNION ALL SELECT 2017,'0x15176',86390<br />
+UNION ALL SELECT 2018,'0x052b0',21168 UNION ALL SELECT 2019,'0x0a930',43312<br />
+UNION ALL SELECT 2020,'0x07954',31060 UNION ALL SELECT 2021,'0x06aa0',27296<br />
+UNION ALL SELECT 2022,'0x0ad50',44368 UNION ALL SELECT 2023,'0x05b52',23378<br />
+UNION ALL SELECT 2024,'0x04b60',19296 UNION ALL SELECT 2025,'0x0a6e6',42726<br />
+UNION ALL SELECT 2026,'0x0a4e0',42208 UNION ALL SELECT 2027,'0x0d260',53856<br />
+UNION ALL SELECT 2028,'0x0ea65',60005 UNION ALL SELECT 2029,'0x0d530',54576<br />
+UNION ALL SELECT 2030,'0x05aa0',23200 UNION ALL SELECT 2031,'0x076a3',30371<br />
+UNION ALL SELECT 2032,'0x096d0',38608 UNION ALL SELECT 2033,'0x04bd7',19415<br />
+UNION ALL SELECT 2034,'0x04ad0',19152 UNION ALL SELECT 2035,'0x0a4d0',42192<br />
+UNION ALL SELECT 2036,'0x1d0b6',118966 UNION ALL SELECT 2037,'0x0d250',53840<br />
+UNION ALL SELECT 2038,'0x0d520',54560 UNION ALL SELECT 2039,'0x0dd45',56645<br />
+UNION ALL SELECT 2040,'0x0b5a0',46496 UNION ALL SELECT 2041,'0x056d0',22224<br />
+UNION ALL SELECT 2042,'0x055b2',21938 UNION ALL SELECT 2043,'0x049b0',18864<br />
+UNION ALL SELECT 2044,'0x0a577',42359 UNION ALL SELECT 2045,'0x0a4b0',42160<br />
+UNION ALL SELECT 2046,'0x0aa50',43600 UNION ALL SELECT 2047,'0x1b255',111189<br />
+UNION ALL SELECT 2048,'0x06d20',27936 UNION ALL SELECT 2049,'0x0ada0',44448<br />
+<br />
+利用存储过程：<br />
+CREATE PROCEDURE GetLunar_zhangzs<br />
+@solarDay DATETIME <br />
+AS<br />
+  DECLARE @solData int    <br />
+  DECLARE @offset int    <br />
+  DECLARE @iLunar int    <br />
+  DECLARE @i INT     <br />
+  DECLARE @j INT     <br />
+  DECLARE @yDays int    <br />
+  DECLARE @mDays int    <br />
+  DECLARE @mLeap int    <br />
+  DECLARE @mLeapNum int    <br />
+  DECLARE @bLeap smallint    <br />
+  DECLARE @temp int    <br />
+  DECLARE @YEAR INT     <br />
+  DECLARE @MONTH INT    <br />
+  DECLARE @DAY INT    <br />
+  DECLARE @OUTPUTDATE varchar(10)    <br />
+  <br />
+  --保证传进来的日期是不带时间    <br />
+  SET @solarDay=cast(@solarDay AS char(10))    <br />
+  SET @offset=CAST(@solarDay-'1900-01-30' AS INT)  <br />
+  <br />
+  --确定农历年开始    <br />
+  SET @i=1900    <br />
+  --SET @offset=@solData    <br />
+  WHILE @i<2050 AND @offset>0    <br />
+  BEGIN    <br />
+    SET @yDays=348    <br />
+    SET @mLeapNum=0    <br />
+    SELECT @iLunar=dataInt FROM SolarData WHERE yearId=@i    <br />
+   <br />
+    --传回农历年的总天数    <br />
+    SET @j=32768    <br />
+    WHILE @j>8    <br />
+    BEGIN    <br />
+      IF @iLunar & @j >0    <br />
+        SET @yDays=@yDays+1    <br />
+      SET @j=@j/2    <br />
+    END    <br />
+    <br />
+    --传回农历年闰哪个月 1-12 , 没闰传回 0    <br />
+    SET @mLeap = @iLunar & 15    <br />
+<br />
+    --传回农历年闰月的天数 ,加在年的总天数上    <br />
+    IF @mLeap > 0    <br />
+    BEGIN    <br />
+      IF @iLunar & 65536 > 0    <br />
+        SET @mLeapNum=30    <br />
+      ELSE     <br />
+        SET @mLeapNum=29    <br />
+        SET @yDays=@yDays+@mLeapNum    <br />
+    END    <br />
+    SET @offset=@offset-@yDays    <br />
+    SET @i=@i+1    <br />
+  END    <br />
+      <br />
+  IF @offset <= 0    <br />
+  BEGIN    <br />
+    SET @offset=@offset+@yDays    <br />
+    SET @i=@i-1    <br />
+  END    <br />
+<br />
+  --确定农历年结束      <br />
+  SET @YEAR=@i    <br />
+  <br />
+  --确定农历月开始    <br />
+  SET @i = 1    <br />
+  SELECT @iLunar=dataInt FROM SolarData WHERE yearId=@YEAR  <br />
+  <br />
+  --判断那个月是润月    <br />
+  SET @mLeap = @iLunar & 15    <br />
+  SET @bLeap = 0   <br />
+  <br />
+  WHILE @i < 13 AND @offset > 0    <br />
+  BEGIN    <br />
+    --判断润月    <br />
+    SET @mDays=0    <br />
+    IF (@mLeap > 0 AND @i = (@mLeap+1) AND @bLeap=0)    <br />
+    BEGIN--是润月    <br />
+      SET @i=@i-1    <br />
+      SET @bLeap=1    <br />
+      --传回农历年闰月的天数    <br />
+      IF @iLunar & 65536 > 0    <br />
+        SET @mDays = 30    <br />
+      ELSE     <br />
+        SET @mDays = 29    <br />
+    END    <br />
+    ELSE    <br />
+    --不是润月    <br />
+    BEGIN    <br />
+      SET @j=1    <br />
+      SET @temp = 65536     <br />
+      WHILE @j<=@i    <br />
+      BEGIN    <br />
+        SET @temp=@temp/2    <br />
+        SET @j=@j+1    <br />
+      END    <br />
+      IF @iLunar & @temp > 0    <br />
+        SET @mDays = 30    <br />
+      ELSE    <br />
+        SET @mDays = 29    <br />
+    END       <br />
+    --解除闰月  <br />
+    IF @bLeap=1 AND @i= (@mLeap+1)  <br />
+      SET @bLeap=0  <br />
+      SET @offset=@offset-@mDays     <br />
+      SET @i=@i+1    <br />
+  END    <br />
+    <br />
+  IF @offset <= 0    <br />
+  BEGIN    <br />
+    SET @offset=@offset+@mDays    <br />
+    SET @i=@i-1    <br />
+  END    <br />
+  <br />
+  --确定农历月结束      <br />
+  SET @MONTH=@i  <br />
+    <br />
+  --确定农历日结束      <br />
+  SET @DAY=@offset    <br />
+    <br />
+ SET @OUTPUTDATE=convert(varchar(10),CAST((CAST(@YEAR AS VARCHAR(4))+'-'+CAST(@MONTH AS VARCHAR(2))+'-'+CAST(@DAY AS VARCHAR(2))) AS DATETIME) ,120)   <br />
+  select  convert( varchar(10),@solarDay ,120) as 阳历<br />
+  ,cast(dbo.f_num_str(year(@OUTPUTDATE)) as varchar(8))+'年|' + <br />
+     case when datalength(dbo.f_num_str(month(@OUTPUTDATE)))=4 then case when left(dbo.f_num_str(month(@OUTPUTDATE)),1)<>'一'<br />
+     then left(month(@OUTPUTDATE),1) else '' end + '十'+ case when right(dbo.f_num_str(month(@OUTPUTDATE)),1)='零' then '' else right(dbo.f_num_str(month(@OUTPUTDATE)),1) end  else<br />
+     cast(dbo.f_num_str(month(@OUTPUTDATE)) as varchar(4)) end +'月|'<br />
+  + case when datalength(dbo.f_num_str(day(@OUTPUTDATE)))=4 then  case when cast(dbo.f_num_str(day(@OUTPUTDATE) )as varchar(4))='一零'then '初' else (case when left(cast(dbo.f_num_str(day(@OUTPUTDATE) )as varchar(4)),1)<>'一' <br />
+    then left(cast(dbo.f_num_str(day(@OUTPUTDATE) )as varchar(4)),1) else '' end)end +'十'+ case when right(cast(dbo.f_num_str(day(@OUTPUTDATE) )as varchar(4)),1)='零' then '' else <br />
+   right(cast(dbo.f_num_str(day(@OUTPUTDATE) )as varchar(4)),1)end else '初' +cast(dbo.f_num_str(day(@OUTPUTDATE) )as varchar(4)) end as  阴历<br />
+GO<br />
+--注意：存储过程中使用了自定义函数f_num_str<br />
+--加此函数的目的是把数字换大写<br />
+CREATE FUNCTION [dbo].[f_num_str] (@num int)<br />
+RETURNS varchar(100)<br />
+AS<br />
+BEGIN<br />
+  DECLARE @n_str VARCHAR(20),@re VARCHAR(20),@i int<br />
+  SELECT @n_str=cast(@num as varchar),@i=1,@re=''<br />
+  WHILE @i<=len(@n_str)<br />
+  BEGIN<br />
+    SET @re=@re+SUBSTRING('零一二三四五六七八九',CAST(SUBSTRING(@n_str,@i,1) AS int)+1,1)<br />
+    SET @i=@i+1<br />
+  END<br />
+  RETURN @re<br />
+END<br />
+<br />
+--零壹贰叁肆伍陆柒捌玖<br />
+--调用存储过程 <br />
+exec GetLunar_zhangzs '1978-07-02'<br />
+<br />
+--返回结果：<br />
+<br />
+阳历         阴历                         <br />
+---------- -------------------------- <br />
+1978-07-02 一九七八年|五月|二十七       -- 注意：这是本人生日 ^_^<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:08

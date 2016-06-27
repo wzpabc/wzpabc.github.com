@@ -1,0 +1,114 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>USE master<br />
+GO<br />
+IF DB_ID('Sample_DB') IS NOT NULL <br />
+    DROP DATABASE [Sample_DB]<br />
+	<br />
+CREATE DATABASE [Sample_DB] ON PRIMARY<br />
+(<br />
+	NAME =N'Sample_DB',FILENAME=N'C:\SQLData\Sample_DB.mdf',<br />
+	SIZE=3072KB,FILEGROWTH=1024KB<br />
+), FILEGROUP [FG_1]<br />
+(<br />
+	NAME =N'FG_1_DataFile',FILENAME=N'C:\SQLData\FG_1_DataFile.ndf',<br />
+	SIZE=3072KB,FILEGROWTH=1024KB<br />
+), FILEGROUP [FG_2]<br />
+(<br />
+	NAME =N'FG_2_DataFile',FILENAME=N'C:\SQLData\FG_2_DataFile.ndf',<br />
+	SIZE=3072KB,FILEGROWTH=1024KB<br />
+), FILEGROUP [FG_3]<br />
+(<br />
+	NAME =N'FG_3_DataFile',FILENAME=N'C:\SQLData\FG_3_DataFile.ndf',<br />
+	SIZE=3072KB,FILEGROWTH=1024KB<br />
+), FILEGROUP [FG_N]<br />
+(<br />
+	NAME =N'FG_N_DataFile',FILENAME=N'C:\SQLData\FG_N_DataFile.ndf',<br />
+	SIZE=3072KB,FILEGROWTH=1024KB<br />
+) LOG ON <br />
+(<br />
+NAME =N'Sample_DB_log',FILENAME=N'C:\SQLData\Sample_DB_log.ldf',<br />
+	SIZE=3072KB,FILEGROWTH=10%<br />
+)<br />
+GO<br />
+<br />
+--创建一个带有RANGE LEFT的分区函数pf_OneMillion_LeftRange<br />
+USE Sample_DB<br />
+GO<br />
+<br />
+CREATE PARTITION FUNCTION pf_OneMillion_LeftRange(INT)<br />
+AS RANGE LEFT FOR VALUES(0,1000000,2000000,3000000)<br />
+GO<br />
+<br />
+--验证分区函数<br />
+USE Sample_DB<br />
+GO<br />
+SELECT  name ,<br />
+        function_id ,<br />
+        type ,<br />
+        type_desc ,<br />
+        fanout ,<br />
+        boundary_value_on_right ,<br />
+        create_date<br />
+FROM    sys.partition_functions<br />
+<br />
+SELECT  function_id ,<br />
+        boundary_id ,<br />
+        parameter_id ,<br />
+        value<br />
+FROM    sys.partition_range_values<br />
+GO<br />
+<br />
+--创建并验证分区架构<br />
+USE Sample_DB<br />
+GO<br />
+<br />
+CREATE PARTITION SCHEME ps_OneMillion_LeftRange<br />
+AS PARTITION pf_OneMillion_LeftRange<br />
+TO ([primary],[FG_1],[FG_2],[FG_3],[FG_N])<br />
+<br />
+SELECT  name ,<br />
+        data_space_id ,<br />
+        type ,<br />
+        type_desc ,<br />
+        function_id<br />
+FROM    sys.partition_schemes<br />
+GO<br />
+<br />
+--创建一个表tbl_SampleRecords，并插入500万数据<br />
+USE Sample_DB<br />
+GO<br />
+<br />
+IF OBJECT_ID('tbl_SampleRecords') IS NOT NULL <br />
+    DROP TABLE tbl_SampleRecords<br />
+	<br />
+CREATE TABLE tbl_SampleRecords<br />
+    (<br />
+      id INT ,<br />
+      SomeDate SYSNAME ,<br />
+      CONSTRAINT pk_tbl_SampleRecords_id PRIMARY KEY CLUSTERED ( id )<br />
+    )<br />
+ON  ps_OneMillion_LeftRange(id)<br />
+GO<br />
+<br />
+INSERT  INTO tbl_SampleRecords<br />
+        SELECT TOP 5000000<br />
+                id = ROW_NUMBER() OVER ( ORDER BY C1.name ) ,<br />
+                somedata = c1.NAME<br />
+        FROM    sys.columns AS C1<br />
+                CROSS JOIN sys.columns AS C2<br />
+                CROSS JOIN sys.columns AS C3<br />
+GO<br />
+<br />
+--验证一下分区数和行数<br />
+USE Sample_DB<br />
+GO<br />
+<br />
+SELECT  partition_id ,<br />
+        object_id ,<br />
+        index_id ,<br />
+        partition_number ,<br />
+        rows<br />
+FROM    sys.partitions<br />
+WHERE   object_id = OBJECT_ID('tbl_SampleRecords')<br />
+GO<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:33

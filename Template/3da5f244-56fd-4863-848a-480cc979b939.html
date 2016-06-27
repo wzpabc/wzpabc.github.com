@@ -1,0 +1,233 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--------------------------------------------------------------------------<br />
+<br />
+--  Author : htl258(Tony)<br />
+<br />
+--  Date   : 2010-04-25 01:10:28<br />
+<br />
+--  Version:Microsoft SQL Server 2008 (RTM) - 10.0.1600.22 (Intel X86) <br />
+<br />
+--          Jul  9 2008 14:43:38 <br />
+<br />
+--          Copyright (c) 1988-2008 Microsoft Corporation<br />
+<br />
+--          Developer Edition on Windows NT 5.1 <X86> (Build 2600: Service Pack 3)<br />
+<br />
+--  Blog   : http://blog.csdn.net/htl258<br />
+<br />
+--  Subject: SQL2008 Merge关键字用法与简例<br />
+<br />
+--------------------------------------------------------------------------<br />
+<br />
+--Merge 语法是对表进行插入，更新，删除这三个操作的合并。<br />
+<br />
+--根据与源表联接的结果，对目标表执行插入、更新或删除操作。<br />
+<br />
+--MERGE 语法包括如下五个主要子句：<br />
+<br />
+--  MERGE 子句用于指定作为插入、更新或删除操作目标的表或视图。<br />
+<br />
+--  USING 子句用于指定要与目标联接的数据源。<br />
+<br />
+--  ON 子句用于指定决定目标与源的匹配位置的联接条件。<br />
+<br />
+--  WHEN 子句用于根据ON 子句的结果指定要执行的操作。<br />
+<br />
+--  OUTPUT 子句针对更新、插入或删除的目标对象中的每一行返回一行。<br />
+<br />
+ <br />
+<br />
+ <br />
+<br />
+--示例：<br />
+<br />
+ <br />
+<br />
+USE tempdb<br />
+<br />
+GO<br />
+<br />
+--创建表A<br />
+<br />
+IF NOT OBJECT_ID('[A]') IS NULL<br />
+<br />
+    DROP TABLE [A]<br />
+<br />
+GO<br />
+<br />
+CREATE TABLE A(ID INT,ACOL VARCHAR(10))<br />
+<br />
+GO<br />
+<br />
+INSERT A VALUES(1,N'A')<br />
+<br />
+INSERT A VALUES(2,N'B')<br />
+<br />
+INSERT A VALUES(3,N'C')<br />
+<br />
+INSERT A VALUES(6,N'X') --此记录在B表中不存在，删除<br />
+<br />
+GO<br />
+<br />
+--创建表B<br />
+<br />
+IF NOT OBJECT_ID('[B]') IS NULL<br />
+<br />
+    DROP TABLE [B]<br />
+<br />
+GO<br />
+<br />
+CREATE TABLE B(ID INT,BCOL VARCHAR(10),XCOL VARCHAR(10))<br />
+<br />
+GO<br />
+<br />
+INSERT B VALUES(1,N'A',N'T')  --1的ID与A表ID匹配且指定值与A表指定值对应相同，不变<br />
+<br />
+INSERT B VALUES(2,N'P',N'O')  --2和的ID与A表ID匹配，指定值与A表指定值对应不同，更新<br />
+<br />
+INSERT B VALUES(3,N'P',N'N')<br />
+<br />
+INSERT B VALUES(4,N'L',N'Y')  --4和的ID与A表ID匹配，指定值在A表中对应不存在，插入<br />
+<br />
+INSERT B VALUES(5,N'E',N'S')  <br />
+<br />
+GO<br />
+<br />
+--开始合并两个表：<br />
+<br />
+MERGE A --要处理的表<br />
+<br />
+USING B --参照的表<br />
+<br />
+ON A.ID=B.ID --关联条件<br />
+<br />
+WHEN NOT MATCHED THEN INSERT VALUES(B.ID,B.BCOL) --如果要处理表没有参照表上的记录，则插入<br />
+<br />
+WHEN MATCHED THEN UPDATE SET A.ACOL=B.BCOL --如果记录匹配，就更新目标表的匹配行<br />
+<br />
+WHEN NOT MATCHED BY SOURCE THEN DELETE --如果要处理表的记录在参照表上不存在，则删除<br />
+<br />
+OUTPUT $action, Inserted.*, Deleted.*; --相当于输出以上语句的操作记录<br />
+<br />
+ <br />
+<br />
+/*--result:<br />
+<br />
+$action    ID          ACOL       ID          ACOL<br />
+<br />
+---------- ----------- ---------- ----------- ----------<br />
+<br />
+INSERT     4           L          NULL        NULL<br />
+<br />
+INSERT     5           E          NULL        NULL<br />
+<br />
+UPDATE     1           A          1           A<br />
+<br />
+UPDATE     2           P          2           B<br />
+<br />
+UPDATE     3           P          3           C<br />
+<br />
+DELETE     NULL        NULL       6           X<br />
+<br />
+ <br />
+<br />
+(6 行受影响)<br />
+<br />
+*/<br />
+<br />
+--看看A表更新成什么样：<br />
+<br />
+SELECT * FROM A<br />
+<br />
+/*<br />
+<br />
+ID          ACOL<br />
+<br />
+----------- ----------<br />
+<br />
+1           A<br />
+<br />
+2           P<br />
+<br />
+3           P<br />
+<br />
+4           L<br />
+<br />
+5           E<br />
+<br />
+ <br />
+<br />
+(5 行受影响)<br />
+<br />
+*/<br />
+<br />
+--再变换一个字段<br />
+<br />
+MERGE A --要处理的表<br />
+<br />
+USING B --参照的表<br />
+<br />
+ON A.ID=B.ID --关联条件<br />
+<br />
+WHEN NOT MATCHED THEN INSERT VALUES(B.ID,B.XCOL) <br />
+<br />
+WHEN MATCHED THEN UPDATE SET A.ACOL=B.XCOL <br />
+<br />
+WHEN NOT MATCHED BY SOURCE THEN DELETE<br />
+<br />
+OUTPUT $action, Inserted.*, Deleted.*;<br />
+<br />
+ <br />
+<br />
+/*--result:<br />
+<br />
+$action    ID          ACOL       ID          ACOL<br />
+<br />
+---------- ----------- ---------- ----------- ----------<br />
+<br />
+UPDATE     1           T          1           A<br />
+<br />
+UPDATE     2           O          2           P<br />
+<br />
+UPDATE     3           N          3           P<br />
+<br />
+UPDATE     4           Y          4           L<br />
+<br />
+UPDATE     5           S          5           E<br />
+<br />
+ <br />
+<br />
+(5 行受影响)<br />
+<br />
+*/<br />
+<br />
+--再看看现在的A表像什么样<br />
+<br />
+SELECT * FROM A<br />
+<br />
+/*<br />
+<br />
+ID          ACOL<br />
+<br />
+----------- ----------<br />
+<br />
+1           T<br />
+<br />
+2           O<br />
+<br />
+3           N<br />
+<br />
+4           Y<br />
+<br />
+5           S<br />
+<br />
+ <br />
+<br />
+(5 行受影响)<br />
+<br />
+*/<br />
+<br />
+<br />
+<br />
+本文来自CSDN博客，转载请标明出处：http://blog.csdn.net/htl258/archive/2010/04/25/5525814.aspx<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:30

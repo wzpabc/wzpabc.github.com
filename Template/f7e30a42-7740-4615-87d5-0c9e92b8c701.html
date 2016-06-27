@@ -1,0 +1,29 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p><br />
+SELECT  ind.index_id ,<br />
+        obj.name AS TableName ,<br />
+        ind.name AS IndexName ,<br />
+        ind.type_desc ,<br />
+        indUsage.user_seeks ,<br />
+        indUsage.user_scans ,<br />
+        indUsage.user_lookups ,<br />
+        indUsage.user_updates ,<br />
+        indUsage.last_system_seek ,<br />
+        indUsage.last_user_scan ,<br />
+        'drop index [' + ind.name + '] ON [' + obj.name + ']' AS DropIndexCommand<br />
+FROM    sys.indexes AS ind<br />
+        INNER JOIN sys.objects AS obj ON ind.object_id = obj.object_id<br />
+        LEFT JOIN sys.dm_db_index_usage_stats indUsage ON ind.object_id = indUsage.object_id<br />
+                                                          AND ind.index_id = indUsage.index_id<br />
+WHERE   ind.type_desc <> 'HEAP'<br />
+        AND obj.type <> 'S'<br />
+        AND OBJECTPROPERTY(obj.object_id, 'isusertable') = 1<br />
+        AND ( ISNULL(indUsage.user_seeks, 0) = 0<br />
+              AND ISNULL(indUsage.user_scans, 0) = 0<br />
+              AND ISNULL(indUsage.user_lookups, 0) = 0<br />
+            )<br />
+ORDER BY obj.name ,<br />
+        ind.name<br />
+GO<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:06

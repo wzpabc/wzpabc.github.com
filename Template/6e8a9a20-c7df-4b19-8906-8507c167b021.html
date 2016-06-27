@@ -1,0 +1,287 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>/*<br />
+SQLServer2005 XML在T－SQL查询中的典型应用<br />
+<br />
+整理:fcuandy<br />
+时间:2008.11.7<br />
+<br />
+前言:<br />
+    此文只讲xml数据类型及相应的一些操作方法在解决日常T－SQL编程中的一些应用，而避开xml modify,<br />
+xml schema,xml索引,命名空间等这些语法性或者生硬的一些问题(这些语法您可以查联机丛书),即此文主要<br />
+讲以xml的一些操作特性及xquery去解决编程问题.<br />
+<br />
+Tags:<br />
+    xquery ,FLWOR迭带 ,sql:column ,sql:variable ,nodes ,value ,query ,xpath ,xquery function, if, 聚合函数, xs:function等<br />
+<br />
+典型应用举例:<br />
+*/<br />
+<br />
+<br />
+--(1)<br />
+--====================================================================<br />
+--拆分<br />
+DECLARE @s VARCHAR(100)<br />
+SET @s='a,b,c,dd,ee,f,aa,a,aa,f'<br />
+<br />
+--常规做法(sql2000常用),以一split函数拆分串为表类型结构,如<br />
+--SELECT * FROM dbo.split(@s,',') a<br />
+--当然，也可能是循环去拆分,或者以一输助表的identity列利用charindex等函数拿identity列值与','的位置匹配实现拆分<br />
+--这些做法，roy_88及本人以前都整理过，不再累赘，可见推荐贴。即便 是xml法，也贴过多次，下面一笔带过<br />
+<br />
+--XML做法:<br />
+SELECT b.v FROM<br />
+    (SELECT CAST('<r>' + REPLACE(@s,',','</r><r>') + '</r>' AS XML) x) a   --将字串","换换为"</r><r>"并前后拼上<r>,</r>以用来构造xml串<br />
+CROSS APPLY<br />
+    (SELECT v=t.x.value('.','VARCHAR(10)') FROM a.x.nodes('//r') AS t(x) ) b  --使用 xml.nodes函数将xml串拆分为行<br />
+/*<br />
+a<br />
+b<br />
+c<br />
+dd<br />
+ee<br />
+f<br />
+aa<br />
+a<br />
+aa<br />
+f<br />
+*/<br />
+<br />
+<br />
+--(2)<br />
+--====================================================================<br />
+--去重,@s中出现的元素，重复的只要一个,希望结果为 'a,b,c,dd,ee,f'<br />
+--常规做法，循环或函数,或临时表拆后distinct<br />
+--XML做法:<br />
+--a.在(1)的基础上进行<br />
+<br />
+;WITH fc AS   --定义cte命名,将@s转换为一个表结构<br />
+(<br />
+    SELECT DISTINCT b.v v<br />
+            FROM<br />
+                (SELECT CAST('<r>' + REPLACE(@s,',','</r><r>') + '</r>' AS XML) x) a<br />
+            CROSS APPLY<br />
+                (SELECT v=t.x.value('.','VARCHAR(10)') FROM a.x.nodes('//r') AS t(x) ) b<br />
+)<br />
+--对这个表利用xml方法进行行值拼接<br />
+SELECT STUFF(b.v.value('/r[1]','varchar(100)'),1,1,'')<br />
+    FROM<br />
+    (SELECT v=(SELECT ',' + v FROM fc FOR XML PATH(''),ROOT('r'),TYPE)) b<br />
+/*<br />
+a,aa,b,c,dd,ee,f<br />
+*/<br />
+<br />
+--b FLWOR语句 + T-SQL组合:<br />
+SELECT STUFF(v,1,1,'') FROM<br />
+    (SELECT CAST('<r>' + REPLACE(@s,',','</r><r>') + '</r>' AS XML) x) a<br />
+CROSS APPLY<br />
+    (SELECT x=(SELECT t.x.value('.','varchar(10)') v,idx=ROW_NUMBER() OVER(ORDER BY GETDATE()) FROM a.x.nodes('//r') AS t(x) FOR XML PATH('r'),TYPE)) b --利用row_number得到唯一idx<br />
+CROSS APPLY<br />
+    (SELECT v=CAST(b.x.query('for $r in //r where count(//r[v=$r/v and idx<$r/idx])=0 return concat(",",xs:string($r/v[1]))') AS VARCHAR(MAX))) c  --类似count计数法，取得v相同的节点集idx值最小的节点,原型为:<br />
+--SELECT * FROM tb a WHERE 1>(SELECT COUNT(*) FROM tb WHERE v=a.v AND id<a.id)<br />
+/*<br />
+a ,b ,c ,dd ,ee ,aa ,f<br />
+*/<br />
+<br />
+<br />
+--c distinct-values<br />
+SELECT REPLACE(v,' ',',') FROM<br />
+    (SELECT CAST('<r>' + REPLACE(@s,',','</r><r>') + '</r>' AS XML) x) a<br />
+CROSS APPLY<br />
+    (SELECT CAST(a.x.query('distinct-values(//r)') AS VARCHAR(MAX)) v) b  --直接调用distinct-values函数来操作<br />
+/*<br />
+a,b,c,dd,ee,f,aa<br />
+*/<br />
+<br />
+<br />
+-- 导入去重, last() , position()<br />
+<br />
+DECLARE   @doc  xml<br />
+SET   @doc   ='<?xml version="1.0" encoding="gb2312" ?><br />
+<employees><br />
+    <employee><br />
+        <empid>e0001</empid><br />
+        <name>萧峰</name><br />
+    </employee><br />
+    <employee><br />
+        <empid>e0002</empid><br />
+        <name>段誉</name><br />
+    </employee><br />
+    <employee><br />
+        <empid>e0003</empid><br />
+        <name>王语嫣</name><br />
+    </employee><br />
+    <employee><br />
+        <empid>e0003</empid><br />
+        <name>张无忌</name><br />
+    </employee><br />
+</employees><br />
+'<br />
+create table people2 <br />
+( <br />
+    personid varchar(10)  primary key ,<br />
+    name varchar(20) <br />
+)<br />
+<br />
+INSERT people2<br />
+SELECT DISTINCT b.* FROM<br />
+    (SELECT x = @doc.query('for $e in //employee  return  //employee[empid = $e/empid][last()]')) a  --FLWOR时,用当前节点去//emploee节点集中找节点集中empid等于当前节点的empid, 在找到的集合中取最后一个利用last()函数<br />
+CROSS APPLY<br />
+    (SELECT id=t.x.value('empid[1]','varchar(100)'),name=t.x.value('name[1]','varchar(100)') FROM a.x.nodes('//employee') AS t(x)) b<br />
+<br />
+SELECT * FROM people2<br />
+/*<br />
+e0001    萧峰<br />
+e0002    段誉<br />
+e0003    张无忌<br />
+*/<br />
+GO<br />
+drop table people2 <br />
+GO<br />
+--同组一选多，也可应用此方法，不过没有必要，就不再累赘了。<br />
+<br />
+<br />
+--(3)<br />
+--====================================================================<br />
+--列名,列值相关<br />
+--a,按行聚合<br />
+declare @t table(Sname nvarchar(5),  V1 float,    V2 float,    V3 float,      V4 float,    V5 float,      V6 float) <br />
+insert @t select N'张三',    0.11 , 0.21 , 0.29,  0.32 ,   0.11,    0.08 <br />
+insert @t select N'李四',    0.01 , 0.61 , 0.21,  0.73 ,   0.21,    0.12 <br />
+insert @t select N'张五',    0.31 , 0.21 , 0.23,  0.33 ,   0.91,    0.65 <br />
+insert @t select N'张六',    0.59 , 0.11,  0.26,  0.13,    0.01,    0.15 <br />
+<br />
+select b.* from<br />
+    (select x=cast((select * from @t for xml path('r')) as xml)) a<br />
+cross apply<br />
+    (<br />
+        select name=x.query('./Sname/text()'),v=x.query('max(./*[local-name(.)!="Sname"])') from a.x.nodes('//r') as t(x)  <br />
+        --r为二级节点(因为文档本身无根节点，即为每项的顶级节点)即为一个r节点表示一条记录. r下级节点，每个表示一个列，因为列名未知，所以用/*匹配所有节点，因为name为区别列，不参与聚合运算，故用local-name取得来过滤<br />
+    ) b<br />
+<br />
+/*<br />
+张三    0.32<br />
+李四    0.73<br />
+张五    0.91<br />
+张六    0.59<br />
+*/<br />
+<br />
+--b ,由值引到取列<br />
+if not object_id('T1') is null<br />
+    drop table T1<br />
+GO<br />
+Create table T1([tId] int,[tName] nvarchar(4))<br />
+Insert T1<br />
+select 1,N'zhao' union all<br />
+select 2,N'qian' union all<br />
+select 3,N'sun'<br />
+Go<br />
+--> --> 借且(Roy)生成測試數據<br />
+<br />
+if not object_id('T2') is null<br />
+    drop table T2<br />
+Go<br />
+Create table T2([tId] int,[zhao] nvarchar(1),[qian] nvarchar(1),[sun] nvarchar(1))<br />
+Insert T2<br />
+select 1,N'a',N'b',N'c' union all<br />
+select 2,N'd',N'e',N'f' union all<br />
+select 3,N'g',N'h',N'i'<br />
+Go<br />
+<br />
+<br />
+SELECT c.tid,c.tName,v FROM t1 c<br />
+CROSS APPLY<br />
+    (SELECT x=(SELECT * FROM t2 WHERE tid=c.tid FOR XML PATH('r'),TYPE)) a<br />
+CROSS APPLY<br />
+    (SELECT v=t.x.query('./*[local-name(.)=xs:string(sql:column("c.tName")) ]/text()') <br />
+        FROM a.x.nodes('//r') AS t(x)<br />
+    ) b<br />
+<br />
+/*<br />
+1    zhao    a<br />
+2    qian    e<br />
+3    sun    i<br />
+*/<br />
+<br />
+<br />
+--c, 列名，列值，与系统表 <br />
+<br />
+CREATE TABLE tb(f1 INT,f2 INT,x INT,z INT,d INT,ex INT,dd INT,vv INT) <br />
+INSERT tb SELECT 1,2,3,5,11,3,2423,33 <br />
+GO <br />
+SELECT * FROM tb <br />
+GO <br />
+SELECT name,v FROM<br />
+  ( SELECT name FROM sys.columns WHERE object_id=object_id('tb','u') ) a <br />
+CROSS JOIN<br />
+  (SELECT x=(SELECT * FROM tb FOR XML PATH('r'),TYPE)) b <br />
+CROSS APPLY<br />
+(SELECT v=t.x.query('./*[local-name(.)=xs:string(sql:column("a.name")) ]/text()') FROM b.x.nodes('//r') AS t(x) ) c <br />
+/*<br />
+f1    1<br />
+f2    2<br />
+x    3<br />
+z    5<br />
+d    11<br />
+ex    3<br />
+dd    2423<br />
+vv    33<br />
+*/<br />
+GO <br />
+DROP TABLE tb<br />
+GO<br />
+<br />
+--(4)<br />
+--一些综合计算<br />
+--以下表 ta.a值 yyyymmdd-yyyymmdd表连续时间段，","表单个日期<br />
+If object_id('ta','u') is not null <br />
+    Drop table ta<br />
+Go<br />
+Create table ta(a varchar(100))<br />
+Go<br />
+Insert into ta<br />
+select '1 | |20080101-20080911' <br />
+union all<br />
+select '2 | |20080101，20080201，20080301，20080515，20080808'<br />
+union all<br />
+select '3 | |20080101，20080201，20080301，20080515，20081108'<br />
+Go<br />
+<br />
+declare @s varchar(8)<br />
+select @s= convert(varchar(8),getdate(),112)<br />
+<br />
+select stuff(replace(replace(cast(x as varchar(1000)),'</item><item>',case when type='1' then '-' else '，' end),'</item>',''),1,6,type + ' | |') a<br />
+    from<br />
+    (<br />
+        select left(a,1) type, <br />
+            cast(<br />
+                    '<item>' <br />
+                    + <br />
+                    replace(<br />
+                        stuff(a,1,5,''),<br />
+                        case when left(a,1)=1 then '-' else '，' end,<br />
+                        '</item><item>'<br />
+                        )<br />
+                    + <br />
+                    '</item>'<br />
+                AS XML<br />
+                ) x<br />
+        from ta<br />
+    ) base<br />
+<br />
+    where x.value('<br />
+            if (sql:column("base.type")="1") then<br />
+                if(<br />
+                    (/item/text())[1]<sql:variable("@s")<br />
+                    and<br />
+                    (/item/text())[2]>sql:variable("@s")<br />
+                )<br />
+                then 1<br />
+                else 0<br />
+            else<br />
+                count(//item[text()>sql:variable("@s")])<br />
+            '<br />
+            ,<br />
+            'int'<br />
+            )>0<br />
+go<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:31

@@ -1,0 +1,16 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>SELECT<br />
+    avg_total_user_cost * avg_user_impact * ( user_scans + user_seeks ) AS PossibleImprovement ,<br />
+    last_user_seek ,<br />
+    last_user_scan ,<br />
+    [statement] AS [Object] ,<br />
+    'CREATE INDEX [IDX_' + CONVERT(VARCHAR(32), GS.group_handle) + '_' + CONVERT(VARCHAR(32), D.index_handle) + '_' + REPLACE(REPLACE(REPLACE([STATEMENT], ']', ''), '[', ''), '.', '') + ']' + ' ON ' + [statement] + ' (' + ISNULL(equality_columns, '') + CASE WHEN equality_columns IS NOT NULL AND inequality_columns IS NOT NULL THEN ','<br />
+                                                                                                                                                                                                                                                                  ELSE ''<br />
+                                                                                                                                                                                                                                                             END + ISNULL(inequality_columns, '') + ')' + ISNULL(' INCLUDE (' + included_columns + ')', '') AS Create_Index_Syntax<br />
+FROM<br />
+    sys.dm_db_missing_index_groups AS G<br />
+INNER JOIN sys.dm_db_missing_index_group_stats AS GS ON G.index_group_handle = GS.group_handle<br />
+INNER JOIN sys.dm_db_missing_index_details AS D ON G.index_handle = D.index_handle<br />
+ORDER BY<br />
+    PossibleImprovement DESC<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:11

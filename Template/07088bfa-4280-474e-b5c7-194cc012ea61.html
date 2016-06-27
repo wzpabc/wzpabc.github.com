@@ -1,0 +1,178 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--SQL 2008使用空间数据<br />
+<br />
+SQL SERVER 2008支持两种空间数据类型，geometry和geography.其中geometry数据类型支持平面或平面球数据,geography可用于存储GPS经度和纬度坐标等椭球体数据。<br />
+<br />
+geometry和geography数据类型基于geometry层次结构。<br />
+<br />
+----point类型<br />
+在SQL SERVER的空间数据中，Point用于定义一个点。例如：<br />
+declare @g geometry<br />
+set @g=geometry::STGeomFromText('POINT(3,4)',0)<br />
+在本例中，字符串POINT(3，4)用于表示一个点，其中X坐标为3，Y坐标为4。<br />
+使用下面的语句可以打印geometry变量@g的内容。<br />
+select @g.Tostring()<br />
+/*<br />
+point(3,4)<br />
+*/<br />
+geometry变量的STX属性表示其X坐标值，STY属性表示其Y坐标值。使用下面的语句可以打印@g的X和Y坐标值。<br />
+select @g.STX<br />
+select @g.STY<br />
+<br />
+也可以使用geometry::STPointFromText()方法根据指定格式的字符串生成POINT类型的geometry变量<br />
+declare @g geometry;<br />
+set @g=geometry::STGeomFromText('POINT(3,4)',0);<br />
+select @g.STX;<br />
+select @g.STY;<br />
+<br />
+----MultiPoint类型<br />
+在SQL SERVER的空间数据中，Point用于定义多个点。<br />
+declare @g geometry<br />
+set @g=geometry::STGeomFromText('MultiPoint(3,4),(20 21),(1,2)',0)<br />
+使用STGeometryN()方法可以获取MultiPoint类型数据中的一个点。例如@g.STGeometryN(1)<br />
+表示@g中的第一个点.<br />
+declare @g geometry<br />
+set @g=geometry::STGeomFromText('MultiPoint(3,4),(20 21),(1,2)',0)<br />
+declare @i int<br />
+set @i=1<br />
+print @g.tostring()<br />
+whlie@i<4<br />
+begin<br />
+  print @g.STGeometryN(@i).STX<br />
+  print @g.STGeometryN(@i).STY<br />
+  set @i=@i+1<br />
+end<br />
+/*<br />
+  MultiPoint(3,4),(20 21),(1,2)<br />
+  3<br />
+  4<br />
+  20<br />
+  21<br />
+  1<br />
+  2<br />
+*/<br />
+<br />
+----LineString类型<br />
+在SQL SERVER的空间数据中，LineString是一维对象，用于表示一系列点和连接这些点的线段。<br />
+下面的语句声明一个包含3个点的LineString类型的geometry对象。<br />
+declare @g geometry<br />
+set @g=geometry::STGeomFromText('LineString(3 4, 20 21,1 2)',4322)<br />
+使用STNumPoints()方法可以返回构成实例的点数。<br />
+declare @g geometry<br />
+set @g=geometry::STGeomFromText('LineString(3 4, 20 21,1 2)',4322)<br />
+select @g.STNumPoints()<br />
+/*<br />
+3<br />
+*/<br />
+使用STPointN()方法可以获取LineString中指定的点。<br />
+declare @g geometry<br />
+set @g=geometry::STGeomFromText('LineString(3 4, 20 21,1 2)',4322)<br />
+declare @i int<br />
+set @i=1<br />
+while @i<=@g.STNumPoints()--@g.STNumPoints()表示最后一个点<br />
+begin<br />
+    select @g.STPointN(@i).ToString()<br />
+    set @i=@i+1<br />
+end<br />
+/*<br />
+ 3 4<br />
+ 20 21<br />
+ 1  2<br />
+*/<br />
+<br />
+----MultiLineString类型<br />
+在SQL SERVER的空间数据中,MultiLineString用于定义多个线段对象，即多个LineString.<br />
+declare @g geometry<br />
+set @g=geometry::STGeomFromText('MultiLineString((3 4,20 21),(21 22, 1 2))',13);<br />
+<br />
+----Polygon类型<br />
+在SQL SERVER的空间数据中,Polygon是右一系列点和线段组成的二维图形(多边形).这些点和线段可以定义一个外部的边界环。也可以<br />
+在外部边界环的内部定义零个或者多个内部环。<br />
+declare @g geometry;<br />
+set @g=geometry::STPolyFromText('Polygon((0 0,0 3,3 3,3 0,0 0),(1 1, 1 2, 2 1, 1 1))',10);<br />
+Polygon对象的方法<br />
+1.STExteriorRing方法<br />
+使用STExteriorRing可以返回Polygon对象的外环。<br />
+declare @g geometry;<br />
+set @g=geometry::STPolyFromText('Polygon((0 0,0 3,3 3,3 0,0 0),(1 1, 1 2, 2 1, 1 1))',10);<br />
+select @g.STExteriorRing().tostring();<br />
+/*<br />
+LINESTRING(0 0, 0 3, 3 3, 3 0, 0 0)<br />
+*/<br />
+<br />
+2.STNumterioring方法<br />
+使用STNumterioring方法可以获取Polygon对象中包含的内环的数量。<br />
+declare @g geometry;<br />
+set @g=geometry::STPolyFromText('Polygon((0 0,0 3,3 3,3 0,0 0),(1 1, 1 2, 2 1, 1 1))',10);<br />
+select @g.STExteriorRing().tostring();<br />
+/*<br />
+1<br />
+*/<br />
+<br />
+3.STInteriorRingN方法<br />
+使用STInteriorRingN方法可以获取Polygon对象中包含的内环对象，即LineString对象。<br />
+declare @g geometry;<br />
+set @g=geometry::STPolyFromText('Polygon((0 0,0 3,3 3,3 0,0 0),(1 1, 1 2, 2 1, 1 1))',10);<br />
+select @g.STExteriorRing().tostring();<br />
+declare @i int<br />
+set @i=1<br />
+whlie @i<=@g.STNumterioring()<br />
+begin <br />
+  select @g.STInteriorRingN(@i).tostring()<br />
+  set @i=@i+1<br />
+end<br />
+<br />
+/*<br />
+LINESTRING(1 1,1 2, 2 1,1 1)<br />
+*/<br />
+<br />
+----MultiPolygon类型<br />
+在SQL SERVER的空间数据中,MultiPolygon用于定义多个多边形，即多个Polygon.<br />
+declare @g geometry;<br />
+set @g=geometry::Parse('MultiPolygon(((0 0,0 3, 3 3,3 0,0 0),(1 1,1 2,2 1,1 1)),((9 9,9 10,10 9,9 9))))');<br />
+使用STGeometryN(1)表示@g中的第一个多边形。下面的代码可以输出MultiPolygon对象中所有多边形的字符串信息<br />
+declare @g geometry;<br />
+set @g=geometry::Parse('MultiPolygon(((0 0,0 3, 3 3,3 0,0 0),(1 1,1 2,2 1,1 1)),((9 9,9 10,10 9,9 9))))');<br />
+declare @i int<br />
+set @i=1<br />
+print @g.tostring()<br />
+while @i<3<br />
+begin<br />
+   print @g.STGeometryN(@i).tostring();<br />
+   set @i=@i+1<br />
+end<br />
+/*<br />
+MultiPolygon(((0 0,0 3, 3 3,3 0,0 0),(1 1,1 2,2 1,1 1)),((9 9,9 10,10 9,9 9))))<br />
+Polygon((0 0,0 3, 3 3,3 0,0 0),(1 1,1 2,2 1,1 1))<br />
+Polygon((9 9,9 10,10 9,9 9))<br />
+*/<br />
+<br />
+----GeometryCollection类型<br />
+在SQL SERVER的空间数据中,GeometryCollection用于定义零个或者多个geometry或geography实例的集合。<br />
+比如：<br />
+declare @g geometry;<br />
+set @g=geometry::STPolyFromText('GeometryCollection(point(3 21),Polygon((0 0,0 3,3 3,3 0,0 0)))',1);<br />
+上面的例子中表示2个geometry实例，一个Point实例，一个Polygon实例。<br />
+使用STNumGeometyies()方法可以获取集合中包含的几何图形数量。<br />
+declare @g geometry;<br />
+set @g=geometry::STPolyFromText('GeometryCollection(point(3 21),Polygon((0 0,0 3,3 3,3 0,0 0)))',1);<br />
+select @g.STNumGeometyies()<br />
+/*<br />
+2<br />
+*/<br />
+<br />
+使用STGeometryN()方法可以获取GeometryCollection类型数据中指定的几何图形实例。例如STGeometryN(1)表示@g中的第1个几何图形实例。<br />
+declare @g geometry;<br />
+set @g=geometry::STPolyFromText('GeometryCollection(point(3 21),Polygon((0 0,0 3,3 3,3 0,0 0)))',1);<br />
+declare @i int<br />
+set @i=1<br />
+print @g.Tostring()<br />
+while @i<=@g.STGeometryN(@i).Tostring();<br />
+set @i=@i+1<br />
+end<br />
+/*<br />
+GeometryCollection(point(3 21),Polygon((0 0,0 3,3 3,3 0,0 0)))<br />
+point(3 21)<br />
+Polygon((0 0,0 3,3 3,3 0,0 0)))<br />
+*/<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:06

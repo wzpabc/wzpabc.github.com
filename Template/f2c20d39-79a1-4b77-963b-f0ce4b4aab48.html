@@ -1,0 +1,54 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>----------------------------------------------------<br />
+/*如何将一列中所有的值一行显示<br />
+数据源<br />
+  a<br />
+  b<br />
+  c<br />
+  d<br />
+  e<br />
+结果<br />
+a,b,c,d,e<br />
+*/<br />
+<br />
+create table tb(col varchar(20))<br />
+insert tb values ('a')<br />
+insert tb values ('b')<br />
+insert tb values ('c')<br />
+insert tb values ('d')<br />
+insert tb values ('e')<br />
+go<br />
+<br />
+--方法一<br />
+declare @sql varchar(1000)<br />
+set @sql = ''<br />
+select @sql = @sql + t.col + ',' from (select col from tb) as t<br />
+set @sql='select result = ''' + left(@sql , len(@sql) - 1) + ''''<br />
+exec(@sql)<br />
+/*<br />
+result     <br />
+---------- <br />
+a,b,c,d,e,<br />
+*/<br />
+<br />
+--方法二<br />
+declare @output varchar(8000)<br />
+select @output = coalesce(@output + ',' , '') + col from tb<br />
+print @output<br />
+/*<br />
+a,b,c,d,e<br />
+*/<br />
+<br />
+---方法三<br />
+declare @s varchar(1000)<br />
+select @s=isnull(@s+',' , '')+col from tb<br />
+select @s<br />
+/*<br />
+a,b,c,d,e<br />
+*/<br />
+<br />
+drop table tb<br />
+<br />
+<br />
+-------------<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:14

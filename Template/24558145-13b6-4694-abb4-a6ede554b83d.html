@@ -1,0 +1,199 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>create   table   testIndex <br />
+( <br />
+          id   int   identity(1,1)   primary   key, <br />
+          nm   varchar(100)   unique   not   null, <br />
+          sex   varchar(10) <br />
+) <br />
+create UNIQUE index UQ__testIndex__0DAF0CB0<br />
+on testindex(nm)<br />
+<br />
+insert   into   testindex   <br />
+          select   'aaabbb','m'   union   all <br />
+          select   'bbb','w'   union   all <br />
+          select   'ccc','w'   union   all <br />
+          select   'ddd','m' <br />
+<br />
+<br />
+insert   into   testindex   <br />
+          select   '麦蒂未伤愈中途退出训练复出时间再度成疑','北京'  <br />
+go<br />
+--创建全文目录 <br />
+sp_fulltext_catalog   'abc','create'     <br />
+go<br />
+--创建全文索引（‘表名‘，’创建/删除‘，’全文目录名‘，’约束名‘） <br />
+sp_fulltext_table   'testindex','create','abc','UQ__testIndex__0DAF0CB0' <br />
+go<br />
+--添加列到全文索引（‘表名‘，’列名‘，’添加/删除‘） <br />
+sp_fulltext_column   'testindex','nm','add' <br />
+<br />
+go<br />
+--建立全文索引<br />
+--activate，是激活表的全文检索能力，也就是在全文目录中注册该表<br />
+execute sp_fulltext_table 'testindex','activate'<br />
+go<br />
+--填充全文索引目录<br />
+execute sp_fulltext_catalog 'abc','start_full'<br />
+go<br />
+<br />
+--检查全文目录填充情况<br />
+While fulltextcatalogproperty('abc','populateStatus')<>0<br />
+begin<br />
+<br />
+--如果全文目录正处于填充状态，则等待30秒后再检测一次<br />
+waitfor delay '0:0:30'<br />
+end<br />
+<br />
+--全文目录填充完成后，即可使用全文目录检索<br />
+<br />
+<br />
+<br />
+<br />
+SELECT   *   FROM   testindex   WHERE   CONTAINS(nm,   '麦蒂') <br />
+<br />
+/*<br />
+<br />
+id          nm                                                                                                 sex        <br />
+----------- --------------------------------------------- ------------------------------------------------ ---------- <br />
+5           麦蒂未伤愈中途退出训练复出时间再度成疑                                                             北京<br />
+<br />
+（所影响的行数为 1 行）<br />
+*/<br />
+insert   into   testindex   <br />
+          select   '麦蒂未伤愈中途退出训练复出时间再度成疑12121','北京'  <br />
+go<br />
+SELECT   *   FROM   testindex   WHERE   CONTAINS(nm,   '麦蒂')<br />
+-----No result<br />
+/*<br />
+<br />
+id          nm                                                                                                 sex        <br />
+----------- --------------------------------------------- ------------------------------------------------ ---------- <br />
+5           麦蒂未伤愈中途退出训练复出时间再度成疑                                                             北京<br />
+<br />
+（所影响的行数为 1 行）<br />
+*/<br />
+go<br />
+<br />
+--填充全文索引目录<br />
+execute sp_fulltext_catalog 'abc','start_full'<br />
+go<br />
+--检查全文目录填充情况<br />
+While fulltextcatalogproperty('abc','populateStatus')<>0<br />
+begin<br />
+<br />
+--如果全文目录正处于填充状态，则等待30秒后再检测一次<br />
+waitfor delay '0:0:30'<br />
+end<br />
+<br />
+<br />
+SELECT   *   FROM   testindex   WHERE   CONTAINS(nm,   '麦蒂')<br />
+<br />
+go<br />
+/*<br />
+<br />
+id          nm                                                                                                   sex        <br />
+----------- ---------------------------------------------------------------------------------------------------- ---------- <br />
+6           麦蒂未伤愈中途退出训练复出时间再度成疑12121                                                                             北京<br />
+5           麦蒂未伤愈中途退出训练复出时间再度成疑                                                                                  北京<br />
+<br />
+（所影响的行数为 2 行）<br />
+<br />
+*/<br />
+sp_fulltext_table  'testindex','drop'<br />
+go<br />
+sp_fulltext_catalog   'abc','drop'  <br />
+go  <br />
+drop table testIndex<br />
+<br />
+<br />
+<br />
+-------------开启全文索引和创建全文索引目录 <br />
+exec sp_fulltext_database 'enable' <br />
+--exec sp_fulltext_catalog 'gf_ft','drop' <br />
+exec sp_fulltext_catalog 'gf_ft','create' <br />
+<br />
+<br />
+-------------为news表创建全文索引 可索引列为 title,abstract,text <br />
+<br />
+exec sp_fulltext_table 'product','create','gf_ft','pk_product' <br />
+exec sp_fulltext_column 'product','productname','add' <br />
+<br />
+-------------激活索引 <br />
+exec sp_fulltext_table 'product','activate' <br />
+exec sp_fulltext_table 'product','start_full' <br />
+<br />
+--检查全文目录填充情况 <br />
+While fulltextcatalogproperty('gf_ft','populateStatus') <>0 <br />
+begin <br />
+<br />
+--如果全文目录正处于填充状态，则等待5秒后再检测一次 <br />
+waitfor delay '0:0:5' <br />
+END <br />
+<br />
+exec sp_fulltext_catalog 'gf_ft','start_full' <br />
+<br />
+--检查全文目录填充情况 <br />
+While fulltextcatalogproperty('gf_ft','populateStatus') <>0 <br />
+begin <br />
+<br />
+--如果全文目录正处于填充状态，则等待5秒后再检测一次 <br />
+waitfor delay '0:0:5' <br />
+END <br />
+<br />
+<br />
+--------------测试------------------ <br />
+SELECT * FROM product WHERE CONTAINS(productname,'美赞臣') <br />
+<br />
+-----------------------卸载------------------ <br />
+<br />
+EXEC sp_fulltext_table 'product','deactivate' <br />
+exec sp_fulltext_column 'product', 'productname', 'drop' <br />
+EXEC sp_fulltext_table 'product', 'drop' <br />
+EXEC sp_fulltext_catalog 'gf_ft', 'stop' <br />
+EXEC sp_fulltext_catalog 'gf_ft', 'drop' <br />
+<br />
+<br />
+2. <br />
+<br />
+先了解一下全文索引是如何创建和使用的 <br />
+<br />
+<br />
+      创建全文索引: <br />
+<br />
+<br />
+      在MS SQL SERVER 2005里,全文索引是一个单独的服务项,默认是启动的,但是没有允许数据库启用全文索引,如果要在某个数据库中创建全文索引,先要启用数据库的全文索引. <br />
+      启用方法: <br />
+      1.数据库->属性->常规->启用全文索引 <br />
+      2.在查询中执行:sp_.........忘了,如果没有启用就执行创建索引目录,会提示. <br />
+<br />
+<br />
+      <br />
+      启用了索引了,就可以创建索引目录了 <br />
+      在查询中执行以下语句: <br />
+      CREATE FULLTEXT CATALOG 索引目录名 <br />
+<br />
+<br />
+      执行以后,就会在SQL SERVER的安装目录里看到一个同名的目录名了,路径为MSSQL.1/MSSQL/FTDATA/索引目录名 <br />
+<br />
+<br />
+      <br />
+      每个表只可以有一个全文索引,存放在指定的索引目录里,可以通过向导创建,也可以通过SQL创建 <br />
+      基本语法: <br />
+      CREATE FULLTEXT INDEX ON tablename <br />
+      （索引列1,索引列2...） <br />
+      KEY INDEX indexname ON 索引目录名 <br />
+<br />
+<br />
+      indexname是指已存在的基于指定表的唯一索引名.而不是唯一索引列名.如果索引不存在,需要先创建唯一索引. <br />
+<br />
+<br />
+      <br />
+      使用全文索引: <br />
+<br />
+<br />
+      主要使用CONTAINS,FREETEXT进行查询 <br />
+<br />
+<br />
+      假设已有一个表music,已为字段memo创建全文索引,那么要查询含有周杰伦或者jay的所有记录的语句为: <br />
+      SELECT * FROM music WHERE CONTAINS（memo,'"周杰伦" or "jay"'） <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:33

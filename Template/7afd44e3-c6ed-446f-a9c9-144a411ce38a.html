@@ -1,0 +1,50 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>Sql server表值函数<br />
+关键字: sql server, 表值函数 <br />
+Sql server 的表值函数是返回一个Table类型,table类型相当与一张存储在内存中的一张虚拟表。<br />
+实现表值函数很简单：<br />
+下面是一个不带输入参数的表值函数<br />
+<br />
+create function tvpoints()<br />
+returns table<br />
+as <br />
+return<br />
+(<br />
+select * from tb_users<br />
+);<br />
+这个表值函数数查询所有用户表的数据<br />
+<br />
+对于多语句表值函数，在 BEGIN...END 语句块中定义的函数体包含一系列 Transact-SQL 语句，这些语句可生成行并将其插入将返回的表中。<br />
+<br />
+以下示例创建了一个表值函数.<br />
+<br />
+create function tvpoints()<br />
+returns @points table (x float, y float)<br />
+as begin<br />
+insert @points values(1,2);<br />
+insert @points values(3,4);<br />
+return;<br />
+end<br />
+<br />
+ <br />
+<br />
+ <br />
+<br />
+查询表值函数跟查询普通表一样<br />
+select * from tvpoints()<br />
+返回的是一张表<br />
+<br />
+ <br />
+<br />
+ <br />
+<br />
+带输入参数的表值函数<br />
+<br />
+create function tvpoints2(@x AS int,@y as int)<br />
+returns @points table (x float, y float)<br />
+as begin<br />
+insert @points values(@x,@y);<br />
+return;<br />
+end<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:30

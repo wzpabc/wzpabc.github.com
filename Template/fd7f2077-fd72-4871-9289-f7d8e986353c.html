@@ -1,0 +1,126 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>/*<br />
+功能：2000当中绘画日历 <br />
+*/<br />
+DECLARE @Year nvarchar(4)<br />
+DECLARE @YearMonth nvarchar(7)    --月份<br />
+DECLARE @strTop nvarchar(200)<br />
+DECLARE @ForI INT,@ForYear INT ,@MaxDay INT<br />
+DECLARE @RowX INT --行位置 <br />
+DECLARE @strWeekDayList nvarchar(20)<br />
+DECLARE @strPrint nvarchar(300)<br />
+<br />
+-- ======================================<br />
+SET @Year='2008'    --请在这里输入年份<br />
+-- ======================================<br />
+SET @strTop= '日'+char(9)+'一'+char(9)+'二' +char(9)+'三'++char(9)+'四'++char(9)+'五'++char(9)+'六' +char(13)+<br />
+         '───────────────────────────'<br />
+SET @strWeekDayList='日一二三四五六'<br />
+SET @ForYear=1<br />
+WHILE @ForYear<=12  --1月份至12月份<br />
+ BEGIN<br />
+    SET @YearMonth=@Year + '-' +CAST( @ForYear AS nvarchar(2))<br />
+    SET @MaxDay=DAY(DATEADD(Day,-1,DATEADD(Month,1,@YearMonth+'-01')))<br />
+    SET @RowX=CHARINDEX(RIGHT(DATENAME(WeekDay,@YearMonth+'-01'),1),@strWeekDayList)-1<br />
+    SET @strPrint=''<br />
+    SET @ForI=1<br />
+    WHILE @ForI<=@RowX    --构造1号的位置<br />
+         BEGIN<br />
+        SET @strPrint=@strPrint+CHAR(9)<br />
+        SET @ForI=@ForI+1<br />
+         END<br />
+        SET @ForI=1<br />
+    WHILE @ForI<=@MaxDay    --构造2号到月底的位置<br />
+         BEGIN<br />
+        SET @strPrint=@strPrint+CAST(@ForI AS nvarchar(2)) +Char(9)    <br />
+        SET @RowX=@RowX+1<br />
+        SET @ForI=@ForI+1<br />
+      IF (@RowX%7=0)<br />
+           BEGIN<br />
+            SET @RowX=0 <br />
+            SET @strPrint=@strPrint+CHAR(13)<br />
+             END<br />
+       END<br />
+    SET @ForYear=@ForYear+1<br />
+    -- 打印输出一个月的结果<br />
+    PRINT '━━━━━━━━━━━━━━━━━━━━━━━━━━━'<br />
+    PRINT +Char(9)++Char(9)+'    '+@YearMonth+CHAR(10)<br />
+    PRINT @strTop<br />
+    PRINT @strPrint+CHAR(10)<br />
+  END<br />
+ <br />
+<br />
+create function GetFormatString(@dec decimal(28,8), @n int)<br />
+returns varchar(32) as<br />
+begin<br />
+    declare @str varchar(32), @len int, @left varchar(32), @right varchar(32),@end varchar(32)<br />
+    if @n!='0' <br />
+  BEGIN<br />
+<br />
+    set @str= round(@dec,@n)<br />
+    select @left=left(@str,charindex('.',@str)-1),@len=len(@left)-2<br />
+    while @len>1<br />
+    begin<br />
+        select @left=stuff(@left,@len,0,','), @len=@len-3<br />
+    end<br />
+    select @right=left(stuff(@str,1,charindex('.',@str),''), @n),@len=4<br />
+    while @len <=len(@right)<br />
+    begin<br />
+        select @right=stuff(@right,@len,0,','), @len=@len+4<br />
+    end<br />
+    set @end= @left+'.'+@right<br />
+end<br />
+    else<br />
+BEGIN<br />
+<br />
+    set @str= round(@dec,@n)<br />
+    select @left=left(@str,charindex('.',@str)-1),@len=len(@left)-2<br />
+    while @len>1<br />
+    begin<br />
+        select @left=stuff(@left,@len,0,','), @len=@len-3<br />
+    end<br />
+    select @right=left(stuff(@str,1,charindex('.',@str),''), @n),@len=4<br />
+    while @len <=len(@right)<br />
+    begin<br />
+        select @right=stuff(@right,@len,0,','), @len=@len+4<br />
+    end<br />
+    set @end= @left<br />
+end<br />
+return @end<br />
+end<br />
+<br />
+select dbo.GetFormatString(123645.7889, 2)+'±'+'MON'<br />
+union all select dbo.GetFormatString(123645.7889, 3)+'±'+'MON'<br />
+union all select dbo.GetFormatString(123645.7889, 4)+'±'+'MON'<br />
+<br />
+<br />
+select convert (varchar(4),datepart(yyyy,getdate())) //返回当前日期的年<br />
+select convert(varchar(2),datepart(dd,getdate())) //返回当前日期的日<br />
+select convert(varchar(2),datepart(mm,getdate())) //返回当前日期的月<br />
+select convert(varchar(4),right(rand(datepart(ms,getdate())*1000),4)) <br />
+select  day(dateadd(dd,-1,dateadd(mm,1,Dateadd(mm,datediff(mm,0,getdate()),0)))) //返回本月的最大天数<br />
+<br />
+<br />
+我现在有一字段值为:a,b,c <br />
+分隔符为逗号. <br />
+我现在想实现目地值为: <br />
+字段: <br />
+id  name <br />
+1  a <br />
+2  b <br />
+3  c <br />
+<br />
+在SQL中咋实现呢?<br />
+declare @str varchar(8000) <br />
+<br />
+set @str = 'a1,b1,c2,d1,e3,f5' <br />
+<br />
+set @str =  'select  name='''+replace(@str,',',''''+' union all select ''')+'''' <br />
+<br />
+--如果要编号的话，那就这样。<br />
+<br />
+set @str='select id=identity(int,1,1),name into #temp from ('+@str+') a select * from #temp drop table #temp'<br />
+<br />
+exec(@str)<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:15

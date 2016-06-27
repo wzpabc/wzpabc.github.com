@@ -1,0 +1,20 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--1. 错误14114<br />
+--使用下面的代码重新添加当前SQL Server实例的信息，处理完成后，应该重新启动MSSQLSERVER服务使修改生效。<br />
+DECLARE @srvname sysname<br />
+SET @srvname=CAST(SERVERPROPERTY('ServerName') as sysname)<br />
+IF NOT EXISTS(SELECT * FROM master.dbo.sysservers WHERE srvname=@srvname)<br />
+    EXEC sp_addserver @server = @srvname , @local = 'LOCAL'<br />
+<br />
+<br />
+--2．错误18483<br />
+--执行下面的代码，将@@SERVERNAME的值修改为与SERVERPROPERTY('ServerName')一样即可。修改完成后，需要重新启动MSSQLSERVER服务使修改生效。<br />
+IF SERVERPROPERTY('ServerName')<>@@SERVERNAME<br />
+BEGIN<br />
+    DECLARE @srvname sysname<br />
+    SET @srvname=@@SERVERNAME<br />
+    EXEC sp_dropserver @server=@srvname<br />
+    SET @srvname=CAST(SERVERPROPERTY('ServerName') as sysname)<br />
+    EXEC sp_addserver @server = @srvname , @local = 'LOCAL'<br />
+END<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:09

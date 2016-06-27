@@ -1,0 +1,34 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>USE MASTER<br />
+GO<br />
+sp_dboption ‘databaseName’, ’single user’, ‘true’<br />
+Go<br />
+DBCC CHECKDB(’databaseName’, REPAIR_REBUILD)<br />
+Go<br />
+USE databaseName<br />
+go<br />
+exec sp_msforeachtable ‘DBCC CHECKTABLE(''’?''’,REPAIR_REBUILD)’<br />
+go<br />
+sp_dboption ‘databaseName’, ’single user’, ‘false’<br />
+Go <br />
+如果还不行，可以采用允许丢失数据的方式修复，如下：<br />
+USE MASTER<br />
+GO<br />
+sp_dboption ‘databaseName’, ’single user’, ‘true’<br />
+Go<br />
+DBCC CHECKDB(’databaseName’, REPAIR_ALLOW_DATA_LOSS)<br />
+Go<br />
+USE databaseName<br />
+go<br />
+exec sp_msforeachtable ‘DBCC CHECKTABLE(''’?''’,REPAIR_REBUILD)’<br />
+go<br />
+sp_dboption ‘databaseName’, ’single user’, ‘false’<br />
+Go<br />
+<br />
+<br />
+<br />
+复制如下命令,写入记事本,保存为:运行CHKDSK.bat 双击运行,完了重启电脑.一般能解决的. <br />
+@ECHO OFF <br />
+for %%1 in (c: d: e: f: G: h: i: j: k: l: M: N: O: P: Q: R: S: T: U: V: W: X: Y: Z:) do (if exist %%1 ECHO Y|chkdsk %%1 /R /x) <br />
+@pause <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:32

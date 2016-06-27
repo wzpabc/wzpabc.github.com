@@ -1,0 +1,136 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--提取数字<br />
+IF OBJECT_ID('DBO.GET_NUMBER2') IS NOT NULL<br />
+DROP FUNCTION DBO.GET_NUMBER2<br />
+GO<br />
+CREATE FUNCTION DBO.GET_NUMBER2(@S VARCHAR(100))<br />
+RETURNS VARCHAR(100)<br />
+AS<br />
+BEGIN<br />
+WHILE PATINDEX('%[^0-9]%',@S) > 0<br />
+BEGIN<br />
+set @s=stuff(@s,patindex('%[^0-9]%',@s),1,'')<br />
+END<br />
+RETURN @S<br />
+END<br />
+GO<br />
+--测试<br />
+PRINT DBO.GET_NUMBER('呵呵ABC123ABC')<br />
+GO<br />
+--123<br />
+--------------------------------------------------------------------<br />
+--提取英文<br />
+IF OBJECT_ID('DBO.GET_STR') IS NOT NULL<br />
+DROP FUNCTION DBO.GET_STR<br />
+GO<br />
+CREATE FUNCTION DBO.GET_STR(@S VARCHAR(100))<br />
+RETURNS VARCHAR(100)<br />
+AS<br />
+BEGIN<br />
+WHILE PATINDEX('%[^a-z]%',@S) > 0<br />
+BEGIN<br />
+set @s=stuff(@s,patindex('%[^a-z]%',@s),1,'')<br />
+END<br />
+RETURN @S<br />
+END<br />
+GO<br />
+--测试<br />
+PRINT DBO.GET_STR('呵呵ABC123ABC')<br />
+GO<br />
+--------------------------------------------------------------------<br />
+--提取中文<br />
+IF OBJECT_ID('DBO.CHINA_STR') IS NOT NULL<br />
+DROP FUNCTION DBO.CHINA_STR<br />
+GO<br />
+CREATE FUNCTION DBO.CHINA_STR(@S NVARCHAR(100))<br />
+RETURNS VARCHAR(100)<br />
+AS<br />
+BEGIN<br />
+WHILE PATINDEX('%[^吖-座]%',@S) > 0<br />
+SET @S = STUFF(@S,PATINDEX('%[^吖-座]%',@S),1,N'')<br />
+RETURN @S<br />
+END<br />
+GO<br />
+PRINT DBO.CHINA_STR('呵呵ABC123ABC')<br />
+GO<br />
+--------------------------------------------------------------------<br />
+--过滤重复字符<br />
+IF OBJECT_ID('DBO.DISTINCT_STR') IS NOT NULL<br />
+DROP FUNCTION DBO.DISTINCT_STR<br />
+GO<br />
+CREATE FUNCTION DBO.DISTINCT_STR(@S NVARCHAR(100),@SPLIT VARCHAR(50))<br />
+RETURNS VARCHAR(100)<br />
+AS<br />
+BEGIN<br />
+IF @S IS NULL RETURN(NULL)<br />
+DECLARE @NEW VARCHAR(50),@INDEX INT,@TEMP VARCHAR(50)<br />
+IF LEFT(@S,1)<>@SPLIT<br />
+SET @S = @SPLIT+@S<br />
+IF RIGHT(@S,1)<>@SPLIT<br />
+SET @S = @S+@SPLIT<br />
+WHILE CHARINDEX(@SPLIT,@S)>0 AND LEN(@S)<>1<br />
+BEGIN<br />
+SET @INDEX = CHARINDEX(@SPLIT,@S)<br />
+SET @TEMP = LEFT(@S,CHARINDEX(@SPLIT,@S,@INDEX+LEN(@SPLIT)))<br />
+IF @NEW IS NULL <br />
+SET @NEW = ISNULL(@NEW,'')+@TEMP<br />
+ELSE<br />
+SET @NEW = ISNULL(@NEW,'')+REPLACE(@TEMP,@SPLIT,'')+@SPLIT<br />
+WHILE CHARINDEX(@TEMP,@S)>0<br />
+BEGIN<br />
+SET @S=STUFF(@S,CHARINDEX(@TEMP,@S)+LEN(@SPLIT),CHARINDEX(@SPLIT,@S,CHARINDEX(@TEMP,@S)+LEN(@SPLIT))-CHARINDEX(@TEMP,@S),'')<br />
+END<br />
+END<br />
+RETURN RIGHT(LEFT(@NEW,LEN(@NEW)-1),LEN(LEFT(@NEW,LEN(@NEW)-1))-1)<br />
+END<br />
+GO<br />
+PRINT DBO.DISTINCT_STR('A,A,B,C,C,B,C,',',')<br />
+--A,B,C<br />
+GO<br />
+--------------------------------------------------------------------<br />
+--过滤重复字符2<br />
+IF OBJECT_ID('DBO.DISTINCT_STR2') IS NOT NULL<br />
+DROP FUNCTION DBO.DISTINCT_STR2<br />
+GO<br />
+CREATE FUNCTION DBO.DISTINCT_STR2(@S varchar(8000))<br />
+RETURNS VARCHAR(100)<br />
+AS<br />
+BEGIN<br />
+IF @S IS NULL RETURN(NULL)<br />
+DECLARE @NEW VARCHAR(50),@INDEX INT,@TEMP VARCHAR(50)<br />
+WHILE LEN(@S)>0<br />
+BEGIN<br />
+SET @NEW=ISNULL(@NEW,'')+LEFT(@S,1)<br />
+SET @S=REPLACE(@S,LEFT(@S,1),'')<br />
+END<br />
+RETURN @NEW<br />
+END<br />
+GO<br />
+SELECT DBO.DISTINCT_STR2('AABCCD')<br />
+--ABCD<br />
+GO<br />
+<br />
+--------------------------------------------------------------------<br />
+IF OBJECT_ID('DBO.SPLIT_STR') IS NOT NULL<br />
+DROP FUNCTION DBO.SPLIT_STR<br />
+GO<br />
+CREATE FUNCTION DBO.SPLIT_STR(<br />
+@S varchar(8000),      --包含多个数据项的字符串<br />
+@INDEX int,             --要获取的数据项的位置<br />
+@SPLIT varchar(10)     --数据分隔符<br />
+)<br />
+RETURNS VARCHAR(100)<br />
+AS<br />
+BEGIN<br />
+IF @S IS NULL RETURN(NULL)<br />
+DECLARE @SPLITLEN int<br />
+SELECT @SPLITLEN=LEN(@SPLIT+'A')-2<br />
+WHILE @INDEX>1 AND CHARINDEX(@SPLIT,@S+@SPLIT)>0<br />
+SELECT @INDEX=@INDEX-1,@S=STUFF(@S,1,CHARINDEX(@SPLIT,@S+@SPLIT)+@SPLITLEN,'')<br />
+RETURN(ISNULL(LEFT(@S,CHARINDEX(@SPLIT,@S+@SPLIT)-1),''))<br />
+END<br />
+GO<br />
+PRINT DBO.SPLIT_STR('AA|BB|CC',2,'|')<br />
+--<br />
+GO<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:07

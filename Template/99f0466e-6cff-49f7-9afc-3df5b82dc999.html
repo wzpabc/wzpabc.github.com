@@ -1,0 +1,372 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>---用户定义数据类型<br />
+create type postcode<br />
+from varchar(6) null  --创建用户定义数据类型<br />
+go<br />
+select * from information_schema.domains ----获取用户定义数据类型信息<br />
+select * from information_schema.column_domain_usage ---查看用户定义数据类型的使用情况<br />
+drop type postcode ---删除用户定义数据类型<br />
+<br />
+<br />
+---同义词<br />
+create synonym tb11 for tb ---创建<br />
+<br />
+select * from sys.synonyms   ----查询同义词信息<br />
+<br />
+drop synonym tb11  ---删除<br />
+<br />
+<br />
+if....else用法<br />
+<br />
+if month(getdate())<7<br />
+begin<br />
+print('上半年')<br />
+select(getdate())<br />
+end<br />
+else<br />
+begin<br />
+print('下半年')<br />
+select(getdate())<br />
+end<br />
+<br />
+--while,continue,break用法<br />
+<br />
+declare @i int<br />
+set @i=1<br />
+while @i<20<br />
+begin<br />
+ set @i=@i+1<br />
+ if @i<=19<br />
+ continue<br />
+ print @i<br />
+end<br />
+<br />
+declare @i int<br />
+set @i=1<br />
+while @i<20<br />
+begin<br />
+ if @i=19<br />
+ break<br />
+ print @i<br />
+ set @i=@i+1<br />
+end<br />
+<br />
+----try...catch用法<br />
+begin try<br />
+   select 1/0<br />
+end try<br />
+begin catch <br />
+   print'打印错误'<br />
+end catch<br />
+<br />
+---raiserror的用法<br />
+begin try<br />
+  raiserror('生成一个错误消息',11,1)<br />
+end try<br />
+begin catch<br />
+  select error_message() as 错误消息,<br />
+         error_severity() as严重级别,<br />
+         error_state() as state;<br />
+end catch<br />
+<br />
+---使用sp_addmessage存储过程添加自定义错误<br />
+exec sp_addmessage 50001,15, N'new user defined error message!',us_english<br />
+exec sp_addmessage 50001,15, N'新增用户自定义错误消息!'<br />
+exec sp_dropmessage 50001,'all'<br />
+<br />
+---使用sp_altermessage存储过程修改用户定义错误消息<br />
+exec sp_altermessage 50001,'with_log',true'<br />
+<br />
+---2005查看数据库信息<br />
+select * from sys.databases<br />
+<br />
+exec sp_helpdb<br />
+<br />
+--查看数据库空间使用情况<br />
+exec sp_spaceused<br />
+<br />
+--创建数据库时指定数据文件<br />
+create database db<br />
+on<br />
+primary(name=db,<br />
+        filename='C:\program files\mircosoft SQL server\mssql10.mssqlserver\mssql\data\db.mdf',<br />
+        size=100MB<br />
+        maxsize=200<br />
+        filegrowth=20)<br />
+go<br />
+--解释下上面的参数：<br />
+   <br />
+--primary关键字，指定关联<文件定义>列表用于定义主要数据文件，一个数据库只能有一个主文件，如果没有指定primary,那么create database 语句中列出的第一个文件将成为主文件。<br />
+<br />
+--name关键字，用于指定数据文件的逻辑名称<br />
+<br />
+--filename关键字，指定数据文件的操作系统文件名。其后面的参数是创建数据文件时定义的物理文件的路径名和文件名。<br />
+<br />
+--size关键字，指定数据文件的大小。<br />
+<br />
+--maxsize关键字，指定数据文件可以增长到的最大大小。<br />
+<br />
+--unlimitted关键字，上面的例子中省略掉了。若指定了，则代表指定定义的数据文件将增长到磁盘变满为止。<br />
+<br />
+--filegrowth关键字，指定数据文件的增长增量，其值不能超过maxsize设置。0表示不增长。，默认值为MB。如果指定为%，则增量大小为发生时文件大小的指定百分比，如果没有指定，默认值为10%。<br />
+<br />
+--在创建数据库时指定文件组<br />
+create database db<br />
+on<br />
+primary(name=db1,<br />
+        filename='C:\program files\mircosoft SQL server\mssql10.mssqlserver\mssql\data\db1.mdf',<br />
+        size=100MB<br />
+        maxsize=200<br />
+        filegrowth=20)，<br />
+filegroup filegroup1<br />
+(name=db2,<br />
+        filename='C:\program files\mircosoft SQL server\mssql10.mssqlserver\mssql\data\db2.mdf',<br />
+        size=100MB<br />
+        maxsize=200<br />
+        filegrowth=20)<br />
+go<br />
+<br />
+--创建数据库时指定事务日志文件<br />
+<br />
+create database db<br />
+on<br />
+primary(name=db1,<br />
+        filename='C:\program files\mircosoft SQL server\mssql10.mssqlserver\mssql\data\db1.mdf',<br />
+        size=100MB<br />
+        maxsize=200<br />
+        filegrowth=20)，<br />
+log on(<br />
+  name=dblog,<br />
+        filename='C:\program files\mircosoft SQL server\mssql10.mssqlserver\mssql\data\db_log.ldf',<br />
+        size=10MB<br />
+        maxsize=20<br />
+        filegrowth=2)<br />
+go<br />
+<br />
+--获取约束信息<br />
+select * from information_schema.constraint_column_usage---可以获取指定数据库中的所有约束的信息以及约束与列的对应关系<br />
+go<br />
+<br />
+select * from information_schema.constraint_table_usage---查询结果中只包含表和约束的对应关系，并没有约束对应的列信息<br />
+go<br />
+<br />
+select * from information_schema.table_constraints---查询结果中只包含表和约束的对应关系，并没有约束对应的列信息<br />
+go<br />
+<br />
+select * from information_schema.key_column_usage---可以获取指定数据库中的所有键约束的列信息，包括主键约束中的主键列，唯一约束中的唯一键列和外键约束中的引用列<br />
+go<br />
+<br />
+select * from sys.key_constraints----获取约束信息<br />
+<br />
+select * from sys.foreign_keys--获取表中的外键约束<br />
+<br />
+select * from sys.foreign_key_columns--获取外键约束的列信息<br />
+<br />
+select * from information_schema.referential_constraints--获取外键约束信息<br />
+<br />
+select * from information_schema.check_constraints--获取检查约束信息<br />
+<br />
+---创建主键约束，唯一约束，检查约束<br />
+create table test<br />
+(<br />
+  id int,<br />
+  testname varchar(50),<br />
+  sex bit,<br />
+  class varchar(50),<br />
+  score float default(0)<br />
+  constraint pk_test primary key/*这里可以指定是创建聚集或非聚集索引clustered|nonclustered可选项*/(id)<br />
+  constraint ix_test unique(testname)<br />
+  constraint ck_test check/*这里可以使用 not for replication可选项，用于指定当从其他表中复制数据时，不检查约束条件*/(score>=0)<br />
+)<br />
+  go<br />
+<br />
+<br />
+alter table tb<br />
+add constraint pk_tb primary key nonclustered (id)<br />
+go<br />
+<br />
+alter table tb<br />
+add constraint ck_sex check(sex='男' or sex='女')<br />
+go<br />
+<br />
+---创建和使用默认约束<br />
+alter table tb<br />
+add constraint de_test default'test' for test  ---在表tb的列test的默认约束为'test'<br />
+go<br />
+<br />
+--创建和使用外键约束<br />
+alter table tb<br />
+add constraint fk_tb_tb1 foreign key(id)<br />
+references tb1(id)<br />
+go<br />
+<br />
+--使用dbcc checkident检查和设置表的标识值<br />
+create table tb<br />
+(<br />
+ id int primary key identity,<br />
+ name varchar(50)<br />
+)<br />
+ insert into tb <br />
+ select 'a'<br />
+ union all<br />
+ select 'b' <br />
+ union all <br />
+ select 'c'<br />
+ union all<br />
+ select 'd'<br />
+go<br />
+ dbcc checkident(tb,noreseed)<br />
+go<br />
+<br />
+<br />
+delete from tb where id>2<br />
+go<br />
+--删除记录后，表tb只剩下两条记录了，但是此时表tb的标识值仍为4,可以用下面的语句重置标识值为2<br />
+dbcc checkident(tb,reseed,2)<br />
+go<br />
+<br />
+dbcc checkident(tb,noreseed)<br />
+go<br />
+<br />
+/*检查标识信息: 当前标识值 '4'，当前列值 '4'。<br />
+DBCC 执行完毕。如果 DBCC 输出了错误信息，请与系统管理员联系。<br />
+<br />
+(2 行受影响)<br />
+检查标识信息: 当前标识值 '4'，当前列值 '2'。<br />
+DBCC 执行完毕。如果 DBCC 输出了错误信息，请与系统管理员联系。<br />
+检查标识信息: 当前标识值 '2'，当前列值 '2'。<br />
+DBCC 执行完毕。如果 DBCC 输出了错误信息，请与系统管理员联系。*/<br />
+<br />
+drop table tb<br />
+<br />
+---视图with encryption的用法<br />
+create view 员工信息简历表<br />
+with encryption----这样就创建了加密视图<br />
+as<br />
+  select <br />
+     e.emp_name,e.sex,e.title,d.dep_name<br />
+  from<br />
+     employees e inner join departments d<br />
+  on<br />
+     e.dep_id=d.dep_id<br />
+go<br />
+<br />
+---获取表和视图信息<br />
+select * from information_shcema.tables---查看当前数据库中当前用户有权限查看的所有表和视图信息<br />
+<br />
+---获取视图信息<br />
+select * from information_schema.views<br />
+<br />
+---获取列信息<br />
+select * from information_schema.columns<br />
+如果需要查看指定表或视图的列情况，可以使用下面的语句。<br />
+select <br />
+ *<br />
+from<br />
+ information_schema.columns<br />
+where<br />
+ table_catalog='数据库名'<br />
+and <br />
+ table_name='表名'<br />
+<br />
+---获取视图中列的信息<br />
+select * from information_schema.view_column_usage<br />
+<br />
+<br />
+---获取列信息<br />
+select * from sys.columns<br />
+<br />
+将sys.columns与系统视图sys.objects和sys.types关联，获得列的一些详细信息,例如<br />
+select<br />
+  o.name as 表名,<br />
+  c.name as 列名,<br />
+  t.name as 数据类型,<br />
+  c.max_length as 长度,<br />
+  c.precision as精度,<br />
+  c.scale as 小数位数,<br />
+  case c.is_nullable when 1 then '是' else '否' end as 是否允许空,<br />
+  case c.is_identity when 1 then '是' else '否' end as 标识列,<br />
+from<br />
+  sys.columns c inner join sys.objects o<br />
+on<br />
+  o.object_id=c.object_id <br />
+inner join<br />
+  sys.types t<br />
+on<br />
+  c.system_type_id=t.system_type_id<br />
+where<br />
+  o.name='表名' and t.name<>'sysname'<br />
+order by<br />
+  c.column_id <br />
+go<br />
+<br />
+--获取视图中包含表的信息<br />
+select * from information_schema.view_table_usage<br />
+go<br />
+ <br />
+--获取所有数据库对象的信息<br />
+select * from sys.objects <br />
+<br />
+--绑定规则<br />
+exec sp_bindrule '规则名','对象名'<br />
+例如<br />
+exec sp_bindrule 'sexrule','employees.sex'<br />
+<br />
+--解除绑定规则<br />
+exec sp_unbindrule '对象名'<br />
+<br />
+--删除规则<br />
+在删除规则前，需要调用sp_unbindrule存储过程解除该规则的绑定,例如<br />
+<br />
+exec sp_unbindrule 'employees.sex'<br />
+drop rule sexrule<br />
+<br />
+--查看表的索引信息<br />
+exec sp_helpindex tb<br />
+<br />
+--结合sys.indexes和sys.index_columns,sys.objects,sys.columns查询索引所属的表或视图的信息<br />
+select<br />
+  o.name as 表名,<br />
+  i.name as 索引名,<br />
+  c.name as 列名,<br />
+  i.type_desc as 类型描述,<br />
+  is_primary_key as 主键约束,<br />
+  is_unique_constraint as 唯一约束,<br />
+  is_disabled as 禁用<br />
+from<br />
+  sys.objects o <br />
+inner join<br />
+  sys.indexes i<br />
+on<br />
+  i.object_id=o.object_id<br />
+inner join <br />
+  sys.index_columns ic<br />
+on<br />
+  ic.index_id=i.index_id and ic.object_id=i.object_id<br />
+inner join<br />
+  sys.columns c<br />
+on<br />
+  ic.column_id=c.column_id and ic.object_id=c.object_id<br />
+go<br />
+<br />
+--查询索引的键和列信息<br />
+select <br />
+  o.name as 表名,<br />
+  i.name as 索引名,<br />
+  c.name as 字段编号,<br />
+from<br />
+  sysindexes i inner join sysobjects o <br />
+on<br />
+  i.id=o.id<br />
+inner join<br />
+  sysindexkeys k <br />
+on<br />
+  o.id=k.id and i.indid=k.indid<br />
+inner join<br />
+  syscolumns c <br />
+on<br />
+  c.id=i.id and k.colid=c.colid<br />
+where<br />
+  o.name='表名'<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:07

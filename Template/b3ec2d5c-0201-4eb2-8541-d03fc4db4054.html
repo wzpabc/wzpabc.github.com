@@ -1,0 +1,179 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>create   table   #t(req_spid   int,obj_name   sysname)   <br />
+<br />
+    <br />
+<br />
+  declare   @s   nvarchar(4000)   <br />
+<br />
+  ,@rid   int,@dbname   sysname,@id   int,@objname   sysname   <br />
+<br />
+    <br />
+<br />
+  declare   tb   cursor   for     <br />
+<br />
+  select   distinct   req_spid,dbname=db_name(rsc_dbid),rsc_objid   <br />
+<br />
+  from   master..syslockinfo   where   rsc_type   in(4,5)   <br />
+<br />
+  open   tb   <br />
+<br />
+  fetch   next   from   tb   into   @rid,@dbname,@id   <br />
+<br />
+  while   @@fetch_status=0   <br />
+<br />
+  begin   <br />
+<br />
+  set   @s='select   @objname=name   from   ['+@dbname+']..sysobjects   where   id=@id'   <br />
+<br />
+  exec   sp_executesql   @s,N'@objname   sysname   out,@id   int',@objname   out,@id   <br />
+<br />
+  insert   into   #t   values(@rid,@objname)   <br />
+<br />
+  fetch   next   from   tb   into   @rid,@dbname,@id   <br />
+<br />
+  end   <br />
+<br />
+  close   tb   <br />
+<br />
+  deallocate   tb   <br />
+<br />
+    <br />
+<br />
+  select   进程id=a.req_spid   <br />
+<br />
+  ,数据库=db_name(rsc_dbid)   <br />
+<br />
+  ,类型=case   rsc_type   when   1   then   'NULL   资源（未使用）'   <br />
+<br />
+  when   2   then   '数据库'   <br />
+<br />
+  when   3   then   '文件'   <br />
+<br />
+  when   4   then   '索引'   <br />
+<br />
+  when   5   then   '表'   <br />
+<br />
+  when   6   then   '页'   <br />
+<br />
+  when   7   then   '键'   <br />
+<br />
+  when   8   then   '扩展盘区'   <br />
+<br />
+  when   9   then   'RID（行 ID)'   <br />
+<br />
+  when   10   then   '应用程序'   <br />
+<br />
+  end   <br />
+<br />
+  ,对象id=rsc_objid   <br />
+<br />
+  ,对象名=b.obj_name   <br />
+<br />
+  ,rsc_indid   <br />
+<br />
+    from   master..syslockinfo   a   left   join   #t   b   on   a.req_spid=b.req_spid   <br />
+<br />
+    <br />
+<br />
+  go   <br />
+<br />
+  drop   table   #t   <br />
+<br />
+ <br />
+<br />
+2.杀掉相应数据库的进程<br />
+<br />
+代码来源：http://www.cnblogs.com/LCX/archive/2008/12/03/1346924.html<br />
+<br />
+ <br />
+<br />
+Create Proc Sp_KillAllProcessInDB <br />
+<br />
+@DbName VarChar(100)<br />
+<br />
+as<br />
+<br />
+if db_id(@DbName) = Null <br />
+<br />
+begin<br />
+<br />
+Print 'DataBase dose not Exist'<br />
+<br />
+end<br />
+<br />
+else<br />
+<br />
+ <br />
+<br />
+Begin<br />
+<br />
+Declare @spId Varchar(30)<br />
+<br />
+ <br />
+<br />
+DECLARE TmpCursor CURSOR FOR<br />
+<br />
+Select 'Kill ' + convert(Varchar, spid) as spId<br />
+<br />
+from master..SysProcesses<br />
+<br />
+where db_Name(dbID) = @DbName<br />
+<br />
+and spId <> @@SpId<br />
+<br />
+and dbID <> 0<br />
+<br />
+OPEN TmpCursor<br />
+<br />
+ <br />
+<br />
+FETCH NEXT FROM TmpCursor<br />
+<br />
+INTO @spId <br />
+<br />
+ <br />
+<br />
+WHILE @@FETCH_STATUS = 0<br />
+<br />
+ <br />
+<br />
+BEGIN<br />
+<br />
+ <br />
+<br />
+Exec (@spId)<br />
+<br />
+ <br />
+<br />
+FETCH NEXT FROM TmpCursor<br />
+<br />
+INTO @spId <br />
+<br />
+ <br />
+<br />
+END<br />
+<br />
+ <br />
+<br />
+ <br />
+<br />
+CLOSE TmpCursor<br />
+<br />
+DEALLOCATE TmpCursor<br />
+<br />
+ <br />
+<br />
+end <br />
+<br />
+ <br />
+<br />
+GO<br />
+<br />
+--To Execute<br />
+<br />
+Exec dbo.Sp_KillAllProcessInDB 'DBname'<br />
+<br />
+ <br />
+<br />
+然后就可以刷新数据库的表与存储过程了。<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:33

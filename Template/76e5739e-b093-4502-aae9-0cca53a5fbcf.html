@@ -1,0 +1,38 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>　　use tempdb<br />
+　　go<br />
+　　--测试数据<br />
+　　declare @s varchar(1000)<br />
+　　set @s='ak47,mp5,1,23'<br />
+　　/*要求输出结果<br />
+　　S<br />
+　　----<br />
+　　ak47<br />
+　　mp5<br />
+　　1<br />
+　　23<br />
+　　*/<br />
+　　--3种方法对比:<br />
+　　--1.[朴实]动态Exec方法:<br />
+　　declare @s1 varchar(1000)<br />
+　　set @s1=right(replace(','+@s,',',''' as S union select '''),len(replace(','+@s,',',''' as S union select '''))-12)+''''<br />
+　　exec(@s1)<br />
+　　--2.[变通]表交叉方法:<br />
+　　select replace(reverse((left(s,charindex(',',s)))),',','') as S from(<br />
+　　select r,reverse(left(@s,r))+',' as s<br />
+　　from(<br />
+　　select (select count(*) from sysobjects where name<=t.name ) as r<br />
+　　from sysobjects t<br />
+　　)a where r<=len(@s)<br />
+　　and left(@s+',',r+1) like '%,'<br />
+　　)t order by r<br />
+　　--3.[高级]XML方法:<br />
+　　DECLARE @idoc int;<br />
+　　DECLARE @doc xml;<br />
+　　set @doc=cast('<Root><item><S>'+replace(@s,',','</S></item><item><S>')+'</S></item></Root>' as xml)<br />
+　　EXEC sp_xml_preparedocument @Idoc OUTPUT, @doc<br />
+　　SELECT * FROM OPENXML (@Idoc, '/Root/item',2)<br />
+　　WITH (<br />
+　　[S] varchar(10)<br />
+　　) <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:06

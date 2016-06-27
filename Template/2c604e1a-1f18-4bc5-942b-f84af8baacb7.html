@@ -1,0 +1,95 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>---查询索引操作的信息<br />
+select * from sys.dm_db_index_usage_stats<br />
+<br />
+--查询指定表的统计信息(sys.stats和sysobjects联合查询)<br />
+select<br />
+  o.name,--表名<br />
+  s.name,--统计信息的名称<br />
+  auto_created,--统计信息是否由查询处理器自动创建<br />
+  user_created--统计信息是否由用户显示创建<br />
+from<br />
+  sys.stats<br />
+inner join<br />
+  sysobjects o<br />
+on<br />
+  s.object_id=o.id<br />
+where <br />
+  o.name='表名'<br />
+go<br />
+<br />
+<br />
+--查看统计信息中列的信息<br />
+select<br />
+  o.name,--表名<br />
+  s.name,--统计信息的名称<br />
+  sc.stats_column_id,<br />
+  c.name---列名<br />
+from<br />
+  sys.stats_columns sc<br />
+inner join<br />
+  sysobjects o<br />
+on<br />
+  sc.object_id=o.id<br />
+inner join<br />
+  sys.stats s<br />
+on<br />
+  sc.stats_id=s.stats_id and sc.object_id=s.object_id<br />
+inner join<br />
+  sys.columns c<br />
+on<br />
+  sc.column_id=c.column_id and sc.object_id=c.object_id<br />
+where <br />
+  o.name='表名'<br />
+<br />
+--查看统计信息的明细信息<br />
+dbcc show_statistics<br />
+<br />
+--查看索引自动创建的统计信息<br />
+exec sp_autostats '对象名'<br />
+<br />
+--关闭自动生成统计信息的数据库选项<br />
+alter datebase 数据库名 set auto_create_statistics off<br />
+<br />
+--创建统计信息<br />
+create statistics 统计信息名称 on 表名(列名)<br />
+[with <br />
+ [[fullscan<br />
+   sample number{percent|rows}]<br />
+ [norecompute]<br />
+]<br />
+go<br />
+解释一下上面的参数：<br />
+fullscan:指定对表或视图中所有的行收集统计信息<br />
+sample number{percent|rows}:指定随机抽样应读取的数据行数或者百分比 sample选项不能与fullscan选项同时使用<br />
+norecompute:指定数据库引擎不自动重新计算统计信息<br />
+<br />
+--计算随机抽样统计信息<br />
+create statistics 统计信息名称 on 表名(列名)<br />
+with sample 5 percent---创建统计信息，按5%计算随机抽样统计信息<br />
+go<br />
+<br />
+--创建统计信息<br />
+exec sp_createstats--参数自己去查下帮助，在这里不一一列举<br />
+<br />
+--修改统计信息<br />
+update statistics 表名|视图名 <br />
+    索引名|统计信息名,索引名|统计信息名,.....<br />
+[with <br />
+ [[fullscan<br />
+   sample number{percent|rows}]<br />
+ [norecompute]<br />
+]<br />
+---参数与create statistics 语句相似，下面介绍几种常用应用<br />
+1.更新指定表的所有统计信息<br />
+update statistics 表名<br />
+<br />
+2.更新指定表的单个索引的统计信息<br />
+update statistics 表名 索引名<br />
+<br />
+3.对表进行全面扫描，更新统计信息<br />
+update statistics 表名(列名) with fullscan<br />
+<br />
+<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:15

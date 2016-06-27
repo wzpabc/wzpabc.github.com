@@ -1,0 +1,55 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>SET QUOTED_IDENTIFIER ON<br />
+SET ANSI_NULLS ON<br />
+GO<br />
+/******************************************************************************************************************************************************  <br />
+<br />
+整理人：中国风(Roy)  <br />
+<br />
+日期:2008.01.01  <br />
+******************************************************************************************************************************************************/  <br />
+create proc [dbo].[SP_SQL](@ObjectName sysname) WITH ENCRYPTION <br />
+as  <br />
+set nocount on ;  <br />
+declare @Print Nvarchar(max)  <br />
+if exists(select 1 from syscomments  where ID=object_id(@ObjectName) and encrypted=1)  <br />
+  begin  <br />
+       Print N'對象已加密!'  <br />
+       return  <br />
+  end  <br />
+<br />
+if coalesce(object_id(@ObjectName,N'P'),object_id(@ObjectName,N'FN'),object_id(@ObjectName,N'IF'),object_id(@ObjectName,N'TF'),object_id(@ObjectName,N'TR'),object_id(@ObjectName,N'V')) is  null  <br />
+  begin  <br />
+      Print N'對象只針對函數、存儲過程、觸發器、視圖!'  <br />
+      return   <br />
+  end  <br />
+print 'Use '+db_Name()  <br />
+print 'Go'  <br />
+print 'if object_ID('+quotename(case when charindex(']',@ObjectName)=0 then '['+replace(rtrim(@ObjectName),'.','].[')+']' else @ObjectName end ,'''')+') is not null'  <br />
+print char(9)+'Drop '+case  when object_id(@ObjectName,N'P') is not null then 'Procedure ' when Coalesce(object_id(@ObjectName,N'FN'),object_id(@ObjectName,N'IF'),object_id(@ObjectName,N'TF')) is not null then 'Function ' when object_id(@ObjectName,N'TR') is not null then 'Trigger ' else 'View 'end +case when charindex(']',@ObjectName)=0 then '['+replace(rtrim(@ObjectName),'.','].[')+']' else @ObjectName end  <br />
+Print 'Go'  <br />
+<br />
+declare @T table(Col nvarchar(max))  <br />
+insert @T select object_definition(object_id(@ObjectName))+char(13)+char(10)  <br />
+while (select max(Col) from @T)>''  <br />
+  begin  <br />
+     select top 1 @Print=left(Col,charindex(char(13)+char(10),Col)-1) from @T  <br />
+     IF LEN(@Print)>4000<br />
+		BEGIN<br />
+			select top 1 @Print=@Print+CHAR(10)+CHAR(9)<br />
+			WHILE CHARINDEX(CHAR(10)+CHAR(9),@Print)>0  <br />
+				BEGIN<br />
+					PRINT LEFT(@Print,CHARINDEX(CHAR(10)+CHAR(9),@Print)-1)<br />
+					SET @Print=STUFF(@Print,1,CHARINDEX(CHAR(10)+CHAR(9),@Print)+1,+CHAR(9))<br />
+				END<br />
+		END<br />
+	ELSE <br />
+      print @Print  <br />
+      <br />
+      update @T set Col=stuff(Col,1,charindex(char(13)+char(10),Col)+1,'')  <br />
+  end  <br />
+print 'Go'  <br />
+<br />
+<br />
+GO<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:32

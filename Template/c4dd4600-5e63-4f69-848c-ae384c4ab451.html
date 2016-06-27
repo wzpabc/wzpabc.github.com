@@ -1,0 +1,69 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>排序问题 <br />
+<br />
+CREATE TABLE [t] ( <br />
+[id] [int] IDENTITY (1, 1) NOT NULL , <br />
+[GUID] [uniqueidentifier] NULL <br />
+) ON [PRIMARY] <br />
+GO <br />
+<br />
+下面这句执行5次 <br />
+<br />
+<br />
+insert t values (newid()) <br />
+<br />
+查看执行结果 <br />
+<br />
+<br />
+select * from t <br />
+<br />
+1、 第一种 <br />
+<br />
+<br />
+select * from t <br />
+order by case id when 4 then 1 <br />
+                  when 5 then 2 <br />
+                  when 1 then 3 <br />
+                  when 2 then 4 <br />
+                  when 3 then 5 end <br />
+<br />
+2、 第二种 <br />
+<br />
+<br />
+select * from t order by (id+2)%6 <br />
+<br />
+3、 第三种 <br />
+<br />
+<br />
+select * from t order by charindex(cast(id as varchar),'45123') <br />
+<br />
+4、 第四种 <br />
+<br />
+<br />
+select * from t <br />
+WHERE id between 0 and 5 <br />
+order by charindex(cast(id as varchar),'45123') <br />
+<br />
+5、 第五种 <br />
+<br />
+<br />
+select * from t order by case when id >3 then id-5 else id end <br />
+<br />
+6、 第六种 <br />
+<br />
+<br />
+select * from t order by id / 4 desc,id asc <br />
+<br />
+<br />
+ 一条语句删除一批记录 <br />
+首先id列是int标识类类型，然后删除ID值为5,6,8,9,10,11的列，这里的cast函数不能用convert函数代替，而且转换的类型必须是varchar，而不能是char，否则就会执行出你不希望的结果，这里的"5,6,8,9,10,11"可以是你在页面上获取的一个chkboxlist构建成的值，然后用下面的一句就全部删 <br />
+除了，比循环用多条语句高效吧应该。 <br />
+<br />
+<br />
+delete from [fujian] where charindex(','+cast([id] as varchar)+',',','+'5,6,8,9,10,11,'+',')>0 <br />
+<br />
+还有一种就是 <br />
+<br />
+<br />
+delete from table1 where id in(1,2,3,4 ) <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:09

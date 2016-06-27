@@ -1,0 +1,169 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--> Title  : MSSQL求連續ID內數量合計-常見解決方案<br />
+<br />
+--> Author : wufeng4552<br />
+<br />
+--> Date   : 2009-12-04<br />
+<br />
+if object_id('tb') is not null drop table tb<br />
+<br />
+go<br />
+<br />
+create table tb(ID varchar(10),Num decimal(10,2)) <br />
+<br />
+insert tb<br />
+<br />
+select '001',200.00 union all<br />
+<br />
+select '002',200.00 union all<br />
+<br />
+select '003',300.00 union all<br />
+<br />
+select '007',500.00 union all<br />
+<br />
+select '008',800.00 union all<br />
+<br />
+select '009',200.00 union all<br />
+<br />
+select '012',100.00 union all<br />
+<br />
+select '013',100.00 union all<br />
+<br />
+select '014',200.00 union all<br />
+<br />
+select '017',100.00 union all<br />
+<br />
+select '018',400.00 union all<br />
+<br />
+select '019',300.00 <br />
+<br />
+-->方法 1 臨時表<br />
+<br />
+if object_id('tempdb..#t1')is not null <br />
+<br />
+drop table #t1<br />
+<br />
+if object_id('tempdb..#t2')is not null <br />
+<br />
+drop table #t2<br />
+<br />
+go<br />
+<br />
+--取出起號<br />
+<br />
+select cnt=identity(int,1,1),* into #t1 from tb t where not exists(select 1 from tb where id=t.id-1)order by t.id<br />
+<br />
+--取出止號<br />
+<br />
+select cnt=identity(int,1,1),* into #t2 from tb t where not exists(select 1 from tb where id=t.id+1)order by t.id<br />
+<br />
+select n.[start]+'-'+n.[end]起止號,sum(num)合計<br />
+<br />
+from tb m,<br />
+<br />
+(select a.ID [start],b.ID [end] from #t1 a,#t2 b where a.cnt=b.cnt) n<br />
+<br />
+where m.ID between n.[start] and n.[end]<br />
+<br />
+group by n.[start]+'-'+n.[end]<br />
+<br />
+/*<br />
+<br />
+起止號                  合計<br />
+<br />
+--------------------- ---------------------------------------<br />
+<br />
+001-003               700.00<br />
+<br />
+007-009               1500.00<br />
+<br />
+012-014               400.00<br />
+<br />
+017-019               800.00<br />
+<br />
+ <br />
+<br />
+(4 個資料列受到影響)<br />
+<br />
+ <br />
+<br />
+*/<br />
+<br />
+--方法 2<br />
+<br />
+select case when min(t.id)!=max(t.id) then min(t.id)+'-'+max(t.id)else min(t.id)end 起止號, <br />
+<br />
+       sum(num)合計<br />
+<br />
+from(<br />
+<br />
+select ID,<br />
+<br />
+       cnt=cast(ID as int)-(select count(*)from tb n where m.ID>n.ID),<br />
+<br />
+       num<br />
+<br />
+from tb m<br />
+<br />
+)t group by cnt<br />
+<br />
+/*<br />
+<br />
+起止號                  合計<br />
+<br />
+--------------------- ---------------------------------------<br />
+<br />
+001-003               700.00<br />
+<br />
+007-009               1500.00<br />
+<br />
+012-014               400.00<br />
+<br />
+017-019               800.00<br />
+<br />
+ <br />
+<br />
+(4 個資料列受到影響)<br />
+<br />
+ <br />
+<br />
+*/<br />
+<br />
+--方法3<br />
+<br />
+select case when min(t.id)!=max(t.id) then min(t.id)+'-'+max(t.id)else min(t.id)end 起止號, <br />
+<br />
+       sum(num)合計<br />
+<br />
+from(<br />
+<br />
+select id,cnt=id-row_number()over(order by getdate()),num from tb<br />
+<br />
+)t group by cnt<br />
+<br />
+/*<br />
+<br />
+起止號                  合計<br />
+<br />
+--------------------- ---------------------------------------<br />
+<br />
+001-003               700.00<br />
+<br />
+007-009               1500.00<br />
+<br />
+012-014               400.00<br />
+<br />
+017-019               800.00<br />
+<br />
+ <br />
+<br />
+(4 個資料列受到影響)<br />
+<br />
+ <br />
+<br />
+*/<br />
+<br />
+<br />
+<br />
+本文来自CSDN博客，转载请标明出处：http://blog.csdn.net/wufeng4552/archive/2009/12/04/4938218.aspx<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:31

@@ -1,0 +1,145 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>if object_id('[tb]') is not null drop table [tb]<br />
+go<br />
+create table [tb]([modeid] int,modename varchar(20),parentid int)<br />
+insert [tb]<br />
+select 100 ,'商品管理', 0 union all<br />
+select 101 ,'定单管理', 0 union all<br />
+select 102 ,'用户管理', 0 union all<br />
+select 104 ,'学院广告', 0 union all<br />
+select 105 ,'系统设置', 0 union all<br />
+select 106 ,'附件管理', 0 union all<br />
+select 107 ,'商品管理', 100 union all<br />
+select 108 ,'明细管理', 100 union all<br />
+select 109 ,'物流管理', 100 union all<br />
+select 110 ,'商品信息管理', 107 union all<br />
+select 111 ,'商品分类管理', 107 union all<br />
+select 112 ,'回收站管理', 107 union all<br />
+select 114 ,'团购管理', 108 union all<br />
+select 115 ,'拍卖管理', 108 union all<br />
+select 116 ,'优惠管理', 108 union all<br />
+select 117 ,'会员管理', 102 union all<br />
+select 118 ,'会员卡管理', 102 union all<br />
+select 119 ,'资金管理', 102 union all<br />
+select 120 ,'管理员管理', 102 union all<br />
+select 121 ,'添加管理员', 120 union all<br />
+select 122 ,'修改管理员', 120<br />
+go<br />
+<br />
+<br />
+--查所有子结点<br />
+if object_id('f_getC') is not null drop function f_getC<br />
+go<br />
+create function f_getC(@id int) <br />
+returns @re table(id int,level int,sort varchar(10)) <br />
+as <br />
+begin<br />
+    declare @l int <br />
+    set @l=0 <br />
+    insert @re select @id,@l,null<br />
+    while @@rowcount>0<br />
+    begin <br />
+        set @l=@l+1<br />
+        insert @re select a.modeid,@l,ltrim(isnull(b.sort,a.modeid)) from tb as a,@re as b <br />
+ where b.id=a.parentid and b.level=@l-1<br />
+    end<br />
+    update @re set level = level -1<br />
+    return <br />
+end <br />
+go <br />
+<br />
+<br />
+select a.modeid,a.parentid,REPLICATE('  ',b.level) +'┝'+a.modename,b.level,b.sort from tb  a,f_getC(0) b <br />
+where a.modeid=b.id <br />
+order by case when b.level<2 then 0 else 1 end,b.sort,b.level<br />
+<br />
+/*<br />
+modeid      parentid                                                       sort       level      <br />
+----------- ----------- -------------------------------------------------- ---------- -----------<br />
+100         0           ┝商品管理                                              100        0<br />
+107         100           ┝商品管理                                            100        1<br />
+108         100           ┝明细管理                                            100        1<br />
+109         100           ┝物流管理                                            100        1<br />
+101         0           ┝定单管理                                              101        0<br />
+102         0           ┝用户管理                                              102        0<br />
+117         102           ┝会员管理                                            102        1<br />
+118         102           ┝会员卡管理                                           102        1<br />
+119         102           ┝资金管理                                            102        1<br />
+120         102           ┝管理员管理                                           102        1<br />
+104         0           ┝学院广告                                              104        0<br />
+105         0           ┝系统设置                                              105        0<br />
+106         0           ┝附件管理                                              106        0<br />
+110         107             ┝商品信息管理                                        100        2<br />
+111         107             ┝商品分类管理                                        100        2<br />
+112         107             ┝回收站管理                                         100        2<br />
+114         108             ┝团购管理                                          100        2<br />
+115         108             ┝拍卖管理                                          100        2<br />
+116         108             ┝优惠管理                                          100        2<br />
+121         120             ┝添加管理员                                         102        2<br />
+122         120             ┝修改管理员                                         102        2<br />
+<br />
+（所影响的行数为 21 行）<br />
+<br />
+*/<br />
+<br />
+<br />
+--查所有子结点,带路径与排序<br />
+if object_id('f_getC') is not null drop function f_getC<br />
+go<br />
+create function f_getC(@id int) <br />
+returns @re table(id int,level int,sort varchar(100),path varchar(500)) <br />
+as <br />
+begin<br />
+    declare @l int <br />
+    set @l=0 <br />
+    insert @re<br />
+ select [modeid],@l,right('00000'+ltrim(modeid),5),modename<br />
+ from tb where parentid=@id<br />
+    while @@rowcount>0<br />
+    begin <br />
+        set @l=@l+1<br />
+        insert @re<br />
+  select a.modeid,@l,b.sort+right('00000'+ltrim(a.modeid),5),<br />
+      b.path+' - '+a.modename<br />
+  from tb as a,@re as b <br />
+  where b.id=a.parentid and b.level=@l-1<br />
+    end<br />
+    update @re set level = level<br />
+    return <br />
+end <br />
+go <br />
+<br />
+select a.modeid,a.parentid,REPLICATE('  ',b.level) +'┝'+a.modename,b.level,b.sort ,b.path from tb  a,f_getC(0) b <br />
+where a.modeid=b.id <br />
+order by sort<br />
+<br />
+/*<br />
+modeid      parentid                         level                           <br />
+----------- ----------- -------------------- ----------- -------------------- ----------------------------------------<br />
+100         0           ┝商品管理                0           00100                商品管理<br />
+107         100           ┝商品管理              1           0010000107           商品管理 - 商品管理<br />
+110         107             ┝商品信息管理          2           001000010700110      商品管理 - 商品管理 - 商品信息管理<br />
+111         107             ┝商品分类管理          2           001000010700111      商品管理 - 商品管理 - 商品分类管理<br />
+112         107             ┝回收站管理           2           001000010700112      商品管理 - 商品管理 - 回收站管理<br />
+108         100           ┝明细管理              1           0010000108           商品管理 - 明细管理<br />
+114         108             ┝团购管理            2           001000010800114      商品管理 - 明细管理 - 团购管理<br />
+115         108             ┝拍卖管理            2           001000010800115      商品管理 - 明细管理 - 拍卖管理<br />
+116         108             ┝优惠管理            2           001000010800116      商品管理 - 明细管理 - 优惠管理<br />
+109         100           ┝物流管理              1           0010000109           商品管理 - 物流管理<br />
+101         0           ┝定单管理                0           00101                定单管理<br />
+102         0           ┝用户管理                0           00102                用户管理<br />
+117         102           ┝会员管理              1           0010200117           用户管理 - 会员管理<br />
+118         102           ┝会员卡管理             1           0010200118           用户管理 - 会员卡管理<br />
+119         102           ┝资金管理              1           0010200119           用户管理 - 资金管理<br />
+120         102           ┝管理员管理             1           0010200120           用户管理 - 管理员管理<br />
+121         120             ┝添加管理员           2           001020012000121      用户管理 - 管理员管理 - 添加管理员<br />
+122         120             ┝修改管理员           2           001020012000122      用户管理 - 管理员管理 - 修改管理员<br />
+104         0           ┝学院广告                0           00104                学院广告<br />
+105         0           ┝系统设置                0           00105                系统设置<br />
+106         0           ┝附件管理                0           00106                附件管理<br />
+<br />
+(21 行受影响)<br />
+<br />
+<br />
+*/<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:31

@@ -1,0 +1,365 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>转贴自teched讲师:  牛可  <br />
+<br />
+基本概念:<br />
+<br />
+第一层 服务主密钥 <br />
+<br />
+备份服务主密钥<br />
+backup service master key to file='c:\smk.bak'<br />
+encryption by password='P@ssw0rd'<br />
+ <br />
+restore service master key from file='c:\smk.bak'<br />
+decryption by password='P@ssw0rd'<br />
+ <br />
+第二层 数据库主密钥<br />
+1)必须先在该数据库上创建数据库主密钥才能使用<br />
+create master key encryption by password='P@ssw0rd'<br />
+ <br />
+2)使用数据库主密钥<br />
+－如果数据库主密钥使用服务密钥进行保护，则在使用时会自动打开<br />
+opren master key decryption by password='P@ssw0rd'<br />
+ <br />
+3)查看数据库主密钥状态<br />
+sys.symmetric_keys<br />
+ <br />
+4)备份数据库主密钥<br />
+backup master key to file='c:\smk.bak'<br />
+encryption by password='P@ssw0rd'<br />
+ <br />
+restore master key from file='c:\smk.bak'<br />
+decryption by password='P@ssw0rd'<br />
+ <br />
+ <br />
+数字证书<br />
+创建自签名<br />
+create certificate cert_myCert<br />
+encryption by password='P@ssw0rd'<br />
+with subject='Self Signed Cert',<br />
+start_date='1/31/2006'<br />
+expiry_date='1/31/2008'<br />
+ <br />
+ <br />
+非对称密钥<br />
+创建新的密钥对<br />
+create asymmetric key asy_Key1<br />
+with algorithm=RSA_2048<br />
+encryption by password='P@ssw0rd'<br />
+ <br />
+ <br />
+对称密钥<br />
+创建新的密钥对<br />
+create symmetric key SymKeyMarketing3<br />
+with algorithm=AES_2048<br />
+encryption by certificate asy_Key1<br />
+ <br />
+使用对称密钥<br />
+使用前必须打开<br />
+open symmetric SymKeyMarketing3<br />
+decryption by certificate asy_Key1<br />
+ <br />
+sys.open_keys<br />
+ <br />
+ <br />
+数据列加密<br />
+－使用对称密钥加密大量的列数据<br />
+－考虑使用证书，非对称密钥保护对称密钥<br />
+ <br />
+防止绕过加密数据列的攻击－使用验证器<br />
+ <br />
+注:<br />
+在加密列上的索引将变得无效<br />
+加密数据列的长度增长，建议使用varbinary（max）数据类型<br />
+修改已有的dml语句以支持加密的数据列<br />
+ <br />
+-----***********示例1 了解数据库加密体系结构*****-----<br />
+ <br />
+--************(1) 服务主密钥<br />
+--准备工作<br />
+--创建测试数据库TestDB<br />
+--1)备份服务主密钥<br />
+backup service master key to file='g:\smk.bak'<br />
+encryption by password='p@ssw0rd'<br />
+ <br />
+--2)生成新的主密钥<br />
+Alter service master key regenerate<br />
+ <br />
+--3)从备份文件还原服务主密钥<br />
+Restore service master key from file= file='g:\smk.bak'<br />
+encryption by password='p@ssw0rd'<br />
+ <br />
+--*************(2) 数据库主密钥<br />
+--1)为数据库创建数据库主密钥<br />
+create master key encryption by password='p@ssw0rd'<br />
+go<br />
+--2)查看数据库加密状态<br />
+select [name],is_master_key_encrypted_by_server <br />
+from sys.databases where name='TestDB'<br />
+ <br />
+--3)查看数据库主密钥的信息<br />
+select * from sys.symmetric_keys <br />
+ <br />
+--4)备份数据库主密钥<br />
+backup master key<br />
+to file='g:\testdbkey.bak'<br />
+encryption by password='p@ssw0rd'<br />
+ <br />
+--5)删除服务主密钥对数据库主密钥的保护<br />
+--创建非对称密钥成功,自动使用服务主密钥解密并使用该数据库主密钥<br />
+create asymmetric key asy_Testkey1 with algorithm=RSA_1024<br />
+go<br />
+--删除服务主密钥对数据库主密钥的保护<br />
+alter master key<br />
+drop encryption by service master key<br />
+go<br />
+ <br />
+--查看数据库加密状态<br />
+select [name],is_master_key_encrypted_by_server <br />
+from sys.databases where name='TestDB'<br />
+ <br />
+--创建非对称密钥失败,因为数据库主密钥未打开<br />
+create asymmetric key asy_Testkey2 with algorithm=RSA_1024<br />
+go<br />
+--打开数据库主密钥<br />
+open master key decryption by password='p@ssw0rd'<br />
+select * from sys.openkeys<br />
+go<br />
+--创建非对称密钥成功<br />
+create asymmetric key asy_Testkey2 with algorithm=RSA_1024<br />
+go<br />
+ <br />
+--恢复服务主密钥对数据库主密钥的保护<br />
+alter master key<br />
+add encryption by service master key<br />
+close master key<br />
+go<br />
+ <br />
+--*****(3)证书<br />
+--1)创建自签名证书<br />
+create certificate cert_Testcert<br />
+encryption by password='p@ssw0rd'<br />
+with subject='TestCert1',<br />
+start_date='1/31/2006',<br />
+expiry_date='1/31/2008'<br />
+go<br />
+select * from sys.certificates<br />
+ <br />
+ <br />
+--2)从文件导入证书<br />
+Create certificate cert_TestCert2<br />
+From file=’g:\MSCert.cer’<br />
+Go<br />
+ <br />
+-- 3)备份导出证书和密钥<br />
+backup certificate cert_Testcert<br />
+to file='g:\Testcert.cer'<br />
+with private key<br />
+(decryption by password='p@ssw0rd',<br />
+file='g:\TestCert_pvt',--私密钥<br />
+encryption by password='p@ssw0rd' )<br />
+go<br />
+ <br />
+--4)使用证书加解密数据<br />
+--加密:使用证书的公钥<br />
+declare @cleartext varbinary(200)<br />
+declare @cipher varbinary(200)<br />
+set @cleartext=convert( varbinary(200),'Test text string')<br />
+set @cipher=EncryptByCert(Cert_ID('cert_TestCert'),@cleartext)<br />
+select @cipher<br />
+ <br />
+--解密:使用证书的私钥<br />
+select convert(varchar(200),DecryptByCert(Cert_ID('cert_TestCert'),@cipher,N'p@ssw0rd')) as [cleartext]<br />
+ <br />
+ <br />
+--5) 删除证书私钥<br />
+alter certificate cert_TestCert<br />
+remove private key<br />
+go<br />
+ <br />
+--加密成功<br />
+declare @cleartext varbinary(200)<br />
+declare @cipher varbinary(200)<br />
+set @cleartext=convert( varbinary(200),'Test text string')<br />
+set @cipher=EncryptByCert(Cert_ID('cert_TestCert'),@cleartext)<br />
+select @cipher<br />
+ <br />
+--解密失败:因为私钥被删除<br />
+select convert(varchar(200),DecryptByCert(Cert_ID('cert_TestCert'),@cipher,N'p@ssw0rd')) as [cleartext]<br />
+ <br />
+ <br />
+--***(4) 非对称密钥<br />
+--1)使用sn.exe生成非对称密钥,安装vs2005后有sn.exe, 在命令行方式下执行<br />
+sn -k g:\asy_Test.key<br />
+ <br />
+--2)从文件创建非对称密钥<br />
+create asymmetric key asm_Test<br />
+from file='g:\asy_Test.key'<br />
+encryption by password='p@ssw0rd'<br />
+go<br />
+ <br />
+select * from sys.asymmetric_keys<br />
+ <br />
+ <br />
+ <br />
+--***********示例2 使用加密保护列数据<br />
+-----*****(1) 准备工作<br />
+--1) 创建示例表<br />
+create table empsalary<br />
+(EmpID int,<br />
+ Title nvarchar(50),<br />
+ Salary varbinary(500)<br />
+)<br />
+go<br />
+ <br />
+--2) 创建数据库主密钥<br />
+create master key encryption by password='p@ssw0rd'<br />
+go<br />
+ <br />
+--3) 创建用于加密的对称密钥<br />
+create symmetric key sym_Salary<br />
+with algorithm=AES_192<br />
+encryption by password='p@ssw0rd'<br />
+go<br />
+ <br />
+select * from sys.symmetric_keys where [name]='sym_Salary'<br />
+ <br />
+------****(2)加密列数据<br />
+--1)打开对称密钥<br />
+open symmetric key sym_Salary<br />
+decryption by password='p@ssw0rd'<br />
+go<br />
+select * from sys.openkeys<br />
+ <br />
+--2)向表中插入数据，并对salary列加密<br />
+insert into empsalary values (1,'CEO',EncryptByKey(KEY_GUID('sym_Salary'),'20000'))<br />
+insert into empsalary values (2,'Manager',EncryptByKey(KEY_GUID('sym_Salary'),'10000'))<br />
+insert into empsalary values (3,'DB Admin',EncryptByKey(KEY_GUID('sym_Salary'),'5000'))<br />
+ <br />
+--3)关闭打开的对称密钥<br />
+close symmetric key sym_Salary<br />
+go<br />
+select * from sys.openkeys<br />
+ <br />
+ <br />
+--4) 查看表中的数据<br />
+select * from empsalary<br />
+ <br />
+--(3)解密并访问被加密的数据列<br />
+--1)打开对称密钥<br />
+open symmetric key sym_Salary decryption by password='p@ssw0rd'<br />
+go<br />
+--2)使用对称密钥解密并访问被加密的列<br />
+select empid,title,cast(DecryptByKey(Salary) as varchar(20)) as salary from empsalary<br />
+ <br />
+--3) 关闭对称密钥<br />
+close symmetric key sym_Salary<br />
+go<br />
+ <br />
+--(4)绕过加密数据的攻击<br />
+--1)攻击者使用其他数据行的加密数据替换某一行的数据<br />
+update empsalary <br />
+set salary=(select salary from empsalary where empid=1)<br />
+where empid=3<br />
+ <br />
+--2)查看被攻击后解密的数据<br />
+open symmetric key sym_Salary decryption by password='p@ssw0rd'<br />
+select empid,title,cast(DecryptByKey(Salary) as varchar(20)) as salary from empsalary<br />
+close symmetric key sym_Salary<br />
+ <br />
+ <br />
+--(5)使用验证器防止绕过加密数据的攻击<br />
+--1)删除前面添加的数据行<br />
+delete empsalary<br />
+ <br />
+--2)向表插入数据，并对salary列的数据使用验证器进行加密<br />
+open symmetric key sym_Salary decryption by password='p@ssw0rd'<br />
+insert into empsalary values (1,'CEO',EncryptByKey(KEY_GUID('sym_Salary'),'20000',1,'1'))<br />
+insert into empsalary values (2,'Manager',EncryptByKey(KEY_GUID('sym_Salary'),'10000',1,'2'))<br />
+insert into empsalary values (3,'DB Admin',EncryptByKey(KEY_GUID('sym_Salary'),'5000',1,'3'))<br />
+ <br />
+--3)解密并访问被加密的数据<br />
+select empid,title,cast(DecryptByKey(Salary,1,cast(empid as varchar(3))) as varchar(20)) as salary from empsalary<br />
+ <br />
+--4)用同样的方法篡改数据<br />
+update empsalary <br />
+set salary=(select salary from empsalary where empid=1)<br />
+where empid=3<br />
+ <br />
+--5)被篡改后的加密了的数据列变成无效<br />
+select empid,title,cast(DecryptByKey(Salary,1,cast(empid as varchar(3))) as varchar(20)) as salary from empsalary<br />
+ <br />
+ <br />
+ <br />
+--***********示例3 使用数字证书签署存储过程<br />
+ <br />
+--*****(1)准备<br />
+--1)创建数据库主密钥<br />
+create master key encryption by password='p@ssw0rd'<br />
+ <br />
+--2)创建签署存储过程所需要的证书<br />
+create certificate cert_Product<br />
+with subject='Products Sign',<br />
+start_date='1/31/2006',<br />
+expiry_date='1/31/2008'<br />
+go<br />
+ <br />
+--3)创建SPDeveloper登录帐户和用户，该用户创建并访问Products表的存储过程<br />
+create login [SPDeveloper] with password='p@ssw0rd',default_database=[TestDB]<br />
+go<br />
+create user [SPDeveloper] for login SPDeveloper with default_schema=[SPDeveloper]<br />
+go<br />
+create schema products authorization SPDeveloper<br />
+go<br />
+exec sp_addrolemember @rolename='db_owner',@membername='SPDeveloper'<br />
+ <br />
+--4)以SPDeveloper的身份创建存储过程products.usp_Products<br />
+execute as user='SPDeveloper'<br />
+go<br />
+create procedure products.usp_Products<br />
+as<br />
+select * from dbo.Products<br />
+go<br />
+ <br />
+revert<br />
+select user<br />
+ <br />
+--5)创建普通用户jerry<br />
+create login [jerry] with password='p@ssw0rd',default_database=[TestDB]<br />
+go<br />
+create user [jerry] for login jerry <br />
+go<br />
+ <br />
+--*******(2)使用证书签署存储过程<br />
+--1)授予用户jerry执行存储过程的权限<br />
+grant execute on products.usp_Products to jerry<br />
+ <br />
+--2)以jerry的身份执行存储过程失败，因为拥有权链的断裂的<br />
+execute as user='jerry'<br />
+select user<br />
+go<br />
+ <br />
+execute products.usp_Products<br />
+go<br />
+revert<br />
+ <br />
+--3)使用证书在当前数据库创建用户ProductsReader,并为该用户赋予读取products表的权限<br />
+create user ProductsReader for certificate cert_Products<br />
+go<br />
+grant select on products To ProductsReader<br />
+ <br />
+--4)使用证书签署当前存储过程<br />
+add signature to products.usp_Products by certificate cert_Products<br />
+ <br />
+--5)以jerry的身份重新执行存储过程，成功<br />
+--因为存储过程将以ProductsReader的权限上下文执行<br />
+execute as user='jerry'<br />
+select user<br />
+go<br />
+ <br />
+execute products.usp_Products<br />
+go<br />
+revert<br />
+<br />
+<br />
+本文来自CSDN博客，转载请标明出处：http://blog.csdn.net/cuoguo1111/archive/2006/11/29/1419515.aspx<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:31

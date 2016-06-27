@@ -1,0 +1,38 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>----------------------------------------------------------------<br />
+-- Author :fredrickhu(小F 向高手学习)<br />
+-- Date   :2009-07-27 10:41:24<br />
+----------------------------------------------------------------<br />
+--> 测试数据：[tb]<br />
+if object_id('[tb]') is not null drop table [tb]<br />
+create table [tb]([aa] varchar(1))<br />
+insert [tb]<br />
+select 'a' union all<br />
+select 'a' union all<br />
+select 'b' union all<br />
+select 'b' union all<br />
+select 'c' union all<br />
+select 'c' union all<br />
+select 'd' union all<br />
+select 'd'<br />
+--------------开始查询--------------------------<br />
+alter table tb<br />
+add id int identity<br />
+go<br />
+select aa,id=(select count(distinct aa)+1 from tb where aa=t.aa and id<t.id)from tb t<br />
+----------------结果----------------------------<br />
+/*<br />
+aa   id          <br />
+---- ----------- <br />
+a    1<br />
+a    2<br />
+b    1<br />
+b    2<br />
+c    1<br />
+c    2<br />
+d    1<br />
+d    2<br />
+<br />
+（所影响的行数为 8 行）<br />
+*/<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:09

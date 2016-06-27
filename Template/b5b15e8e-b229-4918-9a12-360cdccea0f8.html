@@ -1,0 +1,94 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--将表数据生成SQL脚本的存储过程 <br />
+<br />
+CREATE PROCEDURE dbo.UspOutputData <br />
+@tablename sysname <br />
+AS <br />
+declare @column varchar(1000) <br />
+declare @columndata varchar(1000) <br />
+declare @sql varchar(4000) <br />
+declare @xtype tinyint <br />
+declare @name sysname <br />
+declare @objectId int <br />
+declare @objectname sysname <br />
+declare @ident int <br />
+<br />
+set nocount on <br />
+set @objectId=object_id(@tablename) <br />
+<br />
+if @objectId is null -- 判断对象是否存在 <br />
+begin <br />
+print 'The object not exists' <br />
+return <br />
+end <br />
+set @objectname=rtrim(object_name(@objectId)) <br />
+<br />
+if @objectname is null or charindex(@objectname,@tablename)=0 --此判断不严密 <br />
+begin <br />
+print 'object not in current database' <br />
+return <br />
+end <br />
+<br />
+if OBJECTPROPERTY(@objectId,'IsTable') < > 1 -- 判断对象是否是table <br />
+begin <br />
+print 'The object is not table' <br />
+return <br />
+end <br />
+<br />
+select @ident=status&0x80 from syscolumns where id=@objectid and status&0x80=0x80 <br />
+<br />
+if @ident is not null <br />
+print 'SET IDENTITY_INSERT '+@TableName+' ON' <br />
+<br />
+declare syscolumns_cursor cursor <br />
+<br />
+for select c.name,c.xtype from syscolumns c where c.id=@objectid order by c.colid <br />
+<br />
+open syscolumns_cursor <br />
+set @column='' <br />
+set @columndata='' <br />
+fetch next from syscolumns_cursor into @name,@xtype <br />
+<br />
+while @@fetch_status < >-1 <br />
+begin <br />
+if @@fetch_status < >-2 <br />
+begin <br />
+if @xtype not in(189,34,35,99,98) --timestamp不需处理，image,text,ntext,sql_variant 暂时不处理 <br />
+<br />
+begin <br />
+set @column=@column+case when len(@column)=0 then'' else ','end+@name <br />
+<br />
+set @columndata=@columndata+case when len(@columndata)=0 then '' else ','','',' <br />
+end <br />
+<br />
++case when @xtype in(167,175) then '''''''''+'+@name+'+''''''''' --varchar,char <br />
+when @xtype in(231,239) then '''N''''''+'+@name+'+''''''''' --nvarchar,nchar <br />
+when @xtype=61 then '''''''''+convert(char(23),'+@name+',121)+''''''''' --datetime <br />
+when @xtype=58 then '''''''''+convert(char(16),'+@name+',120)+''''''''' --smalldatetime <br />
+when @xtype=36 then '''''''''+convert(char(36),'+@name+')+''''''''' --uniqueidentifier <br />
+else @name end <br />
+<br />
+end <br />
+<br />
+end <br />
+<br />
+fetch next from syscolumns_cursor into @name,@xtype <br />
+<br />
+end <br />
+<br />
+close syscolumns_cursor <br />
+deallocate syscolumns_cursor <br />
+<br />
+set @sql='set nocount on select ''insert '+@tablename+'('+@column+') values(''as ''--'','+@columndata+','')'' from '+@tablename <br />
+<br />
+print '--'+@sql <br />
+exec(@sql) <br />
+<br />
+if @ident is not null <br />
+print 'SET IDENTITY_INSERT '+@TableName+' OFF' <br />
+<br />
+GO <br />
+<br />
+exec UspOutputData 你的表名<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:06

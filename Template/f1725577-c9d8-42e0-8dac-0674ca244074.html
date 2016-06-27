@@ -1,0 +1,111 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>USE tempdb<br />
+GO<br />
+<br />
+-- 建立演示环境<br />
+CREATE TABLE Dept(<br />
+ id int PRIMARY KEY, <br />
+ parent_id int,<br />
+ name nvarchar(20))<br />
+INSERT Dept<br />
+SELECT 0, 0, N'<全部>' UNION ALL<br />
+SELECT 1, 0, N'财务部' UNION ALL<br />
+SELECT 2, 0, N'行政部' UNION ALL<br />
+SELECT 3, 0, N'业务部' UNION ALL<br />
+SELECT 4, 0, N'业务部' UNION ALL<br />
+SELECT 5, 4, N'销售部' UNION ALL<br />
+SELECT 6, 4, N'MIS' UNION ALL<br />
+SELECT 7, 6, N'UI' UNION ALL<br />
+SELECT 8, 6, N'软件开发' UNION ALL<br />
+SELECT 9, 8, N'内部开发'<br />
+GO<br />
+<br />
+-- 查询指定部门下面的所有部门<br />
+DECLARE @Dept_name nvarchar(20)<br />
+SET @Dept_name = N'MIS'<br />
+;WITH<br />
+DEPTS AS(<br />
+ -- 定位点成员<br />
+ SELECT * FROM Dept<br />
+ WHERE name = @Dept_name<br />
+ UNION ALL<br />
+ -- 递归成员, 通过引用CTE自身与Dept基表JOIN实现递归<br />
+ SELECT A.*<br />
+ FROM Dept A, DEPTS B<br />
+ WHERE A.parent_id = B.id<br />
+)<br />
+SELECT * FROM DEPTS<br />
+GO<br />
+<br />
+-- 删除演示环境<br />
+DROP TABLE Dept<br />
+<br />
+----CTE的综合应用<br />
+<br />
+USE tempdb<br />
+GO<br />
+<br />
+-- 建立演示环境<br />
+CREATE TABLE Dept(<br />
+ id int PRIMARY KEY, <br />
+ parent_id int,<br />
+ name nvarchar(20))<br />
+INSERT Dept<br />
+SELECT 0, 0, N'<全部>' UNION ALL<br />
+SELECT 1, 0, N'财务部' UNION ALL<br />
+SELECT 2, 0, N'行政部' UNION ALL<br />
+SELECT 3, 0, N'业务部' UNION ALL<br />
+SELECT 4, 0, N'业务部' UNION ALL<br />
+SELECT 5, 4, N'销售部' UNION ALL<br />
+SELECT 6, 4, N'MIS' UNION ALL<br />
+SELECT 7, 6, N'UI' UNION ALL<br />
+SELECT 8, 6, N'软件开发' UNION ALL<br />
+SELECT 9, 8, N'内部开发'<br />
+GO<br />
+<br />
+-- 查询指定部门下面的所有部门, 并汇总各部门的下级部门数<br />
+DECLARE @Dept_name nvarchar(20)<br />
+SET @Dept_name = N'MIS'<br />
+;WITH<br />
+DEPTS AS(   -- 查询指定部门及其下的所有子部门<br />
+ -- 定位点成员<br />
+ SELECT * FROM Dept<br />
+ WHERE name = @Dept_name<br />
+ UNION ALL<br />
+ -- 递归成员, 通过引用CTE自身与Dept基表JOIN实现递归<br />
+ SELECT A.*<br />
+ FROM Dept A, DEPTS B<br />
+ WHERE A.parent_id = B.id<br />
+),<br />
+DEPTCHILD AS(  -- 引用第1个CTE,查询其每条记录对应的部门下的所有子部门<br />
+ SELECT <br />
+  Dept_id = P.id, C.id, C.parent_id<br />
+ FROM DEPTS P, Dept C<br />
+ WHERE P.id = C.parent_id<br />
+ UNION ALL<br />
+ SELECT <br />
+  P.Dept_id, C.id, C.parent_id<br />
+ FROM DEPTCHILD P, Dept C<br />
+ WHERE P.id = C.parent_id<br />
+),<br />
+DEPTCHILDCNT AS( -- 引用第2个CTE, 汇总得到各部门下的子部门数<br />
+ SELECT <br />
+  Dept_id, Cnt = COUNT(*)<br />
+ FROM DEPTCHILD<br />
+ GROUP BY Dept_id<br />
+)<br />
+SELECT    -- JOIN第1,3个CTE,得到最终的查询结果<br />
+ D.*,<br />
+ ChildDeptCount = ISNULL(DS.Cnt, 0)<br />
+FROM DEPTS D<br />
+ LEFT JOIN DEPTCHILDCNT DS<br />
+  ON D.id = DS.Dept_id<br />
+GO<br />
+<br />
+-- 删除演示环境<br />
+DROP TABLE Dept<br />
+<br />
+<br />
+<br />
+本文来自CSDN博客，转载请标明出处：http://blog.csdn.net/fredrickhu/archive/2009/09/19/4569529.aspx<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:30

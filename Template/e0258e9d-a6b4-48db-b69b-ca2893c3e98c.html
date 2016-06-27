@@ -1,0 +1,136 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--查询用户表对象信息<br />
+select  Tab.Name as [表名],Tab.create_date as [创建时间],Tab.modify_date  as [最后修改时间],<br />
+        Col.Name  as [列名] ,Type.name as [数据类型],Col.max_length as [字段长度],<br />
+        CASE WHEN pk.is_primary_key= 1 THEN 'Y' ELSE 'N' end as [是否主键],<br />
+        CASE WHEN Col.is_identity = 1 THEN 'Y' else 'N'end as [是否自增] ,<br />
+        identity_columns.seed_value as [自增种子],identity_columns.increment_value as [自增步长],<br />
+        case when Col.is_nullable = 1 then 'Y' else 'N' END AS [是否允许为NULL],<br />
+        Def.text as [默认值],case when Col.is_computed = 1 then 'Y' else 'N' END as [是否计算列] ,<br />
+        computed_columns.definition as [计算公式],Col_Desc.Value as [列备注]<br />
+from sys.objects Tab inner join sys.columns Col on Tab.object_id =Col.object_id<br />
+inner join sys.types Type on Col.system_type_id = Type.system_type_id<br />
+left join sys.identity_columns identity_columns on  Tab.object_id = identity_columns.object_id and Col.column_id = identity_columns.column_id<br />
+left join syscomments Def  on Col.default_object_id = Def.ID<br />
+left join(<br />
+    select index_columns.object_id,index_columns.column_id,indexes.is_primary_key <br />
+    from sys.indexes  indexes inner join sys.index_columns index_columns <br />
+    on indexes.object_id = index_columns.object_id and indexes.index_id = index_columns.index_id<br />
+    where indexes.is_primary_key = 1/*主键*/<br />
+) PK on Tab.object_id = PK.object_id AND Col.column_id = PK.column_id<br />
+left join sys.computed_columns  computed_columns on Tab.object_id =computed_columns.object_id and Col.column_id = computed_columns.column_id<br />
+left join sys.extended_properties Col_Desc on Col_Desc.major_id=Tab.object_id and Col_Desc.minor_id=Col.Column_id and Col_Desc.class=1 <br />
+where Tab.type = 'U' and Tab.Name not like'sys%'<br />
+order by Tab.create_date<br />
+<br />
+<br />
+<br />
+--查询所有视图<br />
+select views.Name as [视图名],Col.Name as [列名] ,Type.name as [数据类型],Col.max_length as [字段长度]<br />
+        --,Col_Desc.Value as Col_Description<br />
+from sys.views views<br />
+inner join sys.columns Col on views.object_id  = Col.object_id<br />
+inner join sys.types Type on Col.system_type_id = Type.system_type_id<br />
+--left join sys.extended_properties Col_Desc <br />
+--    on Col_Desc.major_id=views.object_id and Col_Desc.minor_id=Col.Column_id and Col_Desc.class=1 <br />
+order by Create_Date<br />
+<br />
+<br />
+--查询外键约束<br />
+select FK_Name as [外键名],Parent_Tab_Name as [外键表],<br />
+    [外键列]=stuff((select '，'+[Parent_Col_Name] from (<br />
+        select    FK.name as FK_Name,Parent_Tab.Name as Parent_Tab_Name,Parent_Col.Name as Parent_Col_Name,<br />
+                Referenced_Tab.Name as Referenced_Tab_Name,Referenced_Col.Name as Referenced_Col_Name<br />
+        from sys.foreign_keys FK<br />
+        inner join sys.foreign_key_columns Col on FK.Object_ID = Col.constraint_object_id<br />
+        inner join sys.objects Parent_Tab ON  Col.parent_object_id = Parent_Tab.Object_ID and Parent_Tab.TYPE = 'U'<br />
+        inner join sys.columns Parent_Col on Parent_Tab.Object_ID = Parent_Col.object_id <br />
+                                            and  Col.parent_column_id = Parent_Col.column_id<br />
+        inner join sys.objects Referenced_Tab ON  Col.referenced_object_id = Referenced_Tab.Object_ID and Referenced_Tab.TYPE = 'U'<br />
+        inner join sys.columns Referenced_Col on Referenced_Tab.Object_ID = Referenced_Col.object_id <br />
+                                            and  Col.referenced_column_id = Referenced_Col.column_id<br />
+    )t where FK_Name=tb.FK_Name  and Parent_Tab_Name = tb.Parent_Tab_Name and Referenced_Tab_Name = tb.Referenced_Tab_Name   for xml path('')), 1, 1, ''),<br />
+    Referenced_Tab_Name as  [主键表],<br />
+    [主键列]=stuff((select '，'+[Referenced_Col_Name] from (<br />
+        select    FK.name as FK_Name,Parent_Tab.Name as Parent_Tab_Name,Parent_Col.Name as Parent_Col_Name,<br />
+                Referenced_Tab.Name as Referenced_Tab_Name,Referenced_Col.Name as Referenced_Col_Name<br />
+        from sys.foreign_keys FK<br />
+        inner join sys.foreign_key_columns Col on FK.Object_ID = Col.constraint_object_id<br />
+        inner join sys.objects Parent_Tab ON  Col.parent_object_id = Parent_Tab.Object_ID and Parent_Tab.TYPE = 'U'<br />
+        inner join sys.columns Parent_Col on Parent_Tab.Object_ID = Parent_Col.object_id <br />
+                                            and  Col.parent_column_id = Parent_Col.column_id<br />
+        inner join sys.objects Referenced_Tab ON  Col.referenced_object_id = Referenced_Tab.Object_ID and Referenced_Tab.TYPE = 'U'<br />
+        inner join sys.columns Referenced_Col on Referenced_Tab.Object_ID = Referenced_Col.object_id <br />
+                                            and  Col.referenced_column_id = Referenced_Col.column_id<br />
+    )t where FK_Name=tb.FK_Name  and Parent_Tab_Name = tb.Parent_Tab_Name and Referenced_Tab_Name = tb.Referenced_Tab_Name   for xml path('')), 1, 1, '')<br />
+    --as [外键列]<br />
+from (<br />
+    select    FK.name as FK_Name,Parent_Tab.Name as Parent_Tab_Name,Parent_Col.Name as Parent_Col_Name,<br />
+            Referenced_Tab.Name as Referenced_Tab_Name,Referenced_Col.Name as Referenced_Col_Name<br />
+    from sys.foreign_keys FK<br />
+    inner join sys.foreign_key_columns Col on FK.Object_ID = Col.constraint_object_id<br />
+    inner join sys.objects Parent_Tab ON  Col.parent_object_id = Parent_Tab.Object_ID and Parent_Tab.TYPE = 'U'<br />
+    inner join sys.columns Parent_Col on Parent_Tab.Object_ID = Parent_Col.object_id <br />
+                                        and  Col.parent_column_id = Parent_Col.column_id<br />
+    inner join sys.objects Referenced_Tab ON  Col.referenced_object_id = Referenced_Tab.Object_ID and Referenced_Tab.TYPE = 'U'<br />
+    inner join sys.columns Referenced_Col on Referenced_Tab.Object_ID = Referenced_Col.object_id <br />
+                                        and  Col.referenced_column_id = Referenced_Col.column_id<br />
+)tb<br />
+group by FK_Name,Parent_Tab_Name,Referenced_Tab_Name<br />
+<br />
+<br />
+--查询所有存储过程<br />
+select Pr_Name  as [存储过程], [参数]=stuff((select '，'+[Parameter] <br />
+    from (<br />
+        select Pr.Name as Pr_Name,parameter.name +' ' +Type.Name + ' ('+convert(varchar(32),parameter.max_length)+')' as Parameter<br />
+        from sys.procedures Pr left join <br />
+        sys.parameters parameter  on Pr.object_id = parameter.object_id<br />
+        inner join sys.types Type on parameter.system_type_id = Type.system_type_id<br />
+        where type = 'P' <br />
+    ) t where Pr_Name=tb.Pr_Name for xml path('')), 1, 1, '')<br />
+from (<br />
+    select Pr.Name as Pr_Name,parameter.name +' ' +Type.Name + ' ('+convert(varchar(32),parameter.max_length)+')' as Parameter<br />
+    from sys.procedures Pr left join <br />
+    sys.parameters parameter  on Pr.object_id = parameter.object_id<br />
+    inner join sys.types Type on parameter.system_type_id = Type.system_type_id<br />
+    where type = 'P' <br />
+)tb<br />
+where Pr_Name not like 'sp_%' --and Pr_Name not like 'dt%'<br />
+group by Pr_Name<br />
+order by Pr_Name<br />
+<br />
+--查询所有触发器<br />
+select triggers.name as [触发器],tables.name as [表名],triggers.is_disabled as [是否禁用],<br />
+triggers.is_instead_of_trigger AS [触发器类型],<br />
+case when triggers.is_instead_of_trigger = 1 then 'INSTEAD OF'<br />
+     when triggers.is_instead_of_trigger = 0 then 'AFTER'<br />
+     else null<br />
+end as [触发器类型描述]<br />
+from sys.triggers triggers<br />
+inner join sys.tables tables on triggers.parent_id = tables.object_id<br />
+where triggers.type ='TR'<br />
+order by triggers.create_date<br />
+<br />
+--查询所有索引<br />
+select    indexs.Tab_Name  as [表名],indexs.Index_Name as [索引名] ,indexs.[Co_Names] as [索引列],<br />
+        Ind_Attribute.is_primary_key as [是否主键],Ind_Attribute.is_unique AS [是否唯一键],<br />
+        Ind_Attribute.is_disabled AS [是否禁用]<br />
+ from (<br />
+    select Tab_Name,Index_Name, [Co_Names]=stuff((select '，'+[Co_Name] from <br />
+    (    select tab.Name as Tab_Name,ind.Name as Index_Name,Col.Name as Co_Name from sys.indexes ind <br />
+        inner join sys.tables tab on ind.Object_id = tab.object_id and ind.type in (1,2)/*索引的类型：0=堆/1=聚集/2=非聚集/3=XML*/<br />
+        inner join sys.index_columns index_columns on tab.object_id = index_columns.object_id and ind.index_id = index_columns.index_id<br />
+        inner join sys.columns Col on tab.object_id = Col.object_id and index_columns.column_id = Col.column_id<br />
+    ) t where Tab_Name=tb.Tab_Name and Index_Name=tb.Index_Name  for xml path('')), 1, 1, '')<br />
+    from (<br />
+        select tab.Name as Tab_Name,ind.Name as Index_Name,Col.Name as Co_Name from sys.indexes ind <br />
+        inner join sys.tables tab on ind.Object_id = tab.object_id and ind.type in (1,2)/*索引的类型：0=堆/1=聚集/2=非聚集/3=XML*/<br />
+        inner join sys.index_columns index_columns on tab.object_id = index_columns.object_id and ind.index_id = index_columns.index_id<br />
+        inner join sys.columns Col on tab.object_id = Col.object_id and index_columns.column_id = Col.column_id<br />
+    )tb<br />
+    where Tab_Name not like 'sys%'<br />
+    group by Tab_Name,Index_Name<br />
+) indexs inner join sys.indexes  Ind_Attribute on indexs.Index_Name = Ind_Attribute.name<br />
+order by indexs.Tab_Name<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:11

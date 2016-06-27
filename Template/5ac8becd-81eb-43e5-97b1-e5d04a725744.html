@@ -1,0 +1,142 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>create table tb(id varchar(3) , pid varchar(3) , name varchar(10)) <br />
+insert into tb values('001' , null  , '广东省') <br />
+insert into tb values('002' , '001' , '广州市') <br />
+insert into tb values('003' , '001' , '深圳市') <br />
+insert into tb values('004' , '002' , '天河区') <br />
+insert into tb values('005' , '003' , '罗湖区') <br />
+insert into tb values('006' , '003' , '福田区') <br />
+insert into tb values('007' , '003' , '宝安区') <br />
+insert into tb values('008' , '007' , '西乡镇') <br />
+insert into tb values('009' , '007' , '龙华镇') <br />
+insert into tb values('010' , '007' , '松岗镇') <br />
+go <br />
+<br />
+--查询指定节点及其所有子节点的函数 <br />
+create function f_cid(@ID varchar(3)) returns @t_level table(id varchar(3) , level int) <br />
+as <br />
+begin <br />
+  declare @level int <br />
+  set @level = 1 <br />
+  insert into @t_level select @id , @level <br />
+  while @@ROWCOUNT > 0 <br />
+  begin <br />
+    set @level = @level + 1 <br />
+    insert into @t_level select a.id , @level <br />
+    from tb a , @t_Level b <br />
+    where a.pid = b.id and b.level = @level - 1 <br />
+  end <br />
+  return <br />
+end <br />
+go <br />
+<br />
+--调用函数查询001(广东省)及其所有子节点 <br />
+select a.* from tb a , f_cid('001') b where a.id = b.id order by a.id <br />
+/* <br />
+id  pid  name      <br />
+---- ---- ---------- <br />
+001  NULL 广东省 <br />
+002  001  广州市 <br />
+003  001  深圳市 <br />
+004  002  天河区 <br />
+005  003  罗湖区 <br />
+006  003  福田区 <br />
+007  003  宝安区 <br />
+008  007  西乡镇 <br />
+009  007  龙华镇 <br />
+010  007  松岗镇 <br />
+<br />
+（所影响的行数为 10 行） <br />
+*/ <br />
+<br />
+--调用函数查询002(广州市)及其所有子节点 <br />
+select a.* from tb a , f_cid('002') b where a.id = b.id order by a.id <br />
+/* <br />
+id  pid  name      <br />
+---- ---- ---------- <br />
+002  001  广州市 <br />
+004  002  天河区 <br />
+<br />
+（所影响的行数为 2 行） <br />
+*/ <br />
+<br />
+--调用函数查询003(深圳市)及其所有子节点 <br />
+select a.* from tb a , f_cid('003') b where a.id = b.id order by a.id <br />
+/* <br />
+id  pid  name      <br />
+---- ---- ---------- <br />
+003  001  深圳市 <br />
+005  003  罗湖区 <br />
+006  003  福田区 <br />
+007  003  宝安区 <br />
+008  007  西乡镇 <br />
+009  007  龙华镇 <br />
+010  007  松岗镇 <br />
+<br />
+（所影响的行数为 7 行） <br />
+*/ <br />
+<br />
+drop table tb <br />
+drop function f_cid<br />
+<br />
+--bom结构，查找节点下所有子节点：<br />
+<br />
+create table os(id int,parentid int,desn varchar(10))<br />
+insert into os select 1,0,'体育用品'<br />
+insert into os select 2,0,'户外运动'<br />
+insert into os select 3,1,'篮球'<br />
+insert into os select 4,1,'足球'<br />
+insert into os select 5,2,'帐篷'<br />
+insert into os select 6,2,'登山鞋'<br />
+insert into os select 7,0,'男士用品'<br />
+insert into os select 8,7,'刮胡刀'<br />
+insert into os select 9,3,'大号篮球'<br />
+<br />
+--求个节点下所有子节点：<br />
+create function f_cid(@id int)<br />
+returns varchar(500)<br />
+as<br />
+begin<br />
+     declare @t table(id int,parentid int,desn varchar(10),lev int)<br />
+     declare @lev int<br />
+     set @lev=1<br />
+     insert into @t select *,@lev from  os where id=@id<br />
+     while(@@rowcount>0)<br />
+     begin<br />
+          set @lev=@lev+1<br />
+          insert into @t select a.*,@lev from os a,@t b<br />
+          where a.parentid=b.id and b.lev=@lev-1<br />
+     end<br />
+     declare @cids varchar(500)<br />
+     select @cids=isnull(@cids+',','')+ltrim(id) from @t order by lev<br />
+     return @cids<br />
+end<br />
+go<br />
+<br />
+--调用函数<br />
+select *,ids=dbo.f_cid(id) from os<br />
+<br />
+<br />
+--得到每个节点路径：<br />
+create proc wsp2<br />
+@id int<br />
+as<br />
+select *,cast(' ' as varchar(10)) fullpath  into #os from os<br />
+DECLARE @i int,@j int<br />
+set @i=0<br />
+set @j=1<br />
+select @i=max(parentid) from #os<br />
+update #os set fullpath=id <br />
+while @j<=@i<br />
+begin<br />
+       update #os set fullpath=a.fullpath+','+ltrim(#os.id) <br />
+            from #os inner join #os a on #os.parentid=a.id <br />
+       where #os.parentid=@j <br />
+       set @j=@j+1<br />
+end<br />
+select * from #os<br />
+go<br />
+--调用存储过程<br />
+exec wsp2 1<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:13

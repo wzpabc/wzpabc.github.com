@@ -1,0 +1,61 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>select loginame, * from master.dbo.sysprocesses<br />
+where spid>50<br />
+order by 1 <br />
+<br />
+<br />
+--查找活动的登录名<br />
+SELECT loginame,* FROM sys.sysprocesses WHERE spid>50<br />
+<br />
+<br />
+<br />
+DECLARE @login AS SYSNAME = '登录名'; <br />
+SELECT  LOGINPROPERTY(@login, 'BadPasswordCount') AS [Bad Password Count] , <br />
+        LOGINPROPERTY(@login, 'BadPasswordTime') AS [Last Bad Password Time] , <br />
+        LOGINPROPERTY(@login, 'DaysUntilExpiration') AS [Nb of days before expiration] , <br />
+        LOGINPROPERTY(@login, 'HistoryLength') AS [Nb of passwords in history] , <br />
+        LOGINPROPERTY(@login, 'IsExpired') AS [is expired] , <br />
+        LOGINPROPERTY(@login, 'IsLocked') AS [is locked] , <br />
+        LOGINPROPERTY(@login, 'PasswordLastSetTime ') AS [Password Last Set Time];<br />
+<br />
+<br />
+<br />
+--CREATE LOGIN Fred WITH PASSWORD ='Admin!@#123' --创建一个登录名 <br />
+--go <br />
+--检查登录名的密码 <br />
+SELECT PWDCOMPARE('Admin!@#123', CAST(LOGINPROPERTY('登录名', 'passwordhash') as varbinary(256)));--返回1 则证明密码正确<br />
+SELECT PWDCOMPARE('123', CAST(LOGINPROPERTY('登录名', 'passwordhash') as varbinary(256)));--返回0 则证明密码不正确<br />
+<br />
+<br />
+--SELECT name, is_disabled FROM sys.sql_logins WHERE is_policy_checked = 0  ORDER BY name;<br />
+<br />
+--ALTER LOGIN Fred WITH CHECK_POLICY = ON,CHECK_EXPIRATION = ON; --开启强密码<br />
+<br />
+--SELECT LOGINPROPERTY('Fred', 'DaysUntilExpiration');--检查密码到期时间<br />
+<br />
+--ALTER LOGIN Fred WITH PASSWORD = 'You need to change me !' MUST_CHANGE, CHECK_POLICY = ON, CHECK_EXPIRATION = ON; --登录时强制修改密码，初始密码约定为'You need to change me !'<br />
+<br />
+SELECT<br />
+    'ALTER LOGIN ' + QUOTENAME(name) + ' WITH PASSWORD = ''You <br />
+need to change me 11'' MUST_CHANGE, CHECK_POLICY = ON, CHECK_ <br />
+EXPIRATION = ON; <br />
+'<br />
+FROM<br />
+    sys.sql_logins<br />
+WHERE<br />
+    is_policy_checked = 0<br />
+ORDER BY<br />
+    name<br />
+<br />
+--查询是否有锁定的帐号<br />
+SELECT name FROM sys.sql_logins WHERE LOGINPROPERTY(name, N'isLocked') = 1 ORDER BY name;<br />
+<br />
+--禁用SA账号<br />
+--ALTER LOGIN [sa] DISABLE<br />
+<br />
+--重命名SA<br />
+--ALTER LOGIN [sa] WITH NAME=[换成不容易被猜到的名字]<br />
+<br />
+--重命名SA账号以后，查找原来的SA账号现在叫什么名字<br />
+SELECT * FROM sys.sql_logins WHERE principal_id = 1<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:09

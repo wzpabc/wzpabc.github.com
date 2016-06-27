@@ -1,0 +1,171 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>SQL复制表结构的通用存储过程 <br />
+ <br />
+-- Transfer对象的重要属性<br />
+<br />
+-- 1. 属性 <br />
+<br />
+属性名                            类型                描述<br />
+--------------------------------- ------------------- --------------------<br />
+CopyAllDefaults                Boolean    所有默认值<br />
+CopyAllObjects                 Boolean    所有对象<br />
+CopyAllRules                   Boolean    所有规则<br />
+CopyAllStoredProcedures        Boolean    所有存储过程<br />
+CopyAllTables                  Boolean    所有表<br />
+CopyAllTriggers                Boolean    所有触发器<br />
+CopyAllUserDefinedDatatypes    Boolean    所有用户自定义类型<br />
+CopyAllViews                   Boolean    所有视图<br />
+CopyData                       Boolean    所有数据<br />
+DestDatabase                   String     目标对象数据库<br />
+DestLogin                      String     目标数据库登陆用户名<br />
+DestPassword                   String     目标数据库登陆密码<br />
+DestServer                     String     目标服务器<br />
+DestUseTrustedConnection       Boolean    用户信任连接<br />
+DropDestObjectsFirst           Boolean    是否先删除目标对象<br />
+IncludeDependencies            Boolean    是否包含依靠对象<br />
+ScriptType                     Boolean    脚本类型 <br />
+<br />
+-- 2. 重要方法:  <br />
+<br />
+方法名称                    功能描述<br />
+--------------------------- --------------------------<br />
+AddObject                   增加对象<br />
+AddObjectByName             通过对象名称增加对象 <br />
+<br />
+if exists (select * from dbo.sysobjects where id = object_id(N'[dbo].[P_CopyDB]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)<br />
+drop procedure [dbo].[P_CopyDB]<br />
+GO<br />
+<br />
+/*-- 在 SQLServer 中使用SQLDMO.Transfer 实现数据迁移<br />
+    存储过程实现源数据库到目标数据库的对象和数据的复制<br />
+    要求源数据库和目标数据库在同一服务器<br />
+    如果是要实现不同服务器之间的复制，则需要增加验证信息<br />
+--邹建 2005.07(引用请保留此信息)--*/<br />
+<br />
+/*--调用示例<br />
+<br />
+    CREATE DATABASE test<br />
+    EXEC P_CopyDB @Source_DB='northwind',@Des_DB='test'<br />
+    DROP DATABASE test<br />
+--*/<br />
+CREATE PROCEDURE P_CopyDB     <br />
+@Des_DB      sysname,           --目标数据库<br />
+@Obj_Type    nvarchar(4000)=N'',--复制的对象类型，可以是下列字符串列表：<br />
+                                -- O 所有对象，D 默认值，R 规则，P 存储过程<br />
+                                -- T 表，TR 触发器，DT 用户定义数据类型<br />
+                                -- V 视图，DATA 数据，DEL 删除目标对象<br />
+@Source_DB   sysname=N'',       --源数据库<br />
+@ServerName  sysname=N'',       --服务器名<br />
+@UserName    sysname=N'',       --用户名，不指定则表示使用 Windows 身份登录<br />
+@pwd         sysname=N''        --密码 <br />
+AS<br />
+SET NOCOUNT ON<br />
+DECLARE @srvid int,@Dbid int,@S_dbid int,@D_dbid int,@TransferID int,<br />
+    @err int,@src varchar(255), @desc varchar(255)<br />
+<br />
+IF ISNULL(@ServerName,N'')=N'' SET @ServerName=@@SERVERNAME<br />
+IF ISNULL(@Source_DB,N'')=N'' SET @Source_DB=DB_NAME() <br />
+<br />
+--创建sqldmo对象·<br />
+EXEC @err=sp_oacreate 'sqldmo.sqlserver',@srvid OUT<br />
+IF @err<>0 GOTO lb_Err<br />
+<br />
+--连接服务器<br />
+IF ISNULL(@UserName,N'')=N'' --使用 Windows 身份登录<br />
+BEGIN<br />
+    EXEC @err=sp_oasetproperty @srvid,'loginsecure',-1<br />
+    IF @err<>0 GOTO lb_Err<br />
+<br />
+    EXEC @err=sp_oamethod @srvid,'connect',NULL,@servername<br />
+END<br />
+ELSE<br />
+    EXEC @err=sp_oamethod @srvid,'connect',NULL,@servername,@UserName,@pwd<br />
+<br />
+IF @err<>0 GOTO lb_Err<br />
+<br />
+--获取数据库集<br />
+EXEC @err=sp_oagetproperty @srvid,'databases',@Dbid OUT<br />
+IF @err<>0 GOTO lb_Err<br />
+<br />
+--选择源数据库    <br />
+EXEC @err=sp_oamethod @Dbid,'item',@S_dbid OUT,@Source_DB<br />
+IF @err<>0 GOTO lb_Err<br />
+<br />
+--选择目标数据库    <br />
+EXEC @err=sp_oamethod @Dbid,'item',@D_dbid OUT,@Des_DB<br />
+IF @err<>0 GOTO lb_Err<br />
+<br />
+--设置复制的对象<br />
+EXEC @err=sp_oacreate 'SQLDMO.Transfer',@TransferID OUT<br />
+IF @err<>0 GOTO lb_Err<br />
+<br />
+--设置目标服务器信息<br />
+EXEC @err=sp_oasetproperty  @TransferID,'DestServer',@ServerName<br />
+IF @err<>0 GOTO lb_Err<br />
+<br />
+  --设置连接用户<br />
+IF ISNULL(@UserName,N'')=N'' --使用 Windows 身份登录<br />
+BEGIN<br />
+    EXEC @err=sp_oasetproperty @TransferID,'DestUseTrustedConnection',1<br />
+    IF @err<>0 GOTO lb_Err<br />
+END<br />
+ELSE<br />
+BEGIN<br />
+    EXEC @err=sp_oasetproperty @TransferID,'DestLogin',@UserName<br />
+    IF @err<>0 GOTO lb_Err<br />
+<br />
+    EXEC @err=sp_oasetproperty @TransferID,'DestPassword',@pwd<br />
+    IF @err<>0 GOTO lb_Err<br />
+END<br />
+<br />
+  --设置复制对象信息<br />
+EXEC @err=sp_oasetproperty @TransferID,'DestDatabase',@Des_DB<br />
+IF @err<>0 GOTO lb_Err <br />
+<br />
+DECLARE tb CURSOR FAST_FORWARD LOCAL<br />
+FOR<br />
+SELECT Name FROM(<br />
+    SELECT KeyWord=N',D,',   Name=N'CopyAllDefaults' UNION ALL<br />
+    SELECT KeyWord=N',O,',   Name=N'CopyAllObjects' UNION ALL<br />
+    SELECT KeyWord=N',R,',   Name=N'CopyAllRules' UNION ALL<br />
+    SELECT KeyWord=N',P,',   Name=N'CopyAllStoredProcedures' UNION ALL<br />
+    SELECT KeyWord=N',T,',   Name=N'CopyAllTables' UNION ALL<br />
+    SELECT KeyWord=N',TR,',  Name=N'CopyAllTriggers' UNION ALL<br />
+    SELECT KeyWord=N',DT,',  Name=N'CopyAllUserDefinedDatatypes' UNION ALL<br />
+    SELECT KeyWord=N',V,',   Name=N'CopyAllViews' UNION ALL<br />
+    SELECT KeyWord=N',DATA,',Name=N'CopyData' UNION ALL<br />
+    SELECT KeyWord=N',DEL,', Name=N'DropDestObjectsFirst'<br />
+)A WHERE CHARINDEX(KeyWord,<br />
+        CASE WHEN ISNULL(@Obj_Type,N'')='' THEN ',O,DATA,' ELSE @Obj_Type END)>0<br />
+OPEN tb<br />
+FETCH tb INTO @src<br />
+WHILE @@FETCH_STATUS=0<br />
+BEGIN<br />
+    EXEC @err=sp_oasetproperty @TransferID,@src,1<br />
+    IF @err<>0 GOTO lb_Err<br />
+    FETCH tb INTO @src<br />
+END<br />
+CLOSE tb<br />
+DEALLOCATE tb<br />
+<br />
+--复制对象<br />
+EXEC @err=sp_oamethod @S_dbid,'Transfer',null,@TransferID<br />
+IF @err<>0 GOTO lb_Err<br />
+<br />
+--结束<br />
+SET @err=0<br />
+GOTO lb_Exit<br />
+<br />
+--错误处理<br />
+lb_Err:<br />
+    EXEC sp_oageterrorinfo NULL, @src OUT, @desc OUT <br />
+    RAISERROR(N'错误编号 %#x, 错误源 "%s", 错误描述 "%s"',16,1,@err,@src,@desc)<br />
+    RETURN -1<br />
+<br />
+lb_Exit:<br />
+    EXEC sp_OADestroy @Dbid  <br />
+    EXEC sp_OADestroy @srvid <br />
+    EXEC sp_OADestroy @TransferID <br />
+    RETURN @err<br />
+GO <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:31

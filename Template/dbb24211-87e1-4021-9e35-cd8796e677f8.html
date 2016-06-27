@@ -1,0 +1,30 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>declare   @maxNumber   int,   --随机数最大值 <br />
+   @minNumber   int,   --随机数最小值 <br />
+                  @rows   int               --要取得的行数   <br />
+select   @maxNumber=10000, @minNumber=10000, <br />
+                @rows=10   <br />
+    <br />
+set   rowcount   @rows   <br />
+    <br />
+select   distinct   '1234 4567 '+convert(varchar,ID)+' '+convert(varchar,ID)+' '+convert(varchar,ID)+' '+convert(varchar,ID)   as   'B'   <br />
+from   (    <br />
+                select   convert(int,rand(checksum(newid()))*@minNumber)   as   ID   <br />
+                from   syscolumns,sysobjects   <br />
+            )t   <br />
+    <br />
+set   rowcount   0 <br />
+-----------------------------------------------------------------------<br />
+declare     @num1     int ,@num2     int ,@num3     int ,@num4     int   <br />
+set @num1=rand(abs(convert(int,checksum(newid()))))*10000<br />
+set @num2=rand(abs(convert(int,checksum(newid()))))*10000<br />
+set @num3=rand(abs(convert(int,checksum(newid()))))*10000<br />
+set @num4=rand(abs(convert(int,checksum(newid()))))*10000   <br />
+select   convert(varchar(100),@num1)+' '+convert(varchar(100),@num2)+' '+convert(varchar(100),@num3)+' '+convert(varchar(100),@num4)<br />
+---------------------------------------------------------------------------<br />
+declare @r1 numeric (15,0),@r2 numeric (15,0)<br />
+SELECT @r1=RAND( (DATEPART(mm, GETDATE()) * 100000 )<br />
+           + (DATEPART(ss, GETDATE()) * 1000 )<br />
+           + DATEPART(ms, GETDATE()) )*10000<br />
+print @r1<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:12

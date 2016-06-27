@@ -1,0 +1,145 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>服务器配置选项<br />
+--启动AWE<br />
+sp_configure 'show advanced options',1<br />
+reconfigure<br />
+go<br />
+sp_configure 'awe enable',1--启动AWE选项，用于支持超过4G内存 具体用法见笔记三<br />
+go <br />
+sp_configure 'show advanced options',0<br />
+reconfigure<br />
+go<br />
+<br />
+--指定游标集中的行数<br />
+sp_configure 'show advanced options',1<br />
+reconfigure<br />
+go<br />
+sp_configure 'cursor threshold'--指定游标集中的行数，超过此行数，将异步生成游标键集<br />
+go <br />
+sp_configure 'show advanced options',0<br />
+reconfigure<br />
+go<br />
+/*配置选项 'show advanced options' 已从 0 更改为 1。请运行 RECONFIGURE 语句进行安装。<br />
+name                                minimum     maximum     config_value run_value<br />
+----------------------------------- ----------- ----------- ------------ -----------<br />
+cursor threshold                    -1          2147483647  -1           -1<br />
+<br />
+配置选项 'show advanced options' 已从 1 更改为 0。请运行 RECONFIGURE 语句进行安装。*/<br />
+<br />
+--指定全文索引列的默认语言值<br />
+sp_configure 'show advanced options',1<br />
+reconfigure<br />
+go<br />
+sp_configure 'default full-text language'--2052代表简体中文，具体的查询联机丛书<br />
+go <br />
+sp_configure 'show advanced options',0<br />
+reconfigure<br />
+go<br />
+/*name                                minimum     maximum     config_value run_value<br />
+----------------------------------- ----------- ----------- ------------ -----------<br />
+default full-text language          0           2147483647  2052         2052*/<br />
+<br />
+--控制是否让触发器返回结果集<br />
+sp_configure 'show advanced options',1<br />
+reconfigure<br />
+go<br />
+sp_configure 'disallow results from triggers',1--1代表on<br />
+go <br />
+sp_configure 'disallow results from triggers',0--0代表off<br />
+go <br />
+sp_configure 'show advanced options',0<br />
+reconfigure<br />
+go<br />
+/*配置选项 'disallow results from triggers' 已从 1 更改为 1。请运行 RECONFIGURE 语句进行安装。<br />
+配置选项 'disallow results from triggers' 已从 1 更改为 0。请运行 RECONFIGURE 语句进行安装。*/<br />
+<br />
+--控制最初为创建索引分配的最大内存量<br />
+sp_configure 'index create memory', 4096<br />
+GO<br />
+<br />
+--设置可用的锁的最大个数<br />
+sp_configure 'show advanced options',1<br />
+reconfigure<br />
+go<br />
+sp_configure 'locks'---要设置的话在后面加',数字'<br />
+go <br />
+sp_configure 'show advanced options',0<br />
+reconfigure<br />
+go<br />
+/*name                                minimum     maximum     config_value run_value<br />
+----------------------------------- ----------- ----------- ------------ -----------<br />
+locks                               5000        2147483647  0            0<br />
+*/<br />
+<br />
+--设置SQL进程可使用的工作线程数<br />
+sp_configure 'show advanced options',1<br />
+reconfigure<br />
+go<br />
+sp_configure 'max worker threads'--要设置的话在后面加',数字'<br />
+go <br />
+sp_configure 'show advanced options',0<br />
+reconfigure<br />
+go<br />
+/*name                                minimum     maximum     config_value run_value<br />
+----------------------------------- ----------- ----------- ------------ -----------<br />
+max worker threads                  128         32767       0            0<br />
+*/<br />
+<br />
+--指定一个查询在超时前等待所需资源的时间<br />
+sp_configure 'query wait',数字<br />
+go<br />
+<br />
+--指定在SQL SERVER超时之前远程操作可以持续的时间<br />
+sp_configure 'remote query  timeout',数字<br />
+go<br />
+<br />
+--是否允许运行系统存储过程xp_cmdshell<br />
+sp_configure 'show advanced options',1<br />
+reconfigure<br />
+go<br />
+sp_configure 'xp_cmdshell',1<br />
+reconfigure<br />
+go<br />
+sp_configure 'show advanced options',0<br />
+reconfigure<br />
+go<br />
+<br />
+--从运行SQL SERVER实例的本地或远程服务器上控制存储过程的执行<br />
+sp_configure 'show advanced options',1<br />
+reconfigure<br />
+go<br />
+sp_configure 'remote access',1 --1表示允许<br />
+reconfigure<br />
+go<br />
+sp_configure 'remote access',0 --0表示禁止<br />
+reconfigure<br />
+go<br />
+sp_configure 'show advanced options',0<br />
+reconfigure<br />
+go<br />
+<br />
+---更多的查看联机丛书<br />
+<br />
+--启动，暂停和停止本地的SQL SERVER 服务<br />
+net start MSSQLSERVER  --启动<br />
+net pause MSSQLSERVER  --暂停<br />
+net continue MSSQLSERVER  ---继续被停止的服务<br />
+net stop MSSQLSERVER --停止<br />
+<br />
+<br />
+--查询服务器配置选项信息<br />
+select * from sys.configurations<br />
+go<br />
+--得到的结果中<br />
+configuration_id --配置选项的唯一ID<br />
+name             --配置选项的名称<br />
+value            --配置选项的值<br />
+minimum          --配置选项的最小值<br />
+maximum          --配置选项的最大值<br />
+value_in_use     --配置选项当前使用的运行值<br />
+description      --配置选项的说明<br />
+is_dynamic       --等于1时表示需要执行reconfiguration语句才能生效的变量<br />
+is_anvanced      --等于1时表示需要执行show advanced语句才能生效的变量<br />
+<br />
+--也可以使用sp_configure查询服务器配置选项信息，只是参数有所不同，具体查看联机丛书<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:12

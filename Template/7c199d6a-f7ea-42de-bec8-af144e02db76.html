@@ -1,0 +1,121 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>create table #t(a int,b int,c int,d int,e int) <br />
+insert into #t values(1,2,3,4,5) <br />
+insert into #t values(1,2,3,4,6) <br />
+insert into #t values(1,2,3,4,7) <br />
+insert into #t values(1,2,3,4,8) <br />
+insert into #t values(1,3,3,4,5) <br />
+insert into #t values(1,3,3,4,6) <br />
+insert into #t values(1,3,3,4,8) <br />
+insert into #t values(1,3,3,4,7) <br />
+<br />
+insert into #t values(2,2,2,4,5) <br />
+insert into #t values(2,2,3,4,6) <br />
+insert into #t values(2,2,4,4,7) <br />
+insert into #t values(2,2,5,4,8) <br />
+insert into #t values(2,3,6,4,5) <br />
+insert into #t values(2,3,3,4,6) <br />
+insert into #t values(2,3,3,4,8) <br />
+insert into #t values(2,3,3,4,7)<br />
+<br />
+select <br />
+  case when grouping(a)=1 then '合计' else cast(a as varchar) end a, b, sum(c) as c,sum(d) as d,sum(e) as e<br />
+from <br />
+  #t <br />
+group by <br />
+  a,b <br />
+with rollup <br />
+  having grouping(b)=0 or grouping(a)=1<br />
+<br />
+/*a                              b           c           d           e           <br />
+------------------------------ ----------- ----------- ----------- ----------- <br />
+1                              2           12          16          26<br />
+1                              3           12          16          26<br />
+2                              2           14          16          26<br />
+2                              3           15          16          26<br />
+合计                             NULL        53          64          104<br />
+<br />
+（所影响的行数为 5 行）<br />
+<br />
+select <br />
+  case when grouping(a)=1 then '合计' else cast(a as varchar) end a, b, c, sum(d) as d,sum(e) as e<br />
+from <br />
+  #t <br />
+group by <br />
+  a,b,c <br />
+with rollup <br />
+  having grouping(c)=0 or grouping(a)=1 <br />
+a                              b           c           d           e           <br />
+------------------------------ ----------- ----------- ----------- ----------- <br />
+1                              2           3           16          26<br />
+1                              3           3           16          26<br />
+2                              2           2           4           5<br />
+2                              2           3           4           6<br />
+2                              2           4           4           7<br />
+2                              2           5           4           8<br />
+2                              3           3           12          21<br />
+2                              3           6           4           5<br />
+合计                             NULL        NULL        64          104<br />
+<br />
+（所影响的行数为 9 行）<br />
+<br />
+<br />
+select <br />
+  case when grouping(a)=1 then '合计' else cast(a as varchar) end a, b, <br />
+  case when grouping(c)=1 and grouping(b)=0 then '小计' else cast(c as varchar) end c, <br />
+  sum(d) as d,sum(e) as e<br />
+from <br />
+  #t <br />
+group by <br />
+  a,b,c <br />
+with rollup <br />
+  having grouping(a)=1 or grouping(b)=0 <br />
+<br />
+a                              b           c                              d           e           <br />
+------------------------------ ----------- ------------------------------ ----------- ----------- <br />
+1                              2           3                              16          26<br />
+1                              2           小计                             16          26<br />
+1                              3           3                              16          26<br />
+1                              3           小计                             16          26<br />
+2                              2           2                              4           5<br />
+2                              2           3                              4           6<br />
+2                              2           4                              4           7<br />
+2                              2           5                              4           8<br />
+2                              2           小计                             16          26<br />
+2                              3           3                              12          21<br />
+2                              3           6                              4           5<br />
+2                              3           小计                             16          26<br />
+合计                             NULL        NULL                           64          104<br />
+<br />
+（所影响的行数为 13 行）<br />
+<br />
+<br />
+select <br />
+   case when grouping(a)=1 then '合计' else cast(a as varchar) end a, <br />
+   case when grouping(b)=1 and grouping(a)=0 then '小计' else cast(b as varchar) end b, sum(c) as c, sum(d) as d,sum(e) as e from #t <br />
+group by <br />
+   a,b,c <br />
+with rollup <br />
+   having grouping(a)=1 or grouping(b)=1 or grouping(c)=0<br />
+<br />
+drop table #t<br />
+<br />
+a                              b                              c           d           e           <br />
+------------------------------ ------------------------------ ----------- ----------- ----------- <br />
+1                              2                              12          16          26<br />
+1                              3                              12          16          26<br />
+1                              小计                             24          32          52<br />
+2                              2                              2           4           5<br />
+2                              2                              3           4           6<br />
+2                              2                              4           4           7<br />
+2                              2                              5           4           8<br />
+2                              3                              9           12          21<br />
+2                              3                              6           4           5<br />
+2                              小计                             29          32          52<br />
+合计                             NULL                           53          64          104<br />
+<br />
+（所影响的行数为 11 行）<br />
+<br />
+*/<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:09

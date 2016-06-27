@@ -1,0 +1,158 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>CREATE PROC sp_ValueSearch<br />
+@value sql_variant,  --要搜索的数据<br />
+@precision bit=1     --1=仅根据sql_variant中的数据类型查找对应类型的数据列.<>1,查询兼容的所有列,字符数据使用like匹配<br />
+AS<br />
+SET NOCOUNT ON<br />
+IF @value IS NULL RETURN<br />
+<br />
+--数据类型处理<br />
+SELECT xtype INTO #t FROM systypes<br />
+WHERE name=SQL_VARIANT_PROPERTY(@value,N'BaseType')<br />
+<br />
+--扩展数据类型及查询处理语句<br />
+DECLARE @sql nvarchar(4000),@sql1 nvarchar(4000)<br />
+IF @precision=1<br />
+    SET @sql=CASE SQL_VARIANT_PROPERTY(@value,N'BaseType')<br />
+        WHEN N'text' THEN N' LIKE N''%''+CAST(@value as varchar(8000))+''%'''<br />
+        WHEN N'ntext' THEN N' LIKE ''%''+CAST(@value as nvarchar(4000))+''%'''<br />
+        ELSE N'=@value' END<br />
+ELSE<br />
+BEGIN<br />
+    SET @sql=CAST(SQL_VARIANT_PROPERTY(@value,N'BaseType') as sysname)<br />
+    IF @sql LIKE N'%char' or @sql LIKE N'%text'<br />
+    BEGIN<br />
+        INSERT #t SELECT xtype FROM systypes<br />
+        WHERE name LIKE N'%char' or name LIKE N'%text'<br />
+        SELECT @sql=N' LIKE N''%''+CAST(@value as '<br />
+            +CASE <br />
+                WHEN LEFT(@sql,1)=N'n' THEN ' nvarchar(4000)'<br />
+                ELSE 'varchar(8000)' END<br />
+            +N')+N''%'''<br />
+    END<br />
+    ELSE IF @sql LIKE N'%datetime'<br />
+    BEGIN<br />
+        INSERT #t SELECT xtype FROM systypes<br />
+        WHERE name LIKE N'%datetime'<br />
+        SET @sql=N'=@value'    <br />
+    END<br />
+    ELSE IF @sql LIKE N'%int' <br />
+        OR @sql LIKE N'%money' <br />
+        OR @sql IN(N'real',N'float',N'decimal',N'numeric')<br />
+    BEGIN<br />
+        INSERT #t SELECT xtype FROM systypes<br />
+        WHERE name LIKE N'%int' <br />
+            OR name LIKE N'%money' <br />
+            OR name IN(N'real',N'float',N'decimal')<br />
+        SET @sql=N'=@value'    <br />
+    END<br />
+    ELSE<br />
+        SET @sql=N'=@value'<br />
+END<br />
+--保存结果的临时表<br />
+CREATE TABLE #(TableName sysname,FieldName sysname,Type sysname,SQL nvarchar(4000))<br />
+<br />
+DECLARE tb CURSOR LOCAL<br />
+FOR<br />
+SELECT N'SELECT * FROM '<br />
+    +QUOTENAME(USER_NAME(o.uid))<br />
+    +N'.'+QUOTENAME(o.name)<br />
+    +N' WHERE '+QUOTENAME(c.name)<br />
+    +@sql,<br />
+    N'INSERT # VALUES(N'+QUOTENAME(o.name,N'''')<br />
+    +N',N'+QUOTENAME(c.name,N'''')<br />
+    +N',N'+QUOTENAME(QUOTENAME(t.name)+CASE <br />
+        WHEN t.name IN (N'decimal',N'numeric')<br />
+        THEN N'('+CAST(c.prec as varchar)+N','+CAST(c.scale as varchar)+N')'<br />
+        WHEN t.name=N'float'<br />
+            OR t.name like N'%char'<br />
+            OR t.name like N'%binary'<br />
+        THEN N'('+CAST(c.prec as varchar)+N')'<br />
+        ELSE N'' END,N'''')<br />
+    +N',@sql)'<br />
+FROM sysobjects o,syscolumns c,systypes t,#t tt<br />
+WHERE o.id=c.id<br />
+    AND c.xusertype=t.xusertype<br />
+    AND t.xtype=tt.xtype<br />
+    AND OBJECTPROPERTY(o.id,N'IsUserTable')=1<br />
+<br />
+OPEN tb<br />
+FETCH tb INTO @sql,@sql1<br />
+WHILE @@FETCH_STATUS=0<br />
+BEGIN<br />
+    SET @sql1=N'IF EXISTS('+@sql+N') '+@sql1<br />
+    EXEC sp_executesql @sql1,N'@value sql_variant,@sql nvarchar(4000)',@value,@sql<br />
+    FETCH tb INTO @sql,@sql1<br />
+END<br />
+CLOSE tb<br />
+DEALLOCATE tb<br />
+SELECT * FROM #<br />
+<br />
+exec sp_ValueSearch '要搜索的值',1 --1或不输入（即默认值1）精确匹配<br />
+exec sp_ValueSearch '要搜索的值',0 --不等于1，模糊匹配<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+Create   PROC xb_GetTableNameAndColNameForValue<br />
+	@value varchar(200)<br />
+AS<br />
+--求test库中包含值为@value的表和列名<br />
+<br />
+--存储表名和列名<br />
+IF object_id('tabss') IS NOT NULL <br />
+	exec('drop table tabss')<br />
+CREATE TABLE Tabss(id int identity(1,1),tabname varchar(100),colName varchar(100))<br />
+<br />
+--查询某表某列是否包含某个值<br />
+IF object_id('ysgs') IS NOT NULL<br />
+	exec('drop proc ysgs')<br />
+exec('create PROC ysgs(@tab varchar(100),@col varchar(100))<br />
+AS<br />
+exec(''select 1 from ''+@tab+'' where ''+@col+'' like ''''%'+@value+'%'''''')')<br />
+<br />
+--将结果存入tabss表中<br />
+EXEC master.dbo.xp_execresultset 'SELECT ''exec ysgs ''''''+object_name(id)+'''''',''''''+name+'''''';if @@rowcount>0  insert tabss (colname,tabname)values(''''''+name+'''''',''''''+object_name(id)+'''''')'' FROM syscolumns s WHERE xtype in(SELECT xtype FROM systypes s2 WHERE name in(''char'',''varchar'',''nchar'',''nvarchar''))<br />
+AND id in(SELECT id FROM sysobjects s2 WHERE xtype=''u'')',N'test'<br />
+<br />
+<br />
+GO<br />
+<br />
+<br />
+/*调用<br />
+exec xb_GetTableNameAndColNameForValue 'aa_1'<br />
+SELECT * FROM tabss<br />
+*/<br />
+<br />
+<br />
+Create  PROC  getFieldAll(@t VARCHAR(100),@v VARCHAR(20), @f VARCHAR(1000) OUT )<br />
+AS <br />
+BEGIN    <br />
+    DECLARE @name VARCHAR(40)<br />
+    DECLARE @S NVARCHAR(1000),@C INT     <br />
+    SET @f='(2006)德旌法协执字第325-1号'<br />
+    <br />
+    EXEC('declare cur cursor for select name from syscolumns where id=object_id('''+@t+''') and  xtype in(SELECT xtype FROM systypes s2 WHERE name in(''char'',''varchar'',''nchar'',''nvarchar''))')<br />
+    <br />
+    OPEN cur <br />
+    FETCH NEXT FROM cur INTO @name<br />
+    WHILE @@FETCH_STATUS=0<br />
+    BEGIN<br />
+        SET @S='select @s=count(1) from '+@t+' where ['+@name +'] like ''%'+@v+'%'''<br />
+        EXEC sp_executesql @S,N'@s int out',@C OUT <br />
+        IF @C>0<br />
+            SET @f=@f+@name+','        <br />
+        FETCH NEXT FROM cur INTO @name<br />
+    END <br />
+    CLOSE cur<br />
+    DEALLOCATE cur <br />
+    RETURN <br />
+END   <br />
+<br />
+go<br />
+EXEC sp_msforeachtable <br />
+        @command1 = N'declare @l varchar(1000); exec getFieldAll ''?'',''aa_1'',@l out;if @l<>'''' select ''?'' 表名,@l 列名<br />
+        '<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:15

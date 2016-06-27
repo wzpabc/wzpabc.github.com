@@ -1,0 +1,221 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>create proc sp_backupdatabase<br />
+ @bak_path nvarchar(4000)=''       --备份路径;<br />
+,@baktype int = null               --备份类型为全备,1为差异备,2为日志备份<br />
+,@type int = null                  --设置需要备份的库,0为全部库,1为系统库,2为全部用户库,3为指定库,4为排除指定库;<br />
+,@dbnames nvarchar(4000)=''        --需要备份或排除的数据库，用,隔开，当@type=3或4时生效<br />
+,@overdueDay int = null            --设置过期天数，默认天;<br />
+,@compression int =0               --是否采用sql2008的压缩备份,0为否,1为采用压缩<br />
+as<br />
+--sql server 2005/2008备份/删除过期备份T-sql 版本v1.0<br />
+/*<br />
+author:perfectaction<br />
+date  :2009.04<br />
+desc  :适用于sql2005/2008备份，自动生成库文件夹，可以自定义备份类型和备份库名等<br />
+      可以自定义备份过期的天数<br />
+              删除过期备份功能不会删除最后一次备份，哪怕已经过期<br />
+              如果某库不再备份，那么也不会再删除之前过期的备份 <br />
+       如有错误请指正，谢谢.<br />
+*/<br />
+<br />
+set nocount on<br />
+--开启xp_cmdshell支持<br />
+exec sp_configure 'show advanced options', 1<br />
+reconfigure with override<br />
+exec sp_configure 'xp_cmdshell', 1 <br />
+reconfigure with override<br />
+exec sp_configure 'show advanced options', 0<br />
+reconfigure with override<br />
+print char(13)+'------------------------'<br />
+<br />
+--判断是否填写路径<br />
+if isnull(@bak_path,'')=''<br />
+    begin<br />
+        print('error:请指定备份路径')<br />
+        return <br />
+    end<br />
+<br />
+--判断是否指定需要备份的库<br />
+if isnull(ltrim(@baktype),'')=''<br />
+    begin<br />
+        print('error:请指定备份类型aa:0为全备,1为差异备,2为日志备份')<br />
+        return <br />
+    end<br />
+else<br />
+    begin<br />
+        if @baktype not between 0 and 2<br />
+        begin<br />
+            print('error:指定备份类型只能为,1,2:  0为全备,1为差异备,2为日志备份')<br />
+            return <br />
+        end<br />
+    end<br />
+--判断是否指定需要备份的库<br />
+if isnull(ltrim(@type),'')=''<br />
+    begin<br />
+        print('error:请指定需要备份的库,0为全部库,1为系统库,2为全部用户库,3为指定库,4为排除指定库')<br />
+        return <br />
+    end<br />
+else<br />
+    begin<br />
+        if @type not between 0 and 4<br />
+        begin<br />
+            print('error:请指定需要备份的库,0为全部库,1为系统库,2为全部用户库,3为指定库,4为排除指定库')<br />
+            return <br />
+        end<br />
+    end<br />
+<br />
+--判断指定库或排除库时，是否填写库名<br />
+if @type>2<br />
+    if @dbnames=''<br />
+    begin<br />
+        print('error:备份类型为'+ltrim(@type)+'时，需要指定@dbnames参数')<br />
+        return <br />
+    end<br />
+<br />
+--判断指定指定过期时间<br />
+if isnull(ltrim(@overdueDay),'')=''<br />
+begin<br />
+    print('error:必须指定备份过期时间,单位为天,0为永不过期')<br />
+    return <br />
+end<br />
+<br />
+--判断是否支持压缩<br />
+if @compression=1 <br />
+    if charindex('2008',@@version)=0 or charindex('Enterprise',@@version)=0<br />
+    begin<br />
+        print('error:压缩备份只支持sql2008企业版')<br />
+        return <br />
+    end<br />
+<br />
+--判断是否存在该磁盘<br />
+declare @drives table(drive varchar(1),[size] varchar(20))<br />
+insert into @drives exec('master.dbo.xp_fixeddrives')<br />
+if not exists(select 1 from @drives where drive=left(@bak_path,1))<br />
+    begin<br />
+        print('error:不存在该磁盘:'+left(@bak_path,1))<br />
+        return <br />
+    end<br />
+<br />
+--格式化参数<br />
+select @bak_path=rtrim(ltrim(@bak_path)),@dbnames=rtrim(ltrim(@dbnames))<br />
+if right(isnull(@bak_path,''),1)!='\' set @bak_path=@bak_path+'\'<br />
+if isnull(@dbnames,'')!='' set @dbnames = ','+@dbnames+','<br />
+set @dbnames=replace(@dbnames,' ','')<br />
+<br />
+--定义变量<br />
+declare @bak_sql nvarchar(max),@del_sql nvarchar(max),@i int,@maxid int<br />
+declare @dirtree_1 table (id int identity(1,1) primary key,subdirectory nvarchar(600),depth int,files int)<br />
+declare @dirtree_2 table (id int identity(1,1) primary key,subdirectory nvarchar(600),depth int,files int,<br />
+dbname varchar(300),baktime datetime,isLastbak int)<br />
+declare @createfolder nvarchar(max),@delbackupfile nvarchar(max),@delbak nvarchar(max)<br />
+<br />
+--获取需要备份的库名--------------------start<br />
+declare @t table(id int identity(1,1) primary key,name nvarchar(max))<br />
+declare @sql nvarchar(max)<br />
+set @sql = 'select name from sys.databases where state=0 and name!=''tempdb''  '<br />
+    + case when @baktype=2 then ' and recovery_model!=3 ' else '' end<br />
+    + case @type when 0 then 'and 1=1'<br />
+        when 1 then 'and database_id<=4'<br />
+        when 2 then 'and database_id>4'<br />
+        when 3 then 'and charindex('',''+Name+'','','''+@dbnames+''')>0'<br />
+        when 4 then 'and charindex('',''+Name+'','','''+@dbnames+''')=0 and database_id>4'<br />
+        else '1>2' end<br />
+insert into @t exec(@sql)<br />
+--获取需要备份的库名---------------------end<br />
+<br />
+--获取需要创建的文件夹------------------start<br />
+insert into @dirtree_1 exec('master.dbo.xp_dirtree '''+@bak_path+''',0,1')<br />
+select @createfolder=isnull(@createfolder,'')+'exec master.dbo.xp_cmdshell ''md '+@bak_path+''+name+''',no_output '+char(13)<br />
+from @t as a left join @dirtree_1 as b on a.name=b.subdirectory and b.files=0 and depth=1 where  b.id is null<br />
+--获取需要创建的文件夹-------------------end<br />
+<br />
+<br />
+--生成处理过期备份的sql语句-------------start<br />
+if @overdueDay>0<br />
+begin<br />
+    insert into @dirtree_2(subdirectory,depth,files) exec('master.dbo.xp_dirtree '''+@bak_path+''',0,1')<br />
+    if @baktype =0 <br />
+    delete from @dirtree_2 where depth=1 or files=0 or charindex('_Full_bak_',subdirectory)=0 <br />
+    if @baktype =1 <br />
+    delete from @dirtree_2 where depth=1 or files=0 or charindex('_Diff_bak_',subdirectory)=0 <br />
+    if @baktype=2<br />
+    delete from @dirtree_2 where depth=1 or files=0 or charindex('_Log_bak_',subdirectory)=0 <br />
+    if exists(select 1 from @dirtree_2)<br />
+    delete from @dirtree_2 where isdate(<br />
+            left(right(subdirectory,19),8)+' '+ substring(right(subdirectory,20),11,2) + ':' +  <br />
+            substring(right(subdirectory,20),13,2) +':'+substring(right(subdirectory,20),15,2) <br />
+            )=0<br />
+    if exists(select 1 from @dirtree_2)<br />
+    update @dirtree_2 set dbname = case when @baktype=0 then left(subdirectory,charindex('_Full_bak_',subdirectory)-1)<br />
+        when @baktype=1 then left(subdirectory,charindex('_Diff_bak_',subdirectory)-1) <br />
+        when @baktype=2 then left(subdirectory,charindex('_Log_bak_',subdirectory)-1) <br />
+        else '' end    <br />
+        ,baktime=left(right(subdirectory,19),8)+' '+ substring(right(subdirectory,20),11,2) + ':' +  <br />
+            substring(right(subdirectory,20),13,2) +':'+substring(right(subdirectory,20),15,2) <br />
+    from @dirtree_2 as a<br />
+    delete @dirtree_2 from @dirtree_2 as a left join @t as b on b.name=a.dbname where b.id is null<br />
+    update @dirtree_2 set isLastbak= case when (select max(baktime) from @dirtree_2 where dbname=a.dbname)=baktime <br />
+    then 1 else 0 end from @dirtree_2 as a<br />
+    select @delbak=isnull(@delbak,'')+'exec master.dbo.xp_cmdshell ''del '+@bak_path+''+dbname+'\'<br />
+    +subdirectory+''',no_output '+char(13) from @dirtree_2 where isLastbak=0 and datediff(day,baktime,getdate())>@overdueDay<br />
+end<br />
+--生成处理过期备份的sql语句--------------end<br />
+<br />
+<br />
+<br />
+<br />
+begin try<br />
+    print(@createfolder)  --创建备份所需文件夹<br />
+    exec(@createfolder)   --创建备份所需文件夹<br />
+end try<br />
+begin catch<br />
+    print 'err:'+ltrim(error_number())<br />
+    print 'err:'+error_message()<br />
+    return<br />
+end catch<br />
+<br />
+<br />
+select @i=1 ,@maxid=max(id) from @t<br />
+while @i<=@maxid<br />
+begin<br />
+    select @bak_sql=''+char(13)+'backup '+ case when @baktype=2 then 'log ' else 'database ' end<br />
+            +quotename(Name)+' to disk='''+@bak_path + Name+'\'+<br />
+            Name+ case when @baktype=0 then '_Full_bak_' when @baktype=1 then '_Diff_bak_' <br />
+            when @baktype=2 then '_Log_bak_' else null end + case when @compression=1 then 'compression_' else '' end+<br />
+            replace(replace(replace(convert(varchar(20),getdate(),120),'-',''),' ','_'),':','')+<br />
+            case when @baktype=2 then '.trn' when @baktype=1 then '.dif' else '.bak' end +'''' <br />
+            + case when @compression=1 or @baktype=1 then ' with ' else '' end<br />
+            + case when @compression=1 then 'compression,' else '' end<br />
+            + case when @baktype=1 then 'differential,' else '' end<br />
+            + case when @compression=1 or @baktype=1 then ' noformat' else '' end <br />
+    from @t where id=@i<br />
+    set @i=@i+1<br />
+    begin try<br />
+        print(@bak_sql)--循环执行备份<br />
+        exec(@bak_sql) --循环执行备份<br />
+    end try<br />
+    begin catch<br />
+        print 'err:'+ltrim(error_number())<br />
+        print 'err:'+error_message()<br />
+    end catch<br />
+end<br />
+<br />
+begin try<br />
+    print(@delbak)   --删除超期的备份<br />
+    exec(@delbak)    --删除超期的备份<br />
+end try<br />
+begin catch<br />
+    print 'err:'+ltrim(error_number())<br />
+    print 'err:'+error_message()<br />
+end catch<br />
+<br />
+<br />
+--关闭xp_cmdshell支持<br />
+--exec sp_configure 'show advanced options', 1<br />
+--reconfigure with override<br />
+--exec sp_configure 'xp_cmdshell', 1 <br />
+--reconfigure with override<br />
+--exec sp_configure 'show advanced options', 0<br />
+--reconfigure with override<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:31

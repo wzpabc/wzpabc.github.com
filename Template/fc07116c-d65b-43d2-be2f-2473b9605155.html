@@ -1,0 +1,88 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>1) 使用BCP导出整个表或视图。 <br />
+<br />
+BCP AdventureWorks.sales.currency out c:\currency1.txt -c -U"sa" -P"password" --使用密码连接 <br />
+<br />
+或 <br />
+<br />
+BCP AdventureWorks.sales.currency out c:\currency1.txt -c -T --使用信任连接 <br />
+<br />
+下面是上述命令执行后的输出结果 <br />
+<br />
+Starting copy... <br />
+105 rows copied. <br />
+Network packet size (bytes): 4096 <br />
+Clock Time (ms.) Total : 10 Average : (10500.00 rows per sec.) <br />
+<br />
+下面是currency1.txt的部分内容 <br />
+<br />
+AED Emirati Dirham 1998-06-01 00:00:00.000 <br />
+AFA Afghani 1998-06-01 00:00:00.000 <br />
+... ... ... <br />
+... ... ... <br />
+ZWD Zimbabwe Dollar 1998-06-01 00:00:00.000 <br />
+<br />
+在使用密码登录时需要将-U后的用户名和-P后的密码加上双引号。 <br />
+<br />
+注：BCP除了可以在控制台执行外，还可以通过调用SQL Server的一个系统存储过程xp_cmdshell以SQL语句的方式运行BCP。如上述第一条命令可改写为 <br />
+<br />
+EXEC master..xp_cmdshell 'BCP AdventureWorks.sales.currency out c:\currency1.txt -c -U"sa" -P"password"'  <br />
+执行xp_cmdshell后，返回信息以表的形式输出。为了可以方便地在SQL中执行BCP，下面的命令都使用xp_cmdshell执行BCP命令。 <br />
+<br />
+(2) 对要导出的表进行过滤。 <br />
+<br />
+BCP不仅可以接受表名或视图名做为参数，也可以接受SQL做为参数。通过SQL语句可以对要导出的表进行过滤，然后导出过滤后的记录。 <br />
+<br />
+EXEC master..xp_cmdshell 'BCP "SELECT TOP 20 * FROM AdventureWorks.sales.currency" queryout c:\currency2.txt -c -U"sa" -P"password"' <br />
+<br />
+BCP还可以通过简单地设置选项对导出的行进行限制。 <br />
+<br />
+EXEC master..xp_cmdshell 'BCP "SELECT TOP 20 * FROM AdventureWorks.sales.currency" queryout c:\currency2.txt -F 10 -L 13 -c -U"sa" -P"password"' <br />
+<br />
+这条命令使用了两个参数-F 10和-L 13，表示从SELECT TOP 20 * FROM AdventureWorks.sales.currency所查出来的结果中取第10条到13条记录进行导出。 <br />
+<br />
+3. 如何使用BCP导出格式文件 <br />
+<br />
+BCP不仅可以根据表、视图导入导出数据，还可以配合格式文件对导入导出数据进行限制。格式文件以纯文本文件形式存在，分为一般格式和xml格式。用户可以手工编写格式文件，也可以通过BCP命令根据表、视图自动生成格式文件。 <br />
+<br />
+EXEC master..xp_cmdshell 'BCP AdventureWorks.sales.currency format nul -f c:\currency_format1.fmt -c -T' <br />
+<br />
+上述命令将currency表的结构生成了一个格式文件currency_format1.fmt，下面是这个格式文件的内容。 <br />
+<br />
+9.0 <br />
+3 <br />
+1 SQLCHAR 0 6 "\t" 1 CurrencyCode SQL_Latin1_General_CP1_CI_AS <br />
+2 SQLCHAR 0 100 "\t" 2 Name SQL_Latin1_General_CP1_CI_AS <br />
+3 SQLCHAR 0 24 "\r\n" 3 ModifiedDate  <br />
+<br />
+这个格式文件记录了这个表的字段（共3个字段）类型、长度、字符和行分割符和字段名等信息。 <br />
+<br />
+BCP还可以通过-x选项生成xml格式的格式文件。 <br />
+<br />
+EXEC master..xp_cmdshell 'BCP AdventureWorks.sales.currency format nul -f c:\currency_format2.fmt -x -c -T'  <br />
+xml格式文件所描述的内容和普通格式文件所描述的内容完全一样，只是格式不同。 <br />
+<br />
+4. 如何使用BCP导入数据 <br />
+<br />
+BCP可以通过in命令将上面所导出的currency1.txt和currency2.txt再重新导入到数据库中，由于currency有主键，因此我们将复制一个和currency的结构完全一样的表。 <br />
+<br />
+SELECT TOP 0 * INTO AdventureWorks.sales.currency1 FROM AdventureWorks.sales.currency  <br />
+将数据导入到currency1表中 <br />
+<br />
+EXEC master..xp_cmdshell 'BCP AdventureWorks.sales.currency1 in c:\currency1.txt -c -T'  <br />
+导入数据也同样可以使用-F和-L选项来选择导入数据的记录行。 <br />
+<br />
+EXEC master..xp_cmdshell 'BCP AdventureWorks.sales.currency1 in c:\currency1.txt -c -F 10 -L 13 -T'  <br />
+在导入数据时可以根据已经存在的格式文件将满足条件的记录导入到数据库中，不满足则不导入。如上述的格式文件中的第三个字段的字符长度是24，如果某个文本文件中的相应字段的长度超过24，则这条记录将不被导入到数据库中，其它满足条件的记录正常导入。 <br />
+<br />
+使用普通的格式文件 <br />
+<br />
+EXEC master..xp_cmdshell 'BCP AdventureWorks.sales.currency1 in c:\currency1.txt -F 10 -L 13 -c -f c:\currency_format1.fmt -T'  <br />
+使用xml格式的格式文件 <br />
+<br />
+EXEC master..xp_cmdshell 'BCP AdventureWorks.sales.currency1 in c:\currency1.txt -F 10 -L 13 -c -x -f c:\currency_format2.fmt -T'  <br />
+<br />
+总结  <br />
+<br />
+BCP命令是SQL Server提供的一个快捷的数据导入导出工具。使用它不需要启动任何图形管理工具就能以高效的方式导入导出数据。当然，它也可以通过xp_cmdshell在SQL语句中执行，通过这种方式可以将其放到客户端程序中（如delphi、c#等）运行，这也是使客户端程序具有数据导入导出功能的方法之一。 <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:31

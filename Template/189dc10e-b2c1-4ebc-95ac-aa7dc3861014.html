@@ -1,0 +1,68 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>Create  function fun_getPY <br />
+ ( <br />
+    @str nvarchar(4000) <br />
+ ) <br />
+returns nvarchar(4000) <br />
+as <br />
+begin <br />
+  declare @word nchar(1),@PY nvarchar(4000) <br />
+<br />
+  set @PY='' <br />
+<br />
+  while len(@str)>0 <br />
+  begin <br />
+    set @word=left(@str,1) <br />
+<br />
+    --假如非汉字字符，返回原字符 <br />
+    set @PY=@PY+(case when unicode(@word) between 19968 and 19968+20901 <br />
+               then (  <br />
+                            select top 1 PY  <br />
+                            from  <br />
+                            (  <br />
+                             select 'A' as PY,N'驁' as word <br />
+                             union all select 'B',N'簿' <br />
+                             union all select 'C',N'錯' <br />
+                     union all select 'D',N'鵽' <br />
+                     union all select 'E',N'樲' <br />
+                     union all select 'F',N'鰒' <br />
+                     union all select 'G',N'腂' <br />
+                     union all select 'H',N'夻' <br />
+                     union all select 'J',N'攈' <br />
+                     union all select 'K',N'穒' <br />
+                     union all select 'L',N'鱳' <br />
+                     union all select 'M',N'旀' <br />
+                     union all select 'N',N'桛' <br />
+                     union all select 'O',N'漚' <br />
+                     union all select 'P',N'曝' <br />
+                     union all select 'Q',N'囕' <br />
+                     union all select 'R',N'鶸' <br />
+                     union all select 'S',N'蜶' <br />
+                     union all select 'T',N'籜' <br />
+                     union all select 'W',N'鶩' <br />
+                     union all select 'X',N'鑂' <br />
+                     union all select 'Y',N'韻' <br />
+                     union all select 'Z',N'咗' <br />
+                      ) T  <br />
+                   where word>=@word collate Chinese_PRC_CS_AS_KS_WS  <br />
+                   order by PY ASC <br />
+                          )  <br />
+                      else @word  <br />
+                 end) <br />
+    set @str=right(@str,len(@str)-1) <br />
+  end <br />
+<br />
+  return @PY <br />
+<br />
+end<br />
+go<br />
+<br />
+Select dbo.fun_getPY('福田区第五医院') <br />
+drop  function fun_getPY <br />
+<br />
+/*----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------<br />
+FTQDWYY<br />
+<br />
+(1 行受影响)<br />
+*/<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:09

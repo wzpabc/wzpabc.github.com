@@ -1,0 +1,47 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>SQL Server会自动创建一个名为tempdb的数据库作为工作空间使用，当您在存储过程中创建一个临时表格时，比如(CREATE TABLE #MyTemp)，无论您正在使用哪个数据库，SQL数据库引擎都会将这个表格创建在tempdb数据库中。<br />
+<br />
+<br />
+SQL Server会自动创建一个名为tempdb的数据库作为工作空间使用，当您在存储过程中创建一个临时表格时，比如(CREATE TABLE #MyTemp)，无论您正在使用哪个数据库，SQL数据库引擎都会将这个表格创建在tempdb数据库中。<br />
+<br />
+而且，当您对大型的结果集进行排序，比如使用ORDER BY或GROUP BY或UNION或执行一个嵌套的SELECT时，如果数据量超过了系统内存容量，SQL数据库引擎就会在tempdb中创建工作表格。在您运行DBCC REINDEX或者向现有的表格中添加集群序列时， SQL数据库引擎同样会使用tempdb。实际上，任何针对大型表格的ALTER TABLE命令都会在tempdb中吃掉大量的磁盘空间。<br />
+<br />
+在理想状态下，SQL会在完成指定操作后自动清理，并销毁这些临时表格，但是，很多问题都会导致错误。比如，您的代码创建了一个事务，但是却没能执行或重新运行，那么这些孤儿对象将遗留在tempdb中。而且，对大型数据库运行DBCC CHECK时，它还会消耗掉大量的空间，您往往会发现tempdb比设想的要大很多，甚至还会收到SQL即将用完磁盘空间的出错信息。<br />
+<br />
+您有很多方法可以来修正这一情况，但从长远看来，您需要执行其它的步骤来保证正常使用。<br />
+<br />
+为tempdb“减肥”最简单的办法就是关闭SQL数据库引擎然后重新启动，但是在重要的任务中，这样做可能难度很大；另一方面，如果您已经处于无法承受的状态，那么我的建议就是将这个坏消息告知您的上司，然后开始操作。<br />
+<br />
+如果您幸运拥有另外一块磁盘可以用来放置tempdb，可以进行如下的操作：<br />
+<br />
+USE master<br />
+<br />
+GO<br />
+<br />
+ALTER DATABASE tempdb modify file (name = tempdev, filename = NewDrive:Pathtempdb.mdf )<br />
+<br />
+GO<br />
+<br />
+ALTER DATABASE tempdb modify file (name = templog, filename = NewDrive:Pathtemplog.ldf )<br />
+<br />
+GO<br />
+<br />
+还有三项关于tempdb的属性应该检查：自动增长标记，初始大小和恢复模式，以下是关于这些属性的小窍门：<br />
+<br />
+自动增长标记：记住将这个标记设为True。<br />
+<br />
+初始大小：tempdb的初始大小要根据常用的工作负载来设定，如果有很多用户在使用GROUP BY、ORDER BY或者对大型表格进行聚合操作，那么您的常用工作负载会相当大。如果服务器脱机时，您可能需要检查日志文件与数据文件是否位于同一磁盘，如果这样的话，应当将需要将它们转移到新的磁盘上，您只需指明相应的数据库并使用相同的命令即可。<br />
+<br />
+恢复模式：将恢复模式设定为True意味着让SQL自动截去tempdb的日志文件（在使用了每个表格之后），要找出tempdb所使用的恢复模式，可以使用如下命令：<br />
+<br />
+SELECT DATABASEPROPERTYEX( tempdb , recovery )<br />
+<br />
+恢复模式有三种选择：简单、完整或大量记录（bulk-logged），如要改变设置，可以使用以下命令：<br />
+<br />
+ALTER DATABASE tempdb SET RECOVERY SIMPLE<br />
+<br />
+这些步骤可以优化您系统中使用的tempdb，除了解决磁盘空间问题外，您还会发现SQL Server系统性能的提升。<br />
+<br />
+<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:09

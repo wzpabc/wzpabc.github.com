@@ -1,0 +1,119 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>/*<br />
+sql xml 入门:<br />
+    --by jinjazz<br />
+    --http://blog.csdn.net/jinjazz<br />
+    <br />
+    1、xml:        能认识元素、属性和值<br />
+    <br />
+    2、xpath:    寻址语言，类似windows目录的查找(没用过dir命令的话就去面壁)<br />
+                <br />
+                语法格式，这些语法可以组合为条件：<br />
+                "."表示自己，".."表示父亲，"/"表示儿子，"//"表示后代，<br />
+                "name"表示按名字查找，"@name"表示按属性查找<br />
+                <br />
+                "集合[条件]" 表示根据条件取集合的子集，条件可以是<br />
+                    数  值：数字,last(),last()-数字 等<br />
+                    布尔值：position()<数字,@name='条件',name='条件'<br />
+                条件是布尔值的时候可以合并计算：and or<br />
+    <br />
+    3、xquery:    基于xpath标的准查询语言，sqlserver xquery包含如下函数<br />
+                exist(xpath条件)：返回布尔值表示节点是否存在<br />
+                query(xpath条件)：返回由符合条件的节点组成的新的xml文档<br />
+                value(xpath条件,数据类型)：返回指定的标量值，xpath条件结果必须唯一<br />
+                nodes(xpath条件): 返回由符合条件的节点组成的一行一列的结果表<br />
+*/<br />
+<br />
+declare @data xml<br />
+set @data='<br />
+<bookstore><br />
+<book category="COOKING"><br />
+  <title lang="en">Everyday Italian</title><br />
+  <author>Giada De Laurentiis</author><br />
+  <year>2005</year><br />
+  <price>30.00</price><br />
+</book><br />
+<book category="CHILDREN"><br />
+  <title lang="jp">Harry Potter</title><br />
+  <author>J K. Rowling</author><br />
+  <year>2005</year><br />
+  <price>29.99</price><br />
+</book><br />
+<book category="WEB"><br />
+  <title lang="en">XQuery Kick Start</title><br />
+  <author>James McGovern</author><br />
+  <author>Per Bothner</author><br />
+  <author>Kurt Cagle</author><br />
+  <author>James Linn</author><br />
+  <author>Vaidyanathan Nagarajan</author><br />
+  <year>2003</year><br />
+  <price>49.99</price><br />
+</book><br />
+<book category="WEB"><br />
+  <title lang="cn">Learning XML</title><br />
+  <author>Erik T. Ray</author><br />
+  <year>2003</year><br />
+  <price>39.95</price><br />
+</book><br />
+</bookstore><br />
+'<br />
+<br />
+--测试语句，如果不理解语法请参考上面的xpath规则和xquery函数说明<br />
+<br />
+--1、文档<br />
+select @data<br />
+--2、任意级别是否存在price节点<br />
+select @data.exist('//price')<br />
+--3、获取所有book节点<br />
+select @data.query('//book')<br />
+--4、获取所有包含lang属性的节点<br />
+select @data.query('//*[@lang]') <br />
+--5、获取第一个book节点<br />
+select @data.query('//book[1]')<br />
+--6、获取前两个book节点<br />
+select @data.query('//book[position()<=2]')<br />
+--7、获取最后一个book节点<br />
+select @data.query('//book[last()]')<br />
+--8、获取price>35的所有book节点<br />
+select @data.query('//book[price>35]')<br />
+--9、获取category="WEB"的所有book节点<br />
+select @data.query('//book[@category="WEB"]')<br />
+--10、获取title的lang="en"的所有book节点<br />
+select @data.query('//book/title[@lang="en"]')<br />
+--11、获取title的lang="en"且 price>35的所有book节点<br />
+select @data.query('//book[./title[@lang="en"] or price>35 ]')<br />
+--12、获取title的lang="en"且 price>35的第一book的(第一个)title<br />
+select @data.query('//book[./title[@lang="en"] and price>35 ]').value('(book/title)[1]','varchar(max)')<br />
+--13、等价于12<br />
+select @data.value('(//book[./title[@lang="en"] and price>35 ]/title)[1]','varchar(max)')<br />
+--14、获取title的lang="en"且 price>35的第一book的(第一个)title的lang属性<br />
+select @data.value('((//book[@category="WEB" and price>35 ]/title)[1]/@lang)[1]','varchar(max)')<br />
+--15、获取第一本书的title<br />
+select Tab.Col.value('(book/title)[1]','varchar(max)') as title<br />
+    from @data.nodes('bookstore')as Tab(Col) <br />
+--16、获取每本书的第一个author<br />
+select Tab.Col.value('author[1]','varchar(max)') as title<br />
+    from @data.nodes('//book')as Tab(Col)<br />
+--17、获取所有book的所有信息<br />
+select<br />
+ T.C.value('title[1]','varchar(max)') as title,<br />
+ T.C.value('year[1]','int') as year,<br />
+ T.C.value('title[1]','varchar(max)')as title,<br />
+ T.C.value('price[1]','float') as price,<br />
+ T.C.value('author[1]','varchar(max)') as author1,<br />
+ T.C.value('author[2]','varchar(max)') as author2,<br />
+ T.C.value('author[3]','varchar(max)') as author3,<br />
+ T.C.value('author[4]','varchar(max)') as author4<br />
+from @data.nodes('//book') as T(C)<br />
+--18、获取不是日语(lang!="jp")且价格大于35的书的所有信息<br />
+select<br />
+ T.C.value('title[1]','varchar(max)') as title,<br />
+ T.C.value('year[1]','int') as year,<br />
+ T.C.value('title[1]','varchar(max)')as title,<br />
+ T.C.value('price[1]','float') as price,<br />
+ T.C.value('author[1]','varchar(max)') as author1,<br />
+ T.C.value('author[2]','varchar(max)') as author2,<br />
+ T.C.value('author[3]','varchar(max)') as author3,<br />
+ T.C.value('author[4]','varchar(max)') as author4<br />
+from @data.nodes('//book[./title[@lang!="jp"] and price>35 ]') as T(C)<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:31

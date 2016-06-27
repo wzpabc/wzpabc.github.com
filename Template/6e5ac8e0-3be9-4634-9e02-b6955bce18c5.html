@@ -1,0 +1,46 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p> --使用联机方式重建索引idx_refno <br />
+ALTER INDEX [idx_refno] ON [ordDemo] REBUILD WITH (FILLFACTOR=80,ONLINE =ON)<br />
+GO<br />
+<br />
+--使用脱机方式重建索引idx_refno <br />
+ALTER INDEX [idx_refno] ON [ordDemo] REBUILD WITH (FILLFACTOR=80,ONLINE =OFF)<br />
+GO<br />
+<br />
+--使用脱机方式重建表上所有索引：<br />
+ALTER INDEX ALL ON [ordDemo] REBUILD WITH (FILLFACTOR=80,ONLINE =OFF )<br />
+GO<br />
+<br />
+--使用DROP_EXISTING 来重建索引：<br />
+CREATE CLUSTERED INDEX [idx_refno] ON [ordDemo](Refno)<br />
+WITH (DROP_EXISTING=ON ,FILLFACTOR=70,ONLINE=ON )<br />
+GO<br />
+<br />
+--使用DBCC DBREINDEX重建标上所有索引：<br />
+DBCC DBREINDEX('ordDemo')<br />
+GO<br />
+<br />
+--重建带有填充因子的索引：<br />
+DBCC DBREINDEX('ordDemo','idx_refno',90)<br />
+GO<br />
+<br />
+<br />
+<br />
+--不指定参数重组索引：<br />
+ALTER INDEX [idx_refno] ON [ordDemo]<br />
+REORGANIZE<br />
+GO<br />
+<br />
+--重组表中所有索引：<br />
+ALTER INDEX ALL ON [ordDemo]<br />
+REORGANIZE<br />
+GO<br />
+<br />
+--使用DBCC INDEXDEFRAG重建表上所有索引：<br />
+DBCC INDEXDEFRAG('AdventureWorks','ordDemo')<br />
+GO<br />
+<br />
+--使用DBCC INDEXDEFRAG重组表上一个索引：<br />
+DBCC INDEXDEFRAG('AdventureWorks','ordDemo','idx_refno')<br />
+GO<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:11

@@ -1,0 +1,32 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--显示索引消耗的磁盘情况<br />
+SELECT  CASE InnerTable.index_id<br />
+          WHEN 0 THEN 'HEAP'<br />
+          WHEN 1 THEN 'Clustered Index'<br />
+          ELSE 'Non-Clustered Index'<br />
+        END AS Index_Type ,<br />
+        SUM(CASE WHEN FilledPage > PageToDeduct<br />
+                 THEN ( FilledPage - PageToDeduct )<br />
+                 ELSE 0<br />
+            END) * 8 AS 'Index_Size(KB)'<br />
+FROM    ( SELECT    partition_id ,<br />
+                    index_id ,<br />
+                    SUM(used_page_count) AS FilledPage ,<br />
+                    SUM(CASE WHEN ( index_id < 2 )<br />
+                             THEN ( in_row_data_page_count<br />
+                                    + lob_used_page_count<br />
+                                    + row_overflow_used_page_count )<br />
+                             ELSE lob_used_page_count<br />
+                                  + row_overflow_used_page_count<br />
+                        END) AS PageToDeduct<br />
+          FROM      sys.dm_db_partition_stats<br />
+          GROUP BY  partition_id ,<br />
+                    index_id<br />
+        ) AS InnerTable<br />
+GROUP BY CASE InnerTable.index_id<br />
+           WHEN 0 THEN 'HEAP'<br />
+           WHEN 1 THEN 'Clustered Index'<br />
+           ELSE 'Non-Clustered Index'<br />
+         END <br />
+GO<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:33

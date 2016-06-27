@@ -1,0 +1,49 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>SQL Server 日期算法<br />
+<br />
+一周的第一天<br />
+select @@DATEFIRST<br />
+<br />
+一个月的第一天  <br />
+select dateadd(mm,datediff(mm,0,getdate()),0)<br />
+<br />
+本周的星期一  <br />
+select dateadd(wk,datediff(wk,0,getdate()),0)<br />
+<br />
+一年的第一天  <br />
+SELECT  DATEADD(yy,  DATEDIFF(yy,0,getdate()),  0)  <br />
+<br />
+季度的第一天  <br />
+SELECT  DATEADD(qq,  DATEDIFF(qq,0,getdate()),  0)  <br />
+<br />
+当天的零时<br />
+SELECT  DATEADD(dd,  DATEDIFF(dd,0,getdate()),  0)  <br />
+<br />
+上个月的最后一天  ：本月第一天减2ms.<br />
+SELECT  dateadd(ms,-2,DATEADD(mm,  DATEDIFF(mm,0,getdate()),  0))  <br />
+<br />
+本月的最后一天  <br />
+SELECT  dateadd(ms,-2,DATEADD(mm,  DATEDIFF(m,0,getdate())+1,  0)) <br />
+<br />
+本月的第一个星期一     <br />
+<br />
+去掉时分秒  <br />
+DATEADD(day,  DATEDIFF(day,0,getdate()),  0)  <br />
+显示星期几  <br />
+select  datename(weekday,getdate())    <br />
+如何取得某个月的天数  <br />
+SELECT  Day(dateadd(ms,-3,DATEADD(mm,  DATEDIFF(m,0,getdate())+1,  0)))  <br />
+<br />
+判断是否闰年：  <br />
+SELECT  case  day(dateadd(mm,  2,  dateadd(ms,-3,DATEADD(yy,  DATEDIFF(yy,0,getdate()),  0))))  <br />
+when  28  then  '平年'  else  '闰年'  end  <br />
+一个季度多少天  <br />
+declare  @m  tinyint,@time  smalldatetime  <br />
+select  @m=month(getdate())  <br />
+select  @m=case  when  @m  between  1  and  3  then  1  <br />
+                       when  @m  between  4  and  6  then  4  <br />
+                       when  @m  between  7  and  9  then  7  <br />
+                       else  10  end  <br />
+select  @time=datename(year,getdate())+'-'+convert(varchar(10),@m)+'-01'  <br />
+select  datediff(day,@time,dateadd(mm,3,@time)) <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:13

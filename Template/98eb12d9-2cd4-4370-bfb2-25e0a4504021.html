@@ -1,0 +1,120 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>分解字符串包含的信息值后然后合并到另外一表的信息<br />
+(爱新觉罗.毓华(十八年风雨,守得冰山雪莲花开)  2007-12-23  广东深圳)<br />
+<br />
+/*问题描述<br />
+tba<br />
+ID  classid   name<br />
+1     1,2,3   西服 <br />
+2     2,3     中山装<br />
+3     1,3     名裤<br />
+tbb <br />
+id   classname<br />
+1     衣服<br />
+2     上衣<br />
+3     裤子<br />
+<br />
+我得的结果是<br />
+id   classname            name<br />
+1     衣服,上衣,裤子      西服 <br />
+2     上衣，裤子          中山装<br />
+3     衣服，裤子          名裤<br />
+*/<br />
+<br />
+-----------------------------------------------------<br />
+--sql server 2000中的写法<br />
+create table tba(ID int,classid varchar(20),name varchar(10))<br />
+insert into tba values(1,'1,2,3','西服')<br />
+insert into tba values(2,'2,3'  ,'中山装')<br />
+insert into tba values(3,'1,3'  ,'名裤')<br />
+create table tbb(ID varchar(10), classname varchar(10))<br />
+insert into tbb values('1','衣服')<br />
+insert into tbb values('2','上衣')<br />
+insert into tbb values('3','裤子')<br />
+go<br />
+<br />
+--第1种方法，创建函数来显示<br />
+create function f_hb(@id varchar(10))<br />
+returns varchar(1000)<br />
+as<br />
+begin<br />
+  declare @str varchar(1000)<br />
+  set @str=''<br />
+  select @str=@str+','+[classname] from tbb where charindex(','+cast(id as varchar)+',',','+@id+',')>0<br />
+  return stuff(@str,1,1,'')<br />
+end<br />
+go <br />
+select id,classid=dbo.f_hb(classid),name from tba<br />
+drop function f_hb<br />
+/*<br />
+id          classid       name       <br />
+----------- ------------- ---------- <br />
+1           衣服,上衣,裤子 西服<br />
+2           上衣,裤子      中山装<br />
+3           衣服,裤子      名裤<br />
+（所影响的行数为 3 行）<br />
+*/<br />
+<br />
+--第2种方法.update<br />
+while(exists (select * from tba,tbb where charindex(tbb.id,tba.classid) >0))<br />
+update tba<br />
+set classid= replace(classid,tbb.id,tbb.classname)<br />
+from tbb<br />
+where charindex(tbb.id,tba.classid)>0<br />
+select * from tba<br />
+/*<br />
+ID          classid              name       <br />
+----------- -------------------- ---------- <br />
+1           衣服,上衣,裤子       西服<br />
+2           上衣,裤子            中山装<br />
+3           衣服,裤子            名裤<br />
+（所影响的行数为 3 行）<br />
+*/<br />
+drop table tba,tbb<br />
+<br />
+------------------------------------------------------------------------<br />
+--sql server 2005中先分解tba中的classid,然后再合并classname<br />
+create table tba(ID int,classid varchar(20),name varchar(10))<br />
+insert into tba values(1,'1,2,3','西服')<br />
+insert into tba values(2,'2,3'  ,'中山装')<br />
+insert into tba values(3,'1,3'  ,'名裤')<br />
+create table tbb(ID varchar(10), classname varchar(10))<br />
+insert into tbb values('1','衣服')<br />
+insert into tbb values('2','上衣')<br />
+insert into tbb values('3','裤子')<br />
+go<br />
+<br />
+SELECT id , classname , name FROM<br />
+(<br />
+  SELECT DISTINCT id , name FROM (select tbc.id , tbc.name , tbb.classname from <br />
+  (<br />
+    SELECT A.id , A.name , B.classid FROM(SELECT id , name , [classid] = CONVERT(xml,'<root><v>' + REPLACE([classid], ',', '</v><v>') + '</v></root>') FROM tba)A<br />
+    OUTER APPLY(SELECT classid = N.v.value('.', 'varchar(100)') FROM A.[classid].nodes('/root/v') N(v))B<br />
+  ) tbc , tbb where tbc.classid = tbb.id<br />
+  ) T<br />
+)A <br />
+OUTER APPLY<br />
+(<br />
+  SELECT [classname]= STUFF(REPLACE(REPLACE((<br />
+    SELECT classname FROM (select tbc.id , tbc.name , tbb.classname from <br />
+    (<br />
+      SELECT A.id , A.name , B.classid FROM(SELECT id , name , [classid] = CONVERT(xml,'<root><v>' + REPLACE([classid], ',', '</v><v>') + '</v></root>') FROM tba)A<br />
+      OUTER APPLY(SELECT classid = N.v.value('.', 'varchar(100)') FROM A.[classid].nodes('/root/v') N(v))B<br />
+    ) tbc , tbb where tbc.classid = tbb.id<br />
+  ) N<br />
+  WHERE id = A.id and name = A.name<br />
+  FOR XML AUTO), '<N classname="', ','), '"/>', ''), 1, 1, '')<br />
+)N<br />
+order by id<br />
+<br />
+drop table tba,tbb<br />
+<br />
+/*<br />
+id          classname      name<br />
+----------- -------------- ----------<br />
+1           衣服,上衣,裤子 西服<br />
+2           上衣,裤子      中山装<br />
+3           衣服,裤子      名裤<br />
+(3 行受影响)<br />
+*/<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:32

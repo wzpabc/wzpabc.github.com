@@ -1,0 +1,214 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--最好备份日志，以后可通过日志恢复数据。。。<br />
+以下为日志处理方法<br />
+一般不建议做第4,6两步<br />
+第4步不安全,有可能损坏数据库或丢失数据<br />
+第6步如果日志达到上限,则以后的数据库处理会失败,在清理日志后才能恢复.<br />
+--*/<br />
+<br />
+--下面的所有库名都指你要处理的数据库的库名<br />
+<br />
+1.清空日志<br />
+DUMP TRANSACTION 库名 WITH NO_LOG<br />
+<br />
+2.截断事务日志：<br />
+BACKUP LOG 库名 WITH NO_LOG<br />
+<br />
+3.收缩数据库文件(如果不压缩,数据库的文件不会减小<br />
+企业管理器--右键你要压缩的数据库--所有任务--收缩数据库--收缩文件<br />
+--选择日志文件--在收缩方式里选择收缩至XXM,这里会给出一个允许收缩到的最小M数,直接输入这个数,确定就可以了<br />
+--选择数据文件--在收缩方式里选择收缩至XXM,这里会给出一个允许收缩到的最小M数,直接输入这个数,确定就可以了<br />
+<br />
+也可以用SQL语句来完成 <br />
+--收缩数据库<br />
+DBCC SHRINKDATABASE(库名)<br />
+<br />
+--收缩指定数据文件,1是文件号,可以通过这个语句查询到:select * from sysfiles<br />
+DBCC SHRINKFILE(1)<br />
+<br />
+4.为了最大化的缩小日志文件(如果是sql 7.0,这步只能在查询分析器中进行)<br />
+a.分离数据库:<br />
+企业管理器--服务器--数据库--右键--分离数据库<br />
+<br />
+b.在我的电脑中删除LOG文件<br />
+<br />
+c.附加数据库:<br />
+企业管理器--服务器--数据库--右键--附加数据库<br />
+<br />
+此法将生成新的LOG，大小只有500多K<br />
+<br />
+或用代码： <br />
+下面的示例分离 pubs，然后将 pubs 中的一个文件附加到当前服务器。<br />
+<br />
+a.分离<br />
+EXEC sp_detach_db @dbname = '库名'<br />
+<br />
+b.删除日志文件<br />
+<br />
+c.再附加<br />
+EXEC sp_attach_single_file_db @dbname = '库名', <br />
+@physname = 'c:\Program Files\Microsoft SQL Server\MSSQL\Data\库名.mdf'<br />
+<br />
+5.为了以后能自动收缩,做如下设置:<br />
+企业管理器--服务器--右键数据库--属性--选项--选择"自动收缩"<br />
+<br />
+--SQL语句设置方式:<br />
+EXEC sp_dboption '库名', 'autoshrink', 'TRUE'<br />
+<br />
+6.如果想以后不让它日志增长得太大<br />
+企业管理器--服务器--右键数据库--属性--事务日志<br />
+--将文件增长限制为xM(x是你允许的最大数据文件大小)<br />
+<br />
+--SQL语句的设置方式:<br />
+alter database 库名 modify file(name=逻辑文件名,maxsize=20)<br />
+<br />
+<br />
+<br />
+--首先,用下面的语句,检查/修复数据库/并整理索引碎片(需要比较长的时间,请在系统空闲时进行此工作)   <br />
+    <br />
+  USE   MASTER   <br />
+  GO   <br />
+    <br />
+  sp_dboption   '你的数据库名',   'single   user',   'true'   <br />
+  Go   <br />
+    <br />
+  DBCC   CHECKDB('你的数据库名',   REPAIR_REBUILD)     <br />
+  Go   <br />
+    <br />
+  USE   你的数据库名   <br />
+  go   <br />
+    <br />
+  exec   sp_msforeachtable   'DBCC   CHECKTABLE(''?'',REPAIR_REBUILD)'   <br />
+  exec   sp_msforeachtable   'DBCC   DBREINDEX(''?'')'   <br />
+  go   <br />
+    <br />
+  sp_dboption   '你的数据库名',   'single   user',   'false'   <br />
+  Go  <br />
+<br />
+<br />
+--然后用这个压缩数据库日志文件.<br />
+SET NOCOUNT ON<br />
+DECLARE @LogicalFileName sysname,<br />
+@MaxMinutes INT,<br />
+@NewSize INT<br />
+<br />
+--Select * From Sysfiles<br />
+USE YSERP -- 要操作的数据库名<br />
+SELECT @LogicalFileName =  'YSERP_Log' , -- 日志文件名<br />
+@MaxMinutes = 10, -- Limit on time allowed to wrap log.<br />
+@NewSize = 20 -- 你想设定的日志文件的大小(M)<br />
+<br />
+-- Setup / initialize<br />
+DECLARE @OriginalSize int<br />
+SELECT @OriginalSize = size<br />
+FROM sysfiles<br />
+WHERE name = @LogicalFileName<br />
+SELECT  ' Original Size of  '  + db_name() +  '  LOG is  '  +<br />
+CONVERT(VARCHAR(30),@OriginalSize) +  '  8K pages or  '  +<br />
+CONVERT(VARCHAR(30),(@OriginalSize*8/1024)) +  ' MB ' <br />
+FROM sysfiles<br />
+WHERE name = @LogicalFileName<br />
+CREATE TABLE DummyTrans<br />
+(DummyColumn char (8000) not null)<br />
+<br />
+<br />
+DECLARE @Counter INT,<br />
+@StartTime DATETIME,<br />
+@TruncLog VARCHAR(255)<br />
+SELECT @StartTime = GETDATE(),<br />
+@TruncLog =  ' BACKUP LOG  '  + db_name() +  '  WITH TRUNCATE_ONLY ' <br />
+<br />
+DBCC SHRINKFILE (@LogicalFileName, @NewSize)<br />
+EXEC (@TruncLog)<br />
+-- Wrap the log if necessary.<br />
+WHILE @MaxMinutes > DATEDIFF (mi, @StartTime, GETDATE()) -- time has not<br />
+/*expired*/ AND @OriginalSize = (SELECT size FROM sysfiles WHERE name =@LogicalFileName) AND (@OriginalSize * 8 /1024) > @NewSize<br />
+BEGIN -- Outer loop.<br />
+SELECT @Counter = 0<br />
+WHILE ((@Counter < @OriginalSize / 16) AND (@Counter < 50000))<br />
+BEGIN -- update<br />
+INSERT DummyTrans VALUES ( ' Fill Log ' )<br />
+DELETE DummyTrans<br />
+SELECT @Counter = @Counter + 1<br />
+END<br />
+EXEC (@TruncLog)<br />
+END<br />
+SELECT  ' Final Size of  '  + db_name() +  '  LOG is  '  +<br />
+CONVERT(VARCHAR(30),size) +  '  8K pages or  '  +<br />
+CONVERT(VARCHAR(30),(size*8/1024)) +  ' MB ' <br />
+FROM sysfiles<br />
+WHERE name = @LogicalFileName<br />
+DROP TABLE DummyTrans<br />
+SET NOCOUNT OFF<br />
+<br />
+--其次是压缩主数据文件<br />
+<br />
+企业管理器->所有任务->压缩数据库->压缩文件->文件->压缩到最终大小->输入最小值即可 <br />
+<br />
+<br />
+<br />
+<br />
+<br />
+--最好备份日志，以后可通过日志恢复数据。。。<br />
+以下为日志处理方法<br />
+一般不建议做第4,6两步<br />
+第4步不安全,有可能损坏数据库或丢失数据<br />
+第6步如果日志达到上限,则以后的数据库处理会失败,在清理日志后才能恢复.<br />
+--*/<br />
+<br />
+--下面的所有库名都指你要处理的数据库的库名<br />
+<br />
+1.清空日志<br />
+DUMP TRANSACTION 库名 WITH NO_LOG<br />
+<br />
+2.截断事务日志：<br />
+BACKUP LOG 库名 WITH NO_LOG<br />
+<br />
+3.收缩数据库文件(如果不压缩,数据库的文件不会减小<br />
+企业管理器--右键你要压缩的数据库--所有任务--收缩数据库--收缩文件<br />
+--选择日志文件--在收缩方式里选择收缩至XXM,这里会给出一个允许收缩到的最小M数,直接输入这个数,确定就可以了<br />
+--选择数据文件--在收缩方式里选择收缩至XXM,这里会给出一个允许收缩到的最小M数,直接输入这个数,确定就可以了<br />
+<br />
+也可以用SQL语句来完成 <br />
+--收缩数据库<br />
+DBCC SHRINKDATABASE(库名)<br />
+<br />
+--收缩指定数据文件,1是文件号,可以通过这个语句查询到:select * from sysfiles<br />
+DBCC SHRINKFILE(1)<br />
+<br />
+4.为了最大化的缩小日志文件(如果是sql 7.0,这步只能在查询分析器中进行)<br />
+a.分离数据库:<br />
+企业管理器--服务器--数据库--右键--分离数据库<br />
+<br />
+b.在我的电脑中删除LOG文件<br />
+<br />
+c.附加数据库:<br />
+企业管理器--服务器--数据库--右键--附加数据库<br />
+<br />
+此法将生成新的LOG，大小只有500多K<br />
+<br />
+或用代码： <br />
+下面的示例分离 pubs，然后将 pubs 中的一个文件附加到当前服务器。<br />
+<br />
+a.分离<br />
+EXEC sp_detach_db @dbname = '库名'<br />
+<br />
+b.删除日志文件<br />
+<br />
+c.再附加<br />
+EXEC sp_attach_single_file_db @dbname = '库名', <br />
+@physname = 'c:\Program Files\Microsoft SQL Server\MSSQL\Data\库名.mdf'<br />
+<br />
+5.为了以后能自动收缩,做如下设置:<br />
+企业管理器--服务器--右键数据库--属性--选项--选择"自动收缩"<br />
+<br />
+--SQL语句设置方式:<br />
+EXEC sp_dboption '库名', 'autoshrink', 'TRUE'<br />
+<br />
+6.如果想以后不让它日志增长得太大<br />
+企业管理器--服务器--右键数据库--属性--事务日志<br />
+--将文件增长限制为xM(x是你允许的最大数据文件大小)<br />
+<br />
+--SQL语句的设置方式:<br />
+alter database 库名 modify file(name=逻辑文件名,maxsize=20)<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:15

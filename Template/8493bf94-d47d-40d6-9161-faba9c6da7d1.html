@@ -1,0 +1,65 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>DECLARE @dt datetime<br />
+SET @dt=GETDATE()<br />
+<br />
+DECLARE @number int<br />
+SET @number=3<br />
+<br />
+--1．指定日期该年的第一天或最后一天<br />
+--A. 年的第一天<br />
+SELECT CONVERT(char(5),@dt,120)+'1-1'<br />
+<br />
+--B. 年的最后一天<br />
+SELECT CONVERT(char(5),@dt,120)+'12-31'<br />
+<br />
+<br />
+--2．指定日期所在季度的第一天或最后一天<br />
+--A. 季度的第一天<br />
+SELECT CONVERT(datetime,<br />
+    CONVERT(char(8),<br />
+        DATEADD(Month,<br />
+            DATEPART(Quarter,@dt)*3-Month(@dt)-2,<br />
+            @dt),<br />
+        120)+'1')<br />
+<br />
+--B. 季度的最后一天（CASE判断法）<br />
+SELECT CONVERT(datetime,<br />
+    CONVERT(char(8),<br />
+        DATEADD(Month,<br />
+            DATEPART(Quarter,@dt)*3-Month(@dt),<br />
+            @dt),<br />
+        120)<br />
+    +CASE WHEN DATEPART(Quarter,@dt) in(1,4)<br />
+        THEN '31'ELSE '30' END)<br />
+<br />
+--C. 季度的最后一天（直接推算法）<br />
+SELECT DATEADD(Day,-1,<br />
+    CONVERT(char(8),<br />
+        DATEADD(Month,<br />
+            1+DATEPART(Quarter,@dt)*3-Month(@dt),<br />
+            @dt),<br />
+        120)+'1')<br />
+<br />
+<br />
+--3．指定日期所在月份的第一天或最后一天<br />
+--A. 月的第一天<br />
+SELECT CONVERT(datetime,CONVERT(char(8),@dt,120)+'1')<br />
+<br />
+--B. 月的最后一天<br />
+SELECT DATEADD(Day,-1,CONVERT(char(8),DATEADD(Month,1,@dt),120)+'1')<br />
+<br />
+--C. 月的最后一天（容易使用的错误方法）<br />
+SELECT DATEADD(Month,1,DATEADD(Day,-DAY(@dt),@dt))<br />
+<br />
+<br />
+--4．指定日期所在周的任意一天<br />
+SELECT DATEADD(Day,@number-DATEPART(Weekday,@dt),@dt)<br />
+<br />
+<br />
+--5．指定日期所在周的任意星期几<br />
+--A.  星期天做为一周的第1天<br />
+SELECT DATEADD(Day,@number-(DATEPART(Weekday,@dt)+@@DATEFIRST-1)%7,@dt)<br />
+<br />
+--B.  星期一做为一周的第1天<br />
+SELECT DATEADD(Day,@number-(DATEPART(Weekday,@dt)+@@DATEFIRST-2)%7-1,@dt)<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:15

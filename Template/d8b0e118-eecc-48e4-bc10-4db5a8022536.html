@@ -1,0 +1,118 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>1、用BACKUP LOG database WITH NO_LOG清除日志 <br />
+<br />
+把数据库属性中的故障还原模型改为“简单”可以大大减慢日志增长的速度。 <br />
+<br />
+   如果把还原模型调到简单，这样就不支持时间点还原了，但是日志文件会很小，如果数据比较重要推荐还是把数据库的还原模型调为完全 <br />
+<br />
+用BACKUP LOG database WITH NO_LOG命名后，会截断不活动日志，不减小物理日志文件的大小，但逻辑日志会减小，收缩数据库后会把不活动虚拟日志删除来释放空间，不会损坏数据。 <br />
+<br />
+如果日志被截断并收缩数据库后，就不能直接用最近的一个全库备份做时间点还原，建议立即备份数据库，以防万一。 <br />
+<br />
+2、sql server运行中，是否能删除主数据库事务日志文件  <br />
+步骤如下：(1)、分离数据库企业管理器－－数据库－－右击你要删除日志的数据库－－所有 <br />
+<br />
+任务－－分离数据库 <br />
+(2)、然后删除日志文件 <br />
+(3)、然后再附加数据库 <br />
+企业管理器－－数据库－－右击数据库－－所有任务－－附加数据库这时候只附加。mdf就可以了。 <br />
+<br />
+3、压缩SQL数据库及日志的详细方法 <br />
+<br />
+SQL Server 2000基础教程——压缩数据库数据库在使用一段时间后，时常会出现因数据删除而造成数据库中空闲空间太多的情况，这时就需要减少分配给数据库文件和事务 日志文件的磁盘空间，以免浪费磁盘空间。当数据库中没有数据时，可以修改数据库文件属性直接改变其占用空间，但当数据库中有数据时，这样做会破坏数据库中 的数据，因此需要使用压缩的方式来缩减数据库空间。可以在数据库属性选项中选择“Auto shrink”选项，让系统自动压缩数据库，也可以用人工的方法来压缩。人工压缩数据库有以下两种方式： <br />
+<br />
+1、用Enterprise Manager 压缩数据库 <br />
+<br />
+在Enterprise Manager 中在所要压缩的数据库上单击右键，从快捷菜单中的“所有任务（All Tasks）”中选择“Shrink Database（压缩数据库）”选项，就会出现如图6-10 所示的对话框。可以在图6-10 所示的对话框中选择数据库的压缩方式，也可以选择使用压缩计划或压缩单个文件单击图6-10 中的“Files”按钮，会出现如图6-11 所示的压缩数据库文件对话框，可以针对每个数据库文件进行不同的压缩设置。 <br />
+  <br />
+单击图6-10 中的“Change” 按钮，会出现如图6-12 所示的压缩计划编辑对话框，可以指定压缩计划的执行方式。单击图6-12 中的“Change” 按钮，会出现如图6-13 所示的循环工作计划编辑对话框，可以编辑计划执行的周期或时间点。设置完成后单击“OK” 按钮就开始压缩数据库，在压缩结束后会显示一个压缩情况信息框。  <br />
+  <br />
+  <br />
+2、用Transact-SQL 命令压缩数据库 <br />
+<br />
+可以使用DBCC SHRINKDATABASE 和DBCC SHRINKFILE 命令来压缩数据库。其中DBCC SHRINKDATABASE 命令对数据库进行压缩，DBCC SHRINKFILE 命令对数据库中指定的文件进行压缩。 <br />
+（1） DBCC SHRINKDATABASE  <br />
+DBCC SHRINKDATABASE 命令语法如下： <br />
+DBCC SHRINKDATABASE (database_name [, target_percent] <br />
+[, {NOTRUNCATE | TRUNCATEONLY}] ) <br />
+各参数说明如下：  <br />
+?target_percent 指定将数据库压缩后，未使用的空间占数据库大小的百分之几。如果指定的百分比过大，超过了压缩前未使用空间所占的比例，则数据库不会被压缩。并且压缩后的数据库不能比数据库初始设定的容量小。  <br />
+?NOTRUECATE <br />
+将数据库缩减后剩余的空间保留在数据库，中不返还给操作系统 <br />
+<br />
+。如果不选择此选项，则剩余的空间返还给操作系统。  <br />
+?TRUNCATEONLY <br />
+将数据库缩减后剩余的空间返还给操作系统。使用此命令时SQL Server 将文件缩减到最后一个文件分配，区域但不移动任何数据文件。选择此项后，target_percent 选项就无效了。例6-14： 压缩数据库mytest 的未使用空间为数据库大小的20% <br />
+<br />
+。 <br />
+dbcc shrinkdatabase (mytest, 20) <br />
+运行结果如下： <br />
+DBCC execution completed. If DBCC printed error  <br />
+<br />
+messages, contact your system administrator.  <br />
+(2) DBCC SHRINKFILE <br />
+DBCC SHRINKFILE 命令压缩当前数据库中的文件。其语法如下： <br />
+DBCC SHRINKFILE ( {file_name | file_id } <br />
+{ [, target_size] | <br />
+[, {EMPTYFILE | NOTRUNCATE | TRUNCATEONLY}] } ) <br />
+各参数说明如下： <br />
+?file_id <br />
+指定要压缩的文件的鉴别号（Identification number， 即ID） <br />
+<br />
+。文件的ID 号可以通过 FILE_ID（）函数或如本章前面所讲述 <br />
+<br />
+的Sp_helpdb 系统存储过程来得到。  <br />
+<br />
+?target_size <br />
+<br />
+指定文件压缩后的大小。以MB 为单位。如果不指定此选项，SQL Server 就会尽最大可能地缩减文件。  <br />
+<br />
+?EMPTYFILE <br />
+<br />
+指明此文件不再使用，将移动所有在此文件中的数据到同一文件组中的其它文件中去。执行带此参数的命令后，此文件就可以用ALTER DATABASE 命令来删除了。 其余参数NOTRUNCATE 和TRUNCATEONLY 与DBCC SHRINKDATABASE  <br />
+<br />
+命令中的含义相同。 例6-15: 压缩数据库mydb 中的数据库文件mydb_data2 的大小到1MB。 use mydb dbcc shrinkfile (mydb_data2, 1) <br />
+  <br />
+<br />
+<br />
+企业管理器里面的方法： <br />
+1、打开企业管理器 <br />
+2、打开要处理的数据库 <br />
+3、点击最上面菜单>工具>SQL查询分析器，打开SQL查询分析器 <br />
+4、在输入窗口里面输入: <br />
+<br />
+Code: <br />
+DUMP TRANSACTION [数据库名] WITH  NO_LOG <br />
+BACKUP LOG [数据库名] WITH NO_LOG <br />
+DBCC SHRINKDATABASE([数据库名]) <br />
+<br />
+<br />
+点击绿色的小三角（或按F5）执行查询，等状态栏提示处理完成 <br />
+<br />
+即可！ <br />
+<br />
+<br />
+程序里面的方法： <br />
+压缩数据库日志 <br />
+--1.清空日志 <br />
+exec(’DUMP TRANSACTION [’+@dbname+’] WITH  NO_LOG’)  <br />
+--2.截断事务日志： <br />
+exec(’BACKUP LOG [’+@dbname+’] WITH NO_LOG’) <br />
+--3.收缩数据库文件(如果不压缩,数据库的文件不会减小 <br />
+exec(’DBCC SHRINKDATABASE([’+@dbname+’])’) <br />
+<br />
+<br />
+　　4、减小日志的方法： <br />
+<br />
+一、用如下步做了： <br />
+1、DUMP　TRANSACTION　库名　WITH　no_log <br />
+2、dbcc shrinkfile(logfilename) <br />
+3、收缩数据库 <br />
+4、设定自动收缩。 <br />
+<br />
+　　二、分离数据库,删除日志文件,再附加,OK!右击数据库－－所有任务－－分离or 附加 <br />
+<br />
+　　三、1、backup log　库名　WITH　no_log，2、dbcc shrinkfile(logfilename)，3、收缩数据库 <br />
+4、设定自动收缩。<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:07

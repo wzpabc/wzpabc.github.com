@@ -1,0 +1,69 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>/*******************完整备份作业*******************/<br />
+--完整备份,每周一次<br />
+USE Master<br />
+GO<br />
+declare @str varchar(100)<br />
+set @str='D:\DBtext\jgj\DBABak\FullBak'+replace(replace(replace(convert(varchar,getdate(),20),'-',''),' ',''),':','')+'.bak'<br />
+BACKUP DATABASE [demo] TO DISK=@str<br />
+WITH RETAINDAYS=15,NOFORMAT,NOINIT,<br />
+NAME=N'Demo完整备份',SKIP,NOREWIND,<br />
+NOUNLOAD,STATS=10<br />
+GO<br />
+<br />
+<br />
+<br />
+<br />
+/*******************差异备份作业*******************/<br />
+--截断日志<br />
+USE Master<br />
+GO<br />
+BACKUP LOG Demo  WITH NO_LOG<br />
+GO<br />
+--收缩日志文件<br />
+USE Demo<br />
+GO<br />
+DBCC SHRINKFILE (N'Demo_log',0,TRUNCATEONLY)<br />
+GO<br />
+--差异备份,每天一次<br />
+USE Master<br />
+GO<br />
+declare @str varchar(100)<br />
+set @str='D:\DBtext\jgj\DBABak\DiffBak'+replace(replace(replace(convert(varchar,getdate(),20),'-',''),' ',''),':','')+'.diff'<br />
+BACKUP DATABASE [Demo] TO DISK=@str<br />
+WITH DIFFERENTIAL,RETAINDAYS=8,NOFORMAT,NOINIT,<br />
+NAME=N'Demo差异备份',SKIP,NOREWIND,<br />
+NOUNLOAD,STATS=10<br />
+GO<br />
+<br />
+<br />
+<br />
+<br />
+/******************日志备份作业*******************/<br />
+--日志备份,每小时一次<br />
+USE Demo<br />
+GO<br />
+declare @str varchar(100)<br />
+set @str='D:\DBtext\jgj\DBABak\logbak'+replace(replace(replace(convert(varchar,getdate(),20),'-',''),' ',''),':','')+'.trn'<br />
+BACKUP LOG [Demo] TO DISK=@str<br />
+WITH RETAINDAYS=3,NOFORMAT,NOINIT,<br />
+NAME=N'Demo日志备份',SKIP,NOREWIND,<br />
+NOUNLOAD,STATS=10<br />
+GO<br />
+<br />
+<br />
+<br />
+<br />
+--删除过期的备份文件,每天两次<br />
+declare @str varchar(100),@dir varchar(100),@fileName varchar(30)<br />
+set @dir='del D:\DBtext\jgj\DBABak\'<br />
+set @filename=left(replace(replace(replace(convert(varchar,getdate()-15,20),'-',''),' ',''),':',''),8)<br />
+set @str=@dir+'fullbak'+@filename+'*.bak'<br />
+exec xp_cmdshell @str<br />
+set @filename=left(replace(replace(replace(convert(varchar,getdate()-8,20),'-',''),' ',''),':',''),8)<br />
+set @str=@dir+'diffbak'+@filename+'*.diff'<br />
+exec xp_cmdshell @str<br />
+set @filename=left(replace(replace(replace(convert(varchar,getdate()-8,20),'-',''),' ',''),':',''),8)<br />
+set @str=@dir+'logbak'+@filename+'*.trn'<br />
+exec xp_cmdshell @str<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:33

@@ -1,0 +1,73 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--动态语句语法<br />
+/******************************************************************************************************************************************************<br />
+动态语句语法:exec\sp_executesql语法<br />
+<br />
+整理人：中国风(Roy)<br />
+<br />
+日期:2008.06.06<br />
+******************************************************************************************************************************************************/<br />
+--动态语句语法:<br />
+<br />
+--方法1查询表改为动态<br />
+select * from sysobjects<br />
+exec('select ID,Name from sysobjects')<br />
+exec sp_executesql N'select ID,Name from sysobjects'--多了一个N为unicode<br />
+<br />
+--方法2:字段名，表名，数据库名之类作为变量时,用动态SQL <br />
+declare @FName varchar(20)<br />
+set @FName='ID'<br />
+exec('select '+@FName+' from sysobjects where '+@FName+'=5' )<br />
+<br />
+<br />
+declare @s varchar(1000)<br />
+set @s=N'select '+@FName+' from sysobjects where '+@FName+'=5'<br />
+exec sp_executesql @s--会报错<br />
+<br />
+<br />
+declare @s nvarchar(1000)--改为nvarchar<br />
+set @s=N'select '+@FName+' from sysobjects where '+@FName+'=5'<br />
+exec sp_executesql @s--成功<br />
+<br />
+<br />
+--方法3:输入参数<br />
+<br />
+declare @i int,@s nvarchar(1000)<br />
+set @i=5<br />
+exec('select ID,Name from sysobjects where ID='+@i)<br />
+<br />
+set @s='select ID,Name from sysobjects where ID=@i'<br />
+exec sp_executesql @s,N'@i int',@i--此处输入参数要加上N<br />
+<br />
+--方法4:输出参数<br />
+<br />
+declare @i int,@s nvarchar(1000)<br />
+set @s='select @i=count(1) from sysobjects'<br />
+<br />
+--用exec<br />
+exec('declare @i int '+@s+' select @i')--把整个语句用字符串加起来执行<br />
+<br />
+--用sp_executesql<br />
+exec sp_executesql @s,N'@i int output',@i output--此处输出参数要加上N<br />
+select @i<br />
+<br />
+<br />
+--方法5:输入输出<br />
+<br />
+--用sp_executesql<br />
+declare @i int,@con int,@s nvarchar(1000)<br />
+set @i=5<br />
+select @s='select @con=count(1) from sysobjects where ID>@i'<br />
+exec sp_executesql @s,N'@con int output,@i int',@con output ,@i <br />
+select @con<br />
+<br />
+--用exec<br />
+declare @i int,@s nvarchar(1000)<br />
+set @i=5<br />
+select @s='declare @con int select @con=count(1) from sysobjects where ID>'+rtrim(@i)+' select @con'<br />
+exec(@s)<br />
+<br />
+<br />
+<br />
+本文来自CSDN博客，转载请标明出处：http://blog.csdn.net/htl258/archive/2009/04/25/4106390.aspx<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:32

@@ -1,0 +1,25 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>DECLARE @T TABLE<br />
+(<br />
+ COL VARCHAR(80)<br />
+)<br />
+<br />
+INSERT INTO @T<br />
+SELECT '123_12_124' UNION ALL   <br />
+SELECT '1234_125_1243'<br />
+<br />
+<br />
+<br />
+SELECT COL,<br />
+       COL1 = PARSENAME(REPLACE(COL,'_','.'),3),   ----替换一下 '.' 因为 parsename 只认 '.' <br />
+       COL2 = PARSENAME(REPLACE(COL,'_','.'),2),<br />
+       COL3 = PARSENAME(REPLACE(COL,'_','.'),1)<br />
+ FROM @T<br />
+<br />
+COL        COL1       COL2       COL3       <br />
+---------- ---------- ---------- ---------- <br />
+123_12_124 123        12         124<br />
+1234_125_1 1234       125        1243<br />
+<br />
+（所影响的行数为 2 行）<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:31

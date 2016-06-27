@@ -1,0 +1,91 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>有A数据库服务器，B本机； <br />
+<br />
+我现在想通过在B机器上通过代码调用SQL来执行A数据库的备份到B机器上 <br />
+<br />
+调用的SQL语句为：Backup Database MYDATABASE To Disk='D:/test.bak'，这样备份的目录是数据库服务器A的D盘下； <br />
+<br />
+怎么才能备份到A的D盘下呢？ <br />
+<br />
+请各位给予建议，谢谢！<br />
+----------------------------------------------------------------------------------------------------<br />
+<br />
+要用远程数据库可以备份本地。 <br />
+本地数据库也可以备份到远程。 <br />
+<br />
+--备份环境:把数据库服务器(192.168.1.8)的数据库(TEST)备份到(192.168.1.145)的C$下 <br />
+<br />
+--首先,做一个与客户端的映射 <br />
+exec master..xp_cmdshell <br />
+'net use z: \\192.168.1.145\c$ "密码" /user:192.168.1.145\administrator' <br />
+/*--说明: <br />
+z: 是映射网络路径对应本机的盘符,与下面的备份对应 <br />
+\\192.168.1.145\c$    是要映射的网络路径 <br />
+192.168.1.145\administrator    <br />
+192.168.1.145是远程的计算机名,administrator是登陆的用户名 <br />
+密码                        上面指定的administrator用户的密码 <br />
+--*/ <br />
+<br />
+<br />
+--其次,进行数据库备份 <br />
+backup database TEST to disk='z:\Test.bak' <br />
+<br />
+--最后.备份完成后删除映射 <br />
+exec master..xp_cmdshell 'net use z: /delete' <br />
+--来自网络<br />
+<br />
+<br />
+--以下代码放在作业里做调度，自动备份、自动删除4天前备份<br />
+<br />
+--创建映射<br />
+exec master..xp_cmdshell 'net use w: \DatabaseBackup$  "password"/user:Roy',NO_OUTPUT<br />
+go<br />
+-----2000用游标:<br />
+declare @s nvarchar(200),@del nvarchar(200)<br />
+select  @s='',@del=''<br />
+<br />
+declare datebak cursor for<br />
+select <br />
+    [bak]='backup database  '+quotename(Name)+'  to disk =''w:'+Name+'_'+convert(varchar(8),getdate(),112)+'.bak''  with init',<br />
+    [del]='exec master..xp_cmdshell '' del w:'+Name+'_'+convert(varchar(8),getdate()-4,112)+'.bak'', no_output' <br />
+from master..sysdatabases where dbid>4 --不备份系统数据库<br />
+open datebak<br />
+<br />
+fetch next from datebak into @s,@del<br />
+while @@fetch_status=0<br />
+    begin<br />
+        exec (@del)<br />
+        exec(@s)<br />
+        fetch next from datebak into @s,@del<br />
+    end<br />
+close datebak<br />
+deallocate datebak<br />
+go<br />
+--删除映射<br />
+exec master..xp_cmdshell 'net use w: /delete'<br />
+<br />
+go<br />
+<br />
+--用JOB. <br />
+--SQL SERVER2000为例 <br />
+<br />
+企业管理器—>数据库服务器—>管理目录—>SQL SERVER代理—>作业—>右键 选—>新建 <br />
+<br />
+常规选项页—>输入作业名称—>选中所有者。 <br />
+<br />
+步骤选项页—>新建—>输入步骤名—>类型 TSQL脚本—>选择需要执行的数据库—>在命令框里输入你的SQL 脚本： <br />
+<br />
+如：update tb set 状态= ...  where 日期........... <br />
+<br />
+你可以点左下角的【分析】按钮，分析一下语法，分析无误，按确定。 <br />
+<br />
+调度选项页—>新建调度—>输入调度名称—>调度类型 你可以选择也可以点右下角的【更改】按钮进行更改，确定。 <br />
+<br />
+任务栏 SQL SERVER服务器的小图标 双击 服务 选中 SQL SERVER AGENT,点【开始/继续】，选中当启动OS时，自动启动服务，就可以了。 <br />
+<br />
+到你定的那个时间点，SQL SERVER会自动去执行你的脚本的。 <br />
+<br />
+如果需要生成脚本的话，企业管理器—>数据库服务器—>管理目录—>SQL SERVER代理—>作业—>右键你刚完成的作业—>所有任务 <br />
+<br />
+—>生成SQL脚本，即可生成你需要的脚本。<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:09

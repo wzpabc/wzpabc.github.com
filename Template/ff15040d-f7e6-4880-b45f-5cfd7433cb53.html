@@ -1,0 +1,34 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>CREATE PROCEDURE sp_drop_all_fk   <br />
+  <br />
+as  <br />
+  <br />
+declare @sql varchar(255)   <br />
+declare dropsql_cursor cursor for    <br />
+select 'alter table '+object_name(fkeyid)+' drop constraint '+object_name(constid)+char(10) from sysreferences   <br />
+  <br />
+open dropsql_cursor   <br />
+  <br />
+fetch dropsql_cursor into @sql   <br />
+  <br />
+begin tran   <br />
+  <br />
+while @@fetch_status=0   <br />
+begin  <br />
+       <br />
+    execute(@sql)   <br />
+       <br />
+    if @@error <> 0   <br />
+    begin  <br />
+        rollback  <br />
+        return  <br />
+    end  <br />
+  <br />
+    fetch dropsql_cursor into @sql   <br />
+  <br />
+end  <br />
+deallocate dropsql_cursor   <br />
+  <br />
+commit  <br />
+GO  <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:32

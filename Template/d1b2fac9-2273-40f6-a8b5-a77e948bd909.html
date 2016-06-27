@@ -1,0 +1,112 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>/************************************************************************************************<br />
+                          乌龟代码<br />
+*************************************************************************************************/<br />
+<br />
+/******* 导出到excel */<br />
+EXEC master..xp_cmdshell 'bcp SettleDB.dbo.shanghu out c:\temp1.xls -c -q -S"GNETDATA/GNETDATA" -U"sa" -P""' <br />
+<br />
+/*********** 导入Excel */<br />
+SELECT * <br />
+FROM OpenDataSource( 'Microsoft.Jet.OLEDB.4.0', <br />
+'Data Source="c:\test.xls";User ID=Admin;Password=;Extended properties=Excel 5.0')...xactions <br />
+<br />
+/*动态文件名 <br />
+declare @fn varchar(20),@s varchar(1000) <br />
+set @fn = 'c:\test.xls' <br />
+set @s ='''Microsoft.Jet.OLEDB.4.0'', <br />
+''Data Source="'+@fn+'";User ID=Admin;Password=;Extended properties=Excel 5.0''' <br />
+set @s = 'SELECT * FROM OpenDataSource ('+@s+')...sheet1$' <br />
+exec(@s) <br />
+*/ <br />
+<br />
+SELECT cast(cast(科目编号 as numeric(10,2)) as nvarchar(255))+'　' 转换后的别名 <br />
+FROM OpenDataSource( 'Microsoft.Jet.OLEDB.4.0', <br />
+'Data Source="c:\test.xls";User ID=Admin;Password=;Extended properties=Excel 5.0')...xactions <br />
+<br />
+/********************** EXCEL导到远程SQL */<br />
+insert OPENDATASOURCE( <br />
+'SQLOLEDB', <br />
+'Data Source=远程ip;User ID=sa;Password=密码' <br />
+).库名.dbo.表名 (列名1,列名2) <br />
+SELECT 列名1,列名2 <br />
+FROM OpenDataSource( 'Microsoft.Jet.OLEDB.4.0', <br />
+'Data Source="c:\test.xls";User ID=Admin;Password=;Extended properties=Excel 5.0')...xactions <br />
+<br />
+<br />
+/** 导入文本文件 */<br />
+EXEC master..xp_cmdshell 'bcp dbname..tablename in c:\DT.txt -c -Sservername -Usa -Ppassword' <br />
+<br />
+/** 导出文本文件 */<br />
+EXEC master..xp_cmdshell 'bcp dbname..tablename out c:\DT.txt -c -Sservername -Usa -Ppassword' <br />
+或 <br />
+EXEC master..xp_cmdshell 'bcp "Select * from dbname..tablename" queryout c:\DT.txt -c -Sservername -Usa -Ppassword' <br />
+<br />
+/**导出到TXT文本，用逗号分开*/ <br />
+exec master..xp_cmdshell 'bcp "库名..表名" out "d:\tt.txt" -c -t ,-U sa -P password' <br />
+<br />
+<br />
+BULK INSERT 库名..表名 <br />
+FROM 'c:\test.txt' <br />
+WITH ( <br />
+FIELDTERMINATOR = ';', <br />
+ROWTERMINATOR = '\n' <br />
+) <br />
+<br />
+<br />
+--/* dBase IV文件 <br />
+select * from <br />
+OPENROWSET('MICROSOFT.JET.OLEDB.4.0' <br />
+,'dBase IV;HDR=NO;IMEX=2;DATABASE=C:\','select * from [客户资料4.dbf]') <br />
+--*/ <br />
+<br />
+--/* dBase III文件 <br />
+select * from <br />
+OPENROWSET('MICROSOFT.JET.OLEDB.4.0' <br />
+,'dBase III;HDR=NO;IMEX=2;DATABASE=C:\','select * from [客户资料3.dbf]') <br />
+--*/ <br />
+<br />
+--/* FoxPro 数据库 <br />
+select * from openrowset('MSDASQL', <br />
+'Driver=Microsoft Visual FoxPro Driver;SourceType=DBF;SourceDB=c:\', <br />
+'select * from [aa.DBF]') <br />
+--*/ <br />
+<br />
+/**************导入DBF文件****************/ <br />
+select * from openrowset('MSDASQL', <br />
+'Driver=Microsoft Visual FoxPro Driver; <br />
+SourceDB=e:\VFP98\data; <br />
+SourceType=DBF', <br />
+'select * from customer where country != "USA" order by country') <br />
+go <br />
+/***************** 导出到DBF ************** <br />
+如果要导出数据到已经生成结构(即现存的)FOXPRO表中,可以直接用下面的SQL语句 */<br />
+<br />
+insert into openrowset('MSDASQL', <br />
+'Driver=Microsoft Visual FoxPro Driver;SourceType=DBF;SourceDB=c:\', <br />
+'select * from [aa.DBF]') <br />
+select * from 表 <br />
+<br />
+/*说明: <br />
+SourceDB=c:\ 指定foxpro表所在的文件夹 <br />
+aa.DBF 指定foxpro表的文件名. */<br />
+<br />
+<br />
+/*************导出到Access********************/ <br />
+insert into openrowset('Microsoft.Jet.OLEDB.4.0', <br />
+'x:\A.mdb';'admin';'',A表) select * from 数据库名..B表 <br />
+<br />
+/*************导入Access********************/ <br />
+insert into B表 selet * from openrowset('Microsoft.Jet.OLEDB.4.0', <br />
+'x:\A.mdb';'admin';'',A表) <br />
+<br />
+/*文件名为参数*/  <br />
+declare @fname varchar(20) <br />
+set @fname = 'd:\test.mdb' <br />
+exec('SELECT a.* FROM opendatasource(''Microsoft.Jet.OLEDB.4.0'', <br />
+'''+@fname+''';''admin'';'''', topics) as a ') <br />
+<br />
+SELECT * <br />
+FROM OpenDataSource( 'Microsoft.Jet.OLEDB.4.0', <br />
+'Data Source="f:\northwind.mdb";Jet OLEDB:Database Password=123;User ID=Admin;Password=;')...产品 <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:31

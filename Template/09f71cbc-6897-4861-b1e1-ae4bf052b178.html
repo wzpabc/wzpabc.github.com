@@ -1,0 +1,268 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>*<br />
+标题：查询各节点的父路径函数<br />
+作者：爱新觉罗·毓华(十八年风雨,守得冰山雪莲花开)  <br />
+时间：2008-05-12<br />
+地点：广东深圳<br />
+*/<br />
+<br />
+/*<br />
+原始数据及要求结果如下：<br />
+--食品 <br />
+  --水果 <br />
+    --香蕉 <br />
+    --苹果    <br />
+  --蔬菜 <br />
+    --青菜<br />
+id          pid         name                 <br />
+----------- ----------- -------------------- <br />
+1           0           食品<br />
+2           1           水果<br />
+3           1           蔬菜<br />
+4           2           香蕉<br />
+5           2           苹果<br />
+6           3           青菜<br />
+<br />
+要求得到各节点的父路径即如下结果：<br />
+id  pid name  路径                         <br />
+--- --- ----- ---------------<br />
+1   0   食品  食品<br />
+2   1   水果  食品,水果<br />
+3   1   蔬菜  食品,蔬菜<br />
+4   2   香蕉  食品,水果,香蕉<br />
+5   2   苹果  食品,水果,苹果<br />
+6   3   青菜  食品,蔬菜,青菜 <br />
+*/<br />
+<br />
+create table tb (id int , pid int , name nvarchar(20)) <br />
+insert into tb values(1 , 0 , '食品')<br />
+insert into tb values(2 , 1 , '水果')<br />
+insert into tb values(3 , 1 , '蔬菜')<br />
+insert into tb values(4 , 2 , '香蕉')<br />
+insert into tb values(5 , 2 , '苹果')<br />
+insert into tb values(6 , 3 , '青菜')<br />
+go<br />
+<br />
+--查询各节点的父路径函数<br />
+create function f_pid(@id int) returns varchar(100)<br />
+as<br />
+begin<br />
+  declare @re_str as varchar(100)<br />
+  set @re_str = ''<br />
+  select @re_str = name from tb where id = @id<br />
+  while exists (select 1 from tb where id = @id and pid <> 0)<br />
+    begin<br />
+      select @id = b.id , @re_str = b.name + ',' + @re_str from tb a , tb b where a.id = @id and a.pid = b.id<br />
+    end<br />
+  return @re_str<br />
+end<br />
+go<br />
+<br />
+select * , dbo.f_pid(id) 路径 from tb order by id<br />
+<br />
+drop table tb<br />
+drop function f_pid<br />
+<br />
+<br />
+<br />
+SQL code<br />
+/*<br />
+标题：查询所有节点及其所有子节点的函数<br />
+作者：爱新觉罗·毓华(十八年风雨,守得冰山雪莲花开) <br />
+时间：2009-04-12<br />
+地点：广东深圳<br />
+*/<br />
+<br />
+--生成测试数据 <br />
+create table tb(id varchar(10),pid varchar(10)) <br />
+insert into tb select 'a', null <br />
+insert into tb select 'b', 'a' <br />
+insert into tb select 'c', 'a' <br />
+insert into tb select 'd', 'b' <br />
+insert into tb select 'e', 'b' <br />
+insert into tb select 'f', 'c' <br />
+insert into tb select 'g', 'c' <br />
+go <br />
+<br />
+--创建用户定义函数 <br />
+create function f_getchild(@id varchar(10)) returns varchar(8000) <br />
+as <br />
+begin <br />
+  declare @i int , @ret varchar(8000) <br />
+  declare @t table(id varchar(10) , pid varchar(10) , level int) <br />
+  set @i = 1 <br />
+  insert into @t select id , pid , @i from tb where id = @id <br />
+  while @@rowcount <> 0 <br />
+  begin <br />
+    set @i = @i + 1 <br />
+    insert into @t select a.id , a.pid , @i from tb a , @t b where a.pid = b.id and b.level = @i - 1<br />
+  end <br />
+  select @ret = isnull(@ret , '') + id + ',' from @t <br />
+  return left(@ret , len(@ret) - 1)<br />
+end <br />
+go <br />
+<br />
+--执行查询 <br />
+select id , children = isnull(dbo.f_getchild(id) , '') from tb group by id<br />
+go <br />
+<br />
+--输出结果 <br />
+/* <br />
+id         children     <br />
+---------- -------------<br />
+a          a,b,c,d,e,f,g<br />
+b          b,d,e<br />
+c          c,f,g<br />
+d          d<br />
+e          e<br />
+f          f<br />
+g          g<br />
+<br />
+（所影响的行数为 7 行）<br />
+<br />
+*/ <br />
+<br />
+--删除测试数据 <br />
+drop function f_getchild <br />
+drop table tb<br />
+<br />
+<br />
+<br />
+SQL code<br />
+/*<br />
+标题：查询所有顶级节点及其子节点的例<br />
+地址：http://topic.csdn.net/u/20090323/21/63a91f51-c4df-464d-ba18-64343deb4e3a.html<br />
+作者：爱新觉罗·毓华(十八年风雨,守得冰山雪莲花开)<br />
+时间：2009-03-23<br />
+地点：广东深圳<br />
+*/<br />
+<br />
+[code=SQL]create table Area (id int identity,Name varchar(10) ,order_by int ,father_ID int )<br />
+insert into area values('广东省',2,0) <br />
+insert into area values('四川省',2,0) <br />
+insert into area values('湖北省',2,0) <br />
+insert into area values('东莞市',1,1) <br />
+insert into area values('广州市',1,1) <br />
+insert into area values('天河区',0,5) <br />
+insert into area values('绵阳市',1,2) <br />
+insert into area values('武汉市',1,3) <br />
+insert into area values('汉口区',0,8) <br />
+insert into area values('随州市',1,3)<br />
+go<br />
+<br />
+select * from area<br />
+<br />
+drop table area<br />
+<br />
+/*<br />
+id          Name       order_by    father_ID   <br />
+----------- ---------- ----------- ----------- <br />
+1           广东省        2           0<br />
+2           四川省        2           0<br />
+3           湖北省        2           0<br />
+4           东莞市        1           1<br />
+5           广州市        1           1<br />
+6           天河区        0           5<br />
+7           绵阳市        1           2<br />
+8           武汉市        1           3<br />
+9           汉口区        0           8<br />
+10          随州市        1           3<br />
+<br />
+（所影响的行数为 10 行）<br />
+<br />
+要求显示为：<br />
+name           <br />
+-------------- <br />
+广东省<br />
+  东莞市<br />
+  广州市<br />
+    天河区<br />
+四川省<br />
+  绵阳市<br />
+湖北省<br />
+  武汉市<br />
+    汉口区<br />
+  随州市<br />
+<br />
+（所影响的行数为 10 行）<br />
+*/<br />
+<br />
+<br />
+SQL code<br />
+--创建原始表<br />
+create table Area (id int identity,Name varchar(10) ,order_by int ,father_ID int )<br />
+insert into area values('广东省',2,0) <br />
+insert into area values('四川省',2,0) <br />
+insert into area values('湖北省',2,0) <br />
+insert into area values('东莞市',1,1) <br />
+insert into area values('广州市',1,1) <br />
+insert into area values('天河区',0,5) <br />
+insert into area values('绵阳市',1,2) <br />
+insert into area values('武汉市',1,3) <br />
+insert into area values('汉口区',0,8) <br />
+insert into area values('随州市',1,3)<br />
+--创建临时表<br />
+create table tmp (id int identity,Name varchar(10) ,order_by int ,father_ID int )<br />
+go<br />
+<br />
+--创建查询指定节点及其所有子节点的函数<br />
+create function f_cid(@ID int) returns @t_level table(id int , level int)<br />
+as<br />
+begin<br />
+  declare @level int<br />
+  set @level = 1<br />
+  insert into @t_level select @id , @level<br />
+  while @@ROWCOUNT > 0<br />
+  begin<br />
+    set @level = @level + 1<br />
+    insert into @t_level select a.id , @level<br />
+    from area a , @t_Level b<br />
+    where a.father_ID = b.id and b.level = @level - 1<br />
+  end<br />
+  return<br />
+end<br />
+go<br />
+<br />
+--创建存储过程并将数据插入临时表<br />
+create proc my_proc <br />
+as<br />
+begin<br />
+  declare @id as int<br />
+  set @id = 0<br />
+  while exists(select 1 from area where order_by = 2 and id > @id)<br />
+  begin<br />
+    set @id = (select min(id) from area where order_by = 2 and id > @id)<br />
+    insert into tmp(Name ,order_by ,father_ID) select a.name,a.order_by ,a.father_id from area a , f_cid(@id) b where a.id = b.id order by a.id <br />
+  end<br />
+end<br />
+go<br />
+exec my_proc<br />
+<br />
+--从临时表提取数据并显示<br />
+select case when order_by = 2 then name<br />
+            when order_by = 1 then '  ' + name<br />
+            when order_by = 0 then '    ' + name<br />
+       end name<br />
+from tmp order by id<br />
+<br />
+drop function f_cid<br />
+drop proc my_proc<br />
+drop table area , tmp<br />
+<br />
+/*<br />
+name           <br />
+-------------- <br />
+广东省<br />
+  东莞市<br />
+  广州市<br />
+    天河区<br />
+四川省<br />
+  绵阳市<br />
+湖北省<br />
+  武汉市<br />
+    汉口区<br />
+  随州市<br />
+<br />
+（所影响的行数为 10 行）<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:09

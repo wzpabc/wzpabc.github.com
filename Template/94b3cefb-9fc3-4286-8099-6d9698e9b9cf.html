@@ -1,0 +1,219 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>CREATE TABLE BOM(PID INT,ID INT)<br />
+INSERT INTO BOM SELECT 801,101<br />
+INSERT INTO BOM SELECT 801,102<br />
+INSERT INTO BOM SELECT 801,103<br />
+INSERT INTO BOM SELECT 801,601<br />
+INSERT INTO BOM SELECT 601,101<br />
+INSERT INTO BOM SELECT 601,105<br />
+INSERT INTO BOM SELECT 601,501<br />
+INSERT INTO BOM SELECT 501,106<br />
+INSERT INTO BOM SELECT 501,121<br />
+GO<br />
+<br />
+CREATE FUNCTION F_GETROOT(@PID INT)<br />
+RETURNS INT<br />
+AS<br />
+BEGIN<br />
+    DECLARE @ID INT<br />
+    WHILE EXISTS(SELECT 1 FROM BOM WHERE ID=@PID)<br />
+    BEGIN<br />
+        SET @ID=@PID<br />
+        SELECT @PID=PID FROM BOM WHERE ID=@ID<br />
+    END<br />
+    RETURN @PID<br />
+END<br />
+GO<br />
+<br />
+SELECT PID=DBO.F_GETROOT(PID),ID FROM BOM<br />
+GO<br />
+<br />
+/*<br />
+PID         ID<br />
+----------- ----------- <br />
+801         101<br />
+801         102<br />
+801         103<br />
+801         601<br />
+801         101<br />
+801         105<br />
+801         501<br />
+801         106<br />
+801         121<br />
+*/<br />
+<br />
+<br />
+DROP FUNCTION F_GETROOT<br />
+DROP TABLE BOM<br />
+GO<br />
+<br />
+<br />
+<br />
+<br />
+--生成测试数据<br />
+create table BOM_1(Item int,bom_head varchar(20),bom_child varchar(20),number int,products_attribute  varchar(20))<br />
+insert into BOM_1 select 1 ,'A' ,'A1',1,'采购'<br />
+insert into BOM_1 select 2 ,'A' ,'A2',2,'生产'<br />
+insert into BOM_1 select 3 ,'A2','A3',3,'生产'<br />
+insert into BOM_1 select 4 ,'A2','A4',2,'采购'<br />
+insert into BOM_1 select 5 ,'A3','A5',2,'采购'<br />
+insert into BOM_1 select 6 ,'A3','A6',1,'采购'<br />
+insert into BOM_1 select 7 ,'B' ,'B1',1,'采购'<br />
+insert into BOM_1 select 8 ,'B' ,'B2',2,'生产'<br />
+insert into BOM_1 select 9 ,'B2','B3',3,'生产'<br />
+insert into BOM_1 select 10,'B2','B4',2,'采购'<br />
+insert into BOM_1 select 11,'B3','B5',2,'采购'<br />
+insert into BOM_1 select 12,'B3','B6',2,'采购'<br />
+go<br />
+   <br />
+<br />
+--创建用户定义函数，用于取每个父节点下子节点的采购配置信息<br />
+create function f_stock(@bom_head varchar(20))<br />
+returns @t table(bom varchar(20),number int)<br />
+as<br />
+begin <br />
+    declare @level int<br />
+    declare @a table(bom varchar(20),number int,products_attribute varchar(20),[level] int)<br />
+    set @level=1<br />
+<br />
+    if exists(select 1 from BOM_1 where bom_head=@bom_head)    <br />
+    insert into @a <br />
+    select bom_child,number,products_attribute,@level <br />
+    from BOM_1 <br />
+    where bom_head=@bom_head<br />
+    <br />
+    while exists(select 1 from @a where [level]=@level and products_attribute='生产')<br />
+    begin<br />
+        set @level=@level+1<br />
+        insert into @a(bom,number,products_attribute,[level])<br />
+        select a.bom_child,a.number,a.products_attribute,@level <br />
+        from BOM_1 a,@a b<br />
+        where a.bom_head=b.bom and b.[level]=@level-1<br />
+    end<br />
+    <br />
+    insert into @t(bom,number) select bom,number from @a where products_attribute='采购'<br />
+    return<br />
+end<br />
+go<br />
+<br />
+<br />
+--执行调用，取父节点'A'一个标准配置分解的采购信息及数量<br />
+select * from dbo.f_stock('A')<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+--生成测试数据<br />
+create table BOM(ID INT,PID INT,MSG VARCHAR(1000))<br />
+insert into BOM select 1,0,NULL<br />
+insert into BOM select 2,1,NULL<br />
+insert into BOM select 3,1,NULL<br />
+insert into BOM select 4,2,NULL<br />
+insert into BOM select 5,3,NULL<br />
+insert into BOM select 6,5,NULL<br />
+insert into BOM select 7,6,NULL<br />
+go<br />
+<br />
+--创建用户定义函数用于取每个父节点下子节点的采购配置信息<br />
+create function f_getChild(@ID VARCHAR(10))<br />
+returns @t table(ID VARCHAR(10),PID VARCHAR(10),Level INT)<br />
+as<br />
+begin<br />
+    declare @i int<br />
+    set @i = 1<br />
+    insert into @t select ID,PID,@i from BOM where PID = @ID<br />
+    <br />
+    while @@rowcount<>0<br />
+    begin<br />
+        set @i = @i + 1<br />
+        <br />
+        insert into @t <br />
+        select <br />
+            a.ID,a.PID,@i <br />
+        from <br />
+            BOM a,@t b <br />
+        where <br />
+            a.PID=b.ID and b.Level = @i-1<br />
+    end<br />
+    return<br />
+end<br />
+go<br />
+<br />
+--执行查询<br />
+select ID from dbo.f_getChild(3)<br />
+go<br />
+<br />
+--输出结果<br />
+/*<br />
+ID<br />
+----<br />
+5<br />
+6<br />
+7<br />
+*/<br />
+<br />
+--删除测试数据<br />
+drop function f_getChild<br />
+drop table BOM<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+创建用户定义函数,每个子节点de父节点的信息<br />
+<br />
+<br />
+--生成测试数据<br />
+create table BOM(ID int,parentID int,sClassName varchar(10))<br />
+insert into BOM values(1,0,'1111'      )<br />
+insert into BOM values(2,1,'1111_1'    )<br />
+insert into BOM values(3,2,'1111-1-1'  )<br />
+insert into BOM values(4,3,'1111-1-1-1') <br />
+insert into BOM values(5,1,'1111-2'    )<br />
+<br />
+go<br />
+<br />
+--创建用户定义函数,每个子节点de父节点的信息<br />
+create function f_getParent(@ID int)<br />
+returns varchar(40)<br />
+as<br />
+begin<br />
+    declare @ret varchar(40)<br />
+<br />
+    while exists(select 1 from BOM where ID=@ID and parentID<>0)<br />
+    begin<br />
+        select @ID=b.ID,@ret=','+rtrim(b.ID)+isnull(@ret,'')<br />
+        from<br />
+            BOM a,BOM b<br />
+        where<br />
+            a.ID=@ID and b.ID=a.parentID<br />
+    end<br />
+    <br />
+    set @ret=stuff(@ret,1,1,'')<br />
+    return @ret<br />
+end<br />
+go<br />
+<br />
+--执行查询<br />
+select ID,isnull(dbo.f_getParent(ID),'') as parentID from BOM<br />
+go<br />
+<br />
+--输出结果<br />
+/*<br />
+ID          parentID                                 <br />
+----------- ---------------------------------------- <br />
+1           <br />
+2           1<br />
+3           1,2<br />
+4           1,2,3<br />
+5           1   <br />
+*/<br />
+<br />
+--删除测试数据<br />
+drop function f_getParent<br />
+drop table BOM<br />
+go<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:31

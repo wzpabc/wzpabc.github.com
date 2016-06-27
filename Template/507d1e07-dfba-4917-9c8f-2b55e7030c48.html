@@ -1,0 +1,298 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--bom结构，查找节点下所有子节点：<br />
+<br />
+create table os(id int,parentid int,desn varchar(10))<br />
+insert into os select 1,0,'体育用品'<br />
+insert into os select 2,0,'户外运动'<br />
+insert into os select 3,1,'篮球'<br />
+insert into os select 4,1,'足球'<br />
+insert into os select 5,2,'帐篷'<br />
+insert into os select 6,2,'登山鞋'<br />
+insert into os select 7,0,'男士用品'<br />
+insert into os select 8,7,'刮胡刀'<br />
+insert into os select 9,3,'大号篮球'<br />
+<br />
+--求个节点下所有子节点：<br />
+create function f_cid(@id int)<br />
+returns varchar(500)<br />
+as<br />
+begin<br />
+     declare @t table(id int,parentid int,desn varchar(10),lev int)<br />
+     declare @lev int<br />
+     set @lev=1<br />
+     insert into @t select *,@lev from  os where id=@id<br />
+     while(@@rowcount>0)<br />
+     begin<br />
+          set @lev=@lev+1<br />
+          insert into @t select a.*,@lev from os a,@t b<br />
+          where a.parentid=b.id and b.lev=@lev-1<br />
+     end<br />
+     declare @cids varchar(500)<br />
+     select @cids=isnull(@cids+',','')+ltrim(id) from @t order by lev<br />
+     return @cids<br />
+end<br />
+go<br />
+<br />
+--调用函数<br />
+select *,ids=dbo.f_cid(id) from os<br />
+<br />
+<br />
+--得到每个节点路径：<br />
+create proc wsp2<br />
+@id int<br />
+as<br />
+select *,cast(' ' as varchar(10)) fullpath  into #os from os<br />
+DECLARE @i int,@j int<br />
+set @i=0<br />
+set @j=1<br />
+select @i=max(parentid) from #os<br />
+update #os set fullpath=id <br />
+while @j<=@i<br />
+begin<br />
+       update #os set fullpath=a.fullpath+','+ltrim(#os.id) <br />
+            from #os inner join #os a on #os.parentid=a.id <br />
+       where #os.parentid=@j <br />
+       set @j=@j+1<br />
+end<br />
+select * from #os<br />
+go<br />
+--调用存储过程<br />
+exec wsp2 1<br />
+<br />
+<br />
+----------------------------------------------------------------------------------------------------------------<br />
+create table tb(id varchar(3) , pid varchar(3) , name varchar(10)) <br />
+insert into tb values('001' , null  , '广东省') <br />
+insert into tb values('002' , '001' , '广州市') <br />
+insert into tb values('003' , '001' , '深圳市') <br />
+insert into tb values('004' , '002' , '天河区') <br />
+insert into tb values('005' , '003' , '罗湖区') <br />
+insert into tb values('006' , '003' , '福田区') <br />
+insert into tb values('007' , '003' , '宝安区') <br />
+insert into tb values('008' , '007' , '西乡镇') <br />
+insert into tb values('009' , '007' , '龙华镇') <br />
+insert into tb values('010' , '007' , '松岗镇') <br />
+go <br />
+<br />
+--查询指定节点及其所有子节点的函数 <br />
+create function f_cid(@ID varchar(3)) returns @t_level table(id varchar(3) , level int) <br />
+as <br />
+begin <br />
+  declare @level int <br />
+  set @level = 1 <br />
+  insert into @t_level select @id , @level <br />
+  while @@ROWCOUNT > 0 <br />
+  begin <br />
+    set @level = @level + 1 <br />
+    insert into @t_level select a.id , @level <br />
+    from tb a , @t_Level b <br />
+    where a.pid = b.id and b.level = @level - 1 <br />
+  end <br />
+  return <br />
+end <br />
+go <br />
+<br />
+--调用函数查询001(广东省)及其所有子节点 <br />
+select a.* from tb a , f_cid('001') b where a.id = b.id order by a.id <br />
+/* <br />
+id  pid  name      <br />
+---- ---- ---------- <br />
+001  NULL 广东省 <br />
+002  001  广州市 <br />
+003  001  深圳市 <br />
+004  002  天河区 <br />
+005  003  罗湖区 <br />
+006  003  福田区 <br />
+007  003  宝安区 <br />
+008  007  西乡镇 <br />
+009  007  龙华镇 <br />
+010  007  松岗镇 <br />
+<br />
+（所影响的行数为 10 行） <br />
+*/ <br />
+<br />
+--调用函数查询002(广州市)及其所有子节点 <br />
+select a.* from tb a , f_cid('002') b where a.id = b.id order by a.id <br />
+/* <br />
+id  pid  name      <br />
+---- ---- ---------- <br />
+002  001  广州市 <br />
+004  002  天河区 <br />
+<br />
+（所影响的行数为 2 行） <br />
+*/ <br />
+<br />
+--调用函数查询003(深圳市)及其所有子节点 <br />
+select a.* from tb a , f_cid('003') b where a.id = b.id order by a.id <br />
+/* <br />
+id  pid  name      <br />
+---- ---- ---------- <br />
+003  001  深圳市 <br />
+005  003  罗湖区 <br />
+006  003  福田区 <br />
+007  003  宝安区 <br />
+008  007  西乡镇 <br />
+009  007  龙华镇 <br />
+010  007  松岗镇 <br />
+<br />
+（所影响的行数为 7 行） <br />
+*/ <br />
+<br />
+drop table tb <br />
+drop function f_cid<br />
+<br />
+<br />
+----------------------------------------------------------------------------------------------------------------<br />
+set ANSI_NULLS ON<br />
+set QUOTED_IDENTIFIER ON<br />
+go<br />
+<br />
+<br />
+ALTER trigger [tri_updatesalary_Mem_Type]<br />
+ on [dbo].[SalaryIncrease]<br />
+after  insert<br />
+as<br />
+ declare @i int<br />
+ set @i=@@identity<br />
+ <br />
+ update m<br />
+ set m.Mem_Type=case when s.SMark>500000 then '退休会员'--500000<br />
+                   when s.SMark>400000 then '钻石五级'--400000<br />
+                   when s.SMark>300000 then '钻石四级'--300000<br />
+                   when s.SMark>200000 then '钻石三级'--200000<br />
+                   when s.SMark>100000 then '钻石二级'--100000<br />
+                   when s.SMark>50000 then '钻石一级'--50000<br />
+                   when s.SMark>40000 then '五星级'--40000<br />
+                   when s.SMark>30000 then '四星级'--30000<br />
+                   when s.SMark>20000 then '三星级'--20000<br />
+                   when s.SMark>10000 then '二星级'--10000<br />
+                   when s.SMark>5000 then '一星级'--5000<br />
+                   else '一般VIP会员'<br />
+               end<br />
+from MemberInfo m<br />
+  join (select s.SCardName,sum(s.SMark) as SMark <br />
+          from SalaryIncrease s join inserted i on s.SCardName=i.SCardName group by s.SCardName) s<br />
+    on m.Mem_Num=s.SCardName <br />
+ <br />
+ --if exists(select * from MemberInfo m join inserted i on m.Mem_Num=i.SCardName and m.Mem_Mark>100 )<br />
+ if exists (select  m.SCardName,sum(m.ShopMark)as mark from(select m.SCardName,m.ShopMark  from ShoppingMark m join inserted i on m.SCardName=i.SCardName<br />
+where year(m.SDate)=year(getdate()) and month(m.SDate)=month(getdate())) m<br />
+ group by m.SCardName  having sum(m.ShopMark)>100)<br />
+ /**/<br />
+/* --最新的(我写的,上面是整合魅影的)select * from ShoppingMark SM join (select m.SCardName,sum(m.ShopMark) as Mark from ShoppingMark m join inserted i on m.SCardName=i.SCardName group by m.SCardName) s<br />
+ on SM.SCardName=s.ScardName where month(SDate)=month(getdate()) and year(SDate)=year(getdate()) and s.Mark>100*/<br />
+begin<br />
+ update s<br />
+   set s.SIncease=case<br />
+                      --积分大于1000就是星级.所以不用判断是否是星级<br />
+                   when m.Mem_Type<>'一般VIP会员' then s.SMark*0.3<br />
+                   else case <br />
+                          when s.SMark>4000 then <br />
+                               s.SMark*0.3<br />
+                        --  when s.SMark>4000 then <br />
+                             --  200*0.2+200*0.23+200*0.25+200*0.28+(s.SMark-800)*0.3<br />
+                          when s.SMark>3000 then <br />
+                               1000*0.2+1000*0.23+1000*0.25+(s.SMark-600)*0.28<br />
+                          when s.SMark>2000 then <br />
+                               1000*0.2+100*0.23+(s.SMark-400)*0.25  <br />
+                          when s.SMark>1000 then<br />
+                               (s.SMark-200)*.023+1000*0.2<br />
+                          else  s.SMark*0.2<br />
+                       end<br />
+                  end<br />
+ from SalaryIncrease as s<br />
+ join inserted i<br />
+    on s.SCardName=i.SCardName<br />
+  join MemberInfo m<br />
+    on (i.SCardName=m.Mem_Num and s.SID=@i) or (i.SCardName=m.Mem_Num and s.SIncease=0)<br />
+    end<br />
+--go<br />
+<br />
+<br />
+<br />
+--树型结构处理之双编号（广度深度排序）<br />
+if OBJECTPROPERTY(object_id('tb'),'isusertable')<>0 <br />
+  drop table tb<br />
+create table tb(ybh nvarchar(10),ebh nvarchar(10),beizhu nvarchar(1000))<br />
+insert tb<br />
+select '0001',null,'云南省'<br />
+union all select '0002','0001','昆明市'<br />
+union all select '0003','0001','昭通市'<br />
+union all select '0009','0001','大理市'<br />
+union all select '0008',null,'四川省'<br />
+union all select '0004',null,'贵州省'<br />
+union all select '0005','0002','五华区'<br />
+union all select '0007','0002','水富县'<br />
+union all select '0006','0005','西园路192号'<br />
+union all select '0010','0006','金色梧桐3-702'<br />
+union all select '0011','0010','昆明越科时空科技有限公司'<br />
+union all select '0015','0007','两碗乡'<br />
+union all select '0013','0015','两碗村'<br />
+union all select '0012','0013','某跨国集团董事长'<br />
+union all select '0014','0008','成都市'<br />
+<br />
+  <br />
+  --深度排序（模拟单编码法)<br />
+   declare @level_tt table(ybh nvarchar(1000),ebh nvarchar(1000),level int)<br />
+  declare @level int<br />
+  set @level=0<br />
+  insert @level_tt(ybh,ebh,level)<br />
+  select ybh,ybh,@level from tb where ebh is null<br />
+  while @@ROWCOUNT>0<br />
+  begin <br />
+          set @level=@level+1<br />
+          insert @level_tt(ybh,ebh,level)<br />
+          select a.ybh,b.ebh+a.ybh,@level<br />
+            from tb a,@level_tt b<br />
+            where a.ebh=b.ybh and b.level=@level-1<br />
+ end<br />
+select space(b.level*2)+'----'+a.beizhu,a.*,b.*<br />
+  from tb a,@level_tt b<br />
+  where a.ybh=b.ybh<br />
+  order by b.ebh<br />
+/*<br />
+(结果)    ybh    ebh    beizhu    ybh    ebh    level<br />
+----云南省    0001    NULL    云南省    0001    0001    0<br />
+  ----昆明市    0002    0001    昆明市    0002    00010002    1<br />
+    ----五华区    0005    0002    五华区    0005    000100020005    2<br />
+      ----西园路192号    0006    0005    西园路192号    0006    0001000200050006    3<br />
+        ----金色梧桐3-702    0010    0006    金色梧桐3-702    0010    00010002000500060010    4<br />
+          ----昆明越科时空科技有限公司    0011    0010    昆明越科时空科技有限公司    0011    000100020005000600100011    5<br />
+    ----水富县    0007    0002    水富县    0007    000100020007    2<br />
+      ----两碗乡    0015    0007    两碗乡    0015    0001000200070015    3<br />
+        ----两碗村    0013    0015    两碗村    0013    00010002000700150013    4<br />
+          ----某跨国集团董事长    0012    0013    某跨国集团董事长    0012    000100020007001500130012    5<br />
+  ----昭通市    0003    0001    昭通市    0003    00010003    1<br />
+  ----大理市    0009    0001    大理市    0009    00010009    1<br />
+----贵州省    0004    NULL    贵州省    0004    0004    0<br />
+----四川省    0008    NULL    四川省    0008    0008    0<br />
+  ----成都市    0014    0008    成都市    0014    00080014    1<br />
+  */<br />
+  <br />
+  --查找子节点（包括本身节点和子节点)<br />
+ declare @level_tt table(ybh nvarchar(1000),ebh nvarchar(1000),level int)<br />
+  declare @level int<br />
+  set @level=0<br />
+  insert @level_tt(ybh,ebh,level)<br />
+  select ybh,ybh,@level from tb where ybh='0005'<br />
+  while @@ROWCOUNT>0<br />
+  begin <br />
+          set @level=@level+1<br />
+          insert @level_tt(ybh,ebh,level)<br />
+          select a.ybh,b.ebh+a.ybh,@level<br />
+            from tb a,@level_tt b<br />
+            where a.ebh=b.ybh and b.level=@level-1<br />
+ end<br />
+select space(b.level*2)+'----'+a.beizhu,a.*,b.*<br />
+  from tb a,@level_tt b<br />
+  where a.ybh=b.ybh<br />
+  order by b.ebh<br />
+/*<br />
+(无列名)    ybh    ebh    beizhu    ybh    ebh    level<br />
+----五华区    0005    0002    五华区    0005    0005    0<br />
+  ----西园路192号    0006    0005    西园路192号    0006    00050006    1<br />
+    ----金色梧桐3-702    0010    0006    金色梧桐3-702    0010    000500060010    2<br />
+      ----昆明越科时空科技有限公司    0011    0010    昆明越科时空科技有限公司    0011    0005000600100011    3<br />
+*/<br />
+  <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:31

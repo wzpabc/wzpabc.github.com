@@ -1,0 +1,66 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--监控SQLServer实例上的日志文件和数据文件<br />
+SELECT  DB_NAME(VFS.database_id) AS DatabaseName ,<br />
+        MF.name AS LogicalFileName ,<br />
+        MF.physical_name AS PhysicalFileName ,<br />
+        CASE MF.type<br />
+          WHEN 0 THEN 'Data File'<br />
+          WHEN 1 THEN 'Log File'<br />
+        END AS FileType ,<br />
+        VFS.num_of_reads AS TotalReadOperations ,<br />
+        VFS.num_of_bytes_read AS TotalBytesRead ,<br />
+        VFS.num_of_writes AS TotalWriteOperations ,<br />
+        VFS.num_of_bytes_written AS TotalWriteOperations ,<br />
+        VFS.io_stall_read_ms AS TotalWaitTimeForRead ,<br />
+        VFS.io_stall_write_ms AS TotalWaitTimeForWrite ,<br />
+        VFS.io_stall AS TotalWaitTimeForIO ,<br />
+        VFS.size_on_disk_bytes AS FileSizeInBytes<br />
+FROM    sys.dm_io_virtual_file_stats(NULL, NULL) AS VFS<br />
+        INNER JOIN sys.master_files AS MF ON VFS.database_id = MF.database_id<br />
+                                             AND VFS.file_id = MF.file_id<br />
+ORDER BY VFS.database_id DESC<br />
+<br />
+--检查是否有IO挂起<br />
+<br />
+SELECT  DB_NAME(VFS.database_id) AS DatabaseName ,<br />
+        MF.name AS LogicalFileName ,<br />
+        MF.physical_name AS PhysicalFileName ,<br />
+        CASE MF.type<br />
+          WHEN 0 THEN 'Data File'<br />
+          WHEN 1 THEN 'Log File'<br />
+        END AS FileType ,<br />
+        PIOR.io_type AS InputOutputOperationType ,<br />
+        PIOR.io_pending AS Is_Request_Pending ,<br />
+        PIOR.io_handle ,<br />
+        PIOR.scheduler_address<br />
+FROM    sys.dm_io_pending_io_requests AS PIOR<br />
+        INNER JOIN sys.dm_io_virtual_file_stats(DB_ID('AdventureWorks'), NULL)<br />
+        AS VFS ON PIOR.io_handle = VFS.file_handle<br />
+        INNER JOIN sys.master_files AS MF ON VFS.database_id = MF.database_id<br />
+                                             AND VFS.file_id = MF.file_id<br />
+GO<br />
+<br />
+--检查是否有IO挂起<br />
+DECLARE @DBNAME VARCHAR(50),@sql VARCHAR(max)<br />
+SET @DBNAME='APOMS'<br />
+SET @SQL=<br />
+'<br />
+SELECT  DB_NAME(VFS.database_id) AS DatabaseName ,<br />
+        MF.name AS LogicalFileName ,<br />
+        MF.physical_name AS PhysicalFileName ,<br />
+        CASE MF.type<br />
+          WHEN 0 THEN ''Data File ''<br />
+          WHEN 1 THEN ''Log FILE''<br />
+        END AS FileType ,<br />
+        PIOR.io_type AS InputOutputOperationType ,<br />
+        PIOR.io_pending AS Is_Request_Pending ,<br />
+        PIOR.io_handle ,<br />
+        PIOR.scheduler_address<br />
+FROM    sys.dm_io_pending_io_requests AS PIOR<br />
+        INNER JOIN sys.dm_io_virtual_file_stats(DB_ID('''+@DBNAME+'''), NULL)<br />
+        AS VFS ON PIOR.io_handle = VFS.file_handle<br />
+        INNER JOIN sys.master_files AS MF ON VFS.database_id = MF.database_id<br />
+                                             AND VFS.file_id = MF.file_id'<br />
+EXEC(@SQL)<br />
+GO<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:30

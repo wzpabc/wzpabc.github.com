@@ -1,0 +1,57 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>/*--存为XML<br />
+ 将表/查询存储为标准的XML文件<br />
+--邹建 2003.12(引用请保留此信息)--*/<br />
+<br />
+/*--调用示例<br />
+ --用SQL用winows身份验证的情况<br />
+ exec p_savexml @sql='地区资料',@fname='c:\地区资料.xml'<br />
+<br />
+ --用指定的用户<br />
+ exec p_savexml @sql='地区资料',@fname='c:\地区资料.xml',@userid='sa'<br />
+--*/<br />
+if exists (select * from dbo.sysobjects where id = object_id(N'[dbo].[p_savexml]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)<br />
+drop procedure [dbo].[p_savexml]<br />
+GO<br />
+<br />
+create proc p_savexml<br />
+@sql varchar(8000),     --要保存的表/视图/SQL查询语句<br />
+@fname varchar(1000)='c:\tmp.xml', --保存的XML文件名<br />
+@userid varchar(50)='',    --用户名,如果为nt验证方式,则为''<br />
+@password varchar(50)=''   --密码<br />
+as<br />
+declare @err int,@src varchar(255),@desc varchar(255)<br />
+declare @obj int,@constr varchar(1000)<br />
+if isnull(@userid,'')=''<br />
+ set @constr='Provider=SQLOLEDB.1;Integrated Security=SSPI;Persist Security Info=False;Initial Catalog='<br />
+  +db_name()+';Data Source='+@@servername<br />
+else<br />
+ set @constr='Provider=SQLOLEDB.1;Persist Security Info=True;'<br />
+  +'User ID='+@userid+';Password='+isnull(@password,'')<br />
+  +';Initial Catalog='+db_name()+';Data Source='+@@servername<br />
+<br />
+exec @err=sp_oacreate 'adodb.recordset',@obj out<br />
+if @err<>0 goto lberr<br />
+<br />
+exec @err=sp_oamethod @obj,'open',null,@sql,@constr<br />
+if @err<>0 goto lberr<br />
+<br />
+set @sql='del '+@fname<br />
+exec master..xp_cmdshell @sql,no_output<br />
+exec @err=sp_oamethod @obj,'save',null,@fname,1<br />
+if @err<>0 goto lberr<br />
+<br />
+exec @err=sp_oadestroy @obj<br />
+return<br />
+<br />
+lberr:<br />
+ exec sp_oageterrorinfo 0,@src out,@desc out<br />
+ select cast(@err as varbinary(4)) as 错误号<br />
+  ,@src as 错误源,@desc as 错误描述<br />
+go<br />
+<br />
+<br />
+<br />
+<br />
+本文来自CSDN博客，转载请标明出处：http://blog.csdn.net/zjcxc/archive/2003/12/31/20086.aspx<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:07

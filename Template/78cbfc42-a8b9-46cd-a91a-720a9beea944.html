@@ -1,0 +1,109 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>1 :普通SQL语句可以用Exec执行 <br />
+<br />
+eg:   Select * from tableName <br />
+         Exec('select * from tableName') <br />
+         Exec sp_executesql N'select * from tableName'    -- 请注意字符串前一定要加N <br />
+<br />
+2:字段名，表名，数据库名之类作为变量时，必须用动态SQL <br />
+<br />
+eg:   <br />
+declare @fname varchar(20) <br />
+set @fname = 'FiledName' <br />
+Select @fname from tableName              -- 错误,不会提示错误，但结果为固定值FiledName,并非所要。 <br />
+Exec('select ' + @fname + ' from tableName')     -- 请注意 加号前后的 单引号的边上加空格 <br />
+<br />
+当然将字符串改成变量的形式也可 <br />
+declare @fname varchar(20) <br />
+set @fname = 'FiledName' --设置字段名 <br />
+<br />
+declare @s varchar(1000) <br />
+set @s = 'select ' + @fname + ' from tableName' <br />
+Exec(@s)                -- 成功 <br />
+exec sp_executesql @s   -- 此句会报错 <br />
+<br />
+<br />
+<br />
+declare @s Nvarchar(1000)  -- 注意此处改为nvarchar(1000) <br />
+set @s = 'select ' + @fname + ' from tableName' <br />
+Exec(@s)                -- 成功     <br />
+exec sp_executesql @s   -- 此句正确 <br />
+<br />
+3. 输出参数 <br />
+declare @num int, <br />
+        @sqls nvarchar(4000) <br />
+set @sqls='select count(*) from tableName' <br />
+exec(@sqls) <br />
+--如何将exec执行结果放入变量中？ <br />
+<br />
+declare @num int, <br />
+               @sqls nvarchar(4000) <br />
+set @sqls='select @a=count(*) from tableName ' <br />
+exec sp_executesql @sqls,N'@a int output',@num output <br />
+select @num <br />
+<br />
+几个是几个相关实例:<br />
+<br />
+--1. 使用 EXEC 实现的动态参数存储过程<br />
+CREATE PROC p_test<br />
+@para1 varchar(10)=null,<br />
+@para2 varchar(10)=null,<br />
+@para3 varchar(10)=null,<br />
+@para4 varchar(10)=null<br />
+AS<br />
+SET NOCOUNT ON<br />
+DECLARE @sql varchar(8000)<br />
+SET @sql='SELECT * FROM tbname WHERE 1=1'<br />
+IF @para1 IS NOT NULL<br />
+    SET @sql=@sql+' AND col1='''+@para1+''''<br />
+IF @para2 IS NOT NULL<br />
+    SET @sql=@sql+' AND col2='''+@para2+''''<br />
+IF @para3 IS NOT NULL<br />
+    SET @sql=@sql+' AND col3='''+@para3+''''<br />
+IF @para4 IS NOT NULL<br />
+    SET @sql=@sql+' AND col4='''+@para4+''''<br />
+EXEC(@sql)<br />
+GO<br />
+<br />
+<br />
+/*======================================================*/<br />
+<br />
+--2. 使用 sp_executesql 实现的动态参数存储过程<br />
+CREATE PROC p_test<br />
+@para1 varchar(10)=null,<br />
+@para2 datetime=null,<br />
+@para3 varchar(10)=null,<br />
+@para4 int=null<br />
+AS<br />
+SET NOCOUNT ON<br />
+DECLARE @sql nvarchar(4000)<br />
+SET @sql='SELECT * FROM tbname WHERE 1=1'<br />
+    +CASE WHEN @para1 IS NULL THEN '' ELSE ' AND col1=@para1' END<br />
+    +CASE WHEN @para2 IS NULL THEN '' ELSE ' AND col2=@para2' END<br />
+    +CASE WHEN @para3 IS NULL THEN '' ELSE ' AND col3=@para3' END<br />
+    +CASE WHEN @para4 IS NULL THEN '' ELSE ' AND col4=@para4' END<br />
+EXEC sp_executesql @sql,N'<br />
+    @para1 varchar(10)=null,<br />
+    @para2 datetime=null,<br />
+    @para3 varchar(10)=null,<br />
+    @para4 int=null<br />
+',@para1,@para2,@para3,@para4<br />
+GO<br />
+<br />
+<br />
+/*======================================================*/<br />
+<br />
+--3. 不使用动态 Transact-SQL 语句实现的动态参数存储过程<br />
+CREATE PROC p_test<br />
+@para1 varchar(10)=null,<br />
+@para2 datetime=null,<br />
+@para3 varchar(10)=null,<br />
+@para4 int=null<br />
+AS<br />
+SET NOCOUNT ON<br />
+SELECT * FROM tbname <br />
+WHERE (@para1 IS NULL OR col1=@para1)<br />
+    AND (@para2 IS NULL OR col2=@para2)<br />
+    AND (@para3 IS NULL OR col3=@para3)<br />
+    AND (@para4 IS NULL OR col4=@para4)<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:32

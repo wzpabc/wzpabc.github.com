@@ -1,0 +1,106 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>第一种方法: 使用output参数<br />
+<br />
+USE AdventureWorks;<br />
+GO<br />
+IF OBJECT_ID ( 'Production.usp_GetList', 'P' ) IS NOT NULL <br />
+    DROP PROCEDURE Production.usp_GetList;<br />
+GO<br />
+CREATE PROCEDURE Production.usp_GetList @product varchar(40) <br />
+    , @maxprice money <br />
+    , @compareprice money OUTPUT<br />
+    , @listprice money OUT<br />
+AS<br />
+    SELECT p.name AS Product, p.ListPrice AS 'List Price'<br />
+    FROM Production.Product p<br />
+    JOIN Production.ProductSubcategory s <br />
+      ON p.ProductSubcategoryID = s.ProductSubcategoryID<br />
+    WHERE s.name LIKE @product AND p.ListPrice < @maxprice;<br />
+-- Populate the output variable @listprice.<br />
+SET @listprice = (SELECT MAX(p.ListPrice)<br />
+        FROM Production.Product p<br />
+        JOIN  Production.ProductSubcategory s <br />
+          ON p.ProductSubcategoryID = s.ProductSubcategoryID<br />
+        WHERE s.name LIKE @product AND p.ListPrice < @maxprice);<br />
+-- Populate the output variable @compareprice.<br />
+SET @compareprice = @maxprice;<br />
+GO<br />
+<br />
+<br />
+另一个存储过程调用的时候:<br />
+<br />
+Create Proc Test<br />
+as<br />
+DECLARE @compareprice money, @cost money <br />
+EXECUTE Production.usp_GetList '%Bikes%', 700, <br />
+    @compareprice OUT, <br />
+    @cost OUTPUT<br />
+IF @cost <= @compareprice <br />
+BEGIN<br />
+    PRINT 'These products can be purchased for less than <br />
+    $'+RTRIM(CAST(@compareprice AS varchar(20)))+'.'<br />
+END<br />
+ELSE<br />
+    PRINT 'The prices for all products in this category exceed <br />
+    $'+ RTRIM(CAST(@compareprice AS varchar(20)))+'.'<br />
+第二种方法:创建一个临时表<br />
+<br />
+create proc GetUserName<br />
+as<br />
+begin<br />
+    select 'UserName'<br />
+end<br />
+<br />
+Create table #tempTable (userName nvarchar(50))<br />
+insert into #tempTable(userName)<br />
+exec GetUserName<br />
+<br />
+select #tempTable<br />
+<br />
+--用完之后要把临时表清空<br />
+drop table #tempTable--需要注意的是，这种方法不能嵌套。例如：<br />
+<br />
+  procedure   a   <br />
+  begin   <br />
+      ...   <br />
+      insert   #table   exec   b   <br />
+  end   <br />
+    <br />
+  procedure   b   <br />
+  begin   <br />
+      ...   <br />
+      insert   #table    exec   c   <br />
+      select   *   from   #table     <br />
+  end   <br />
+    <br />
+  procedure   c   <br />
+  begin   <br />
+      ...   <br />
+      select   *   from   sometable   <br />
+  end  <br />
+<br />
+--这里ａ调ｂ的结果集，而ｂ中也有这样的应用ｂ调了ｃ的结果集，这是不允许的，<br />
+--会报“INSERT EXEC 语句不能嵌套”错误。在实际应用中要避免这类应用的发生。<br />
+<br />
+<br />
+第三种方法:声明一个变量,用exec(@sql)执行:<br />
+<br />
+1);EXEC 执行SQL语句<br />
+<br />
+declare @rsql varchar(250)<br />
+        declare @csql varchar(300)<br />
+        declare @rc nvarchar(500)<br />
+        declare @cstucount int<br />
+        declare @ccount int<br />
+        set @rsql='(select Classroom_id from EA_RoomTime where zc='+@zc+' and xq='+@xq+' and T'+@time+'=''否'') and ClassroomType=''1'''<br />
+        --exec(@rsql)<br />
+        set @csql='select @a=sum(teststucount),@b=sum(classcount) from EA_ClassRoom where classroom_id in '<br />
+        set @rc=@csql+@rsql<br />
+        exec sp_executesql @rc,N'@a int output,@b int output',@cstucount output,@ccount output--将exec的结果放入变量中的做法<br />
+        --select @csql+@rsql<br />
+        --select @cstucount<br />
+<br />
+<br />
+<br />
+本文来自CSDN博客，转载请标明出处：http://blog.csdn.net/fredrickhu/archive/2009/09/23/4584118.aspx<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:06

@@ -1,0 +1,165 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--轉老大<br />
+if exists (select * from dbo.sysobjects where id = object_id(N'[dbo].[f_GetStr]') and xtype in (N'FN', N'IF', N'TF'))<br />
+drop function [dbo].[f_GetStr]<br />
+GO<br />
+--分段截取函数<br />
+CREATE FUNCTION dbo.f_GetStr(<br />
+@s varchar(8000),      --包含多个数据项的字符串<br />
+@pos int,             --要获取的数据项的位置<br />
+@split varchar(10)     --数据分隔符<br />
+)RETURNS varchar(100)<br />
+AS<br />
+BEGIN<br />
+    IF @s IS NULL RETURN(NULL)<br />
+    DECLARE @splitlen int<br />
+    SELECT @splitlen=LEN(@split+'a')-2<br />
+    WHILE @pos>1 AND CHARINDEX(@split,@s+@split)>0<br />
+        SELECT @pos=@pos-1,<br />
+            @s=STUFF(@s,1,CHARINDEX(@split,@s+@split)+@splitlen,'')<br />
+    RETURN(ISNULL(LEFT(@s,CHARINDEX(@split,@s+@split)-1),''))<br />
+END<br />
+GO<br />
+<br />
+select dbo.f_GetStr('2∮11∮10∮09∮10∮13∮786∮91.93∮69∮100.00 ',7,'∮')<br />
+/*<br />
+----------------------------------------------------------------------------------------------------<br />
+786<br />
+<br />
+(1 個資料列受到影響)<br />
+<br />
+<br />
+<br />
+------------更新<br />
+if exists (select * from dbo.sysobjects where id = object_id(N'[dbo].[f_SetStr]') and xtype in (N'FN', N'IF', N'TF'))<br />
+drop function [dbo].[f_SetStr]<br />
+GO<br />
+--分段更新函数<br />
+CREATE FUNCTION dbo.f_SetStr(<br />
+@s varchar(8000),      --包含数据项的字符串<br />
+@pos int,             --要更新的数据项的段<br />
+@value varchar(100),   --更新后的值<br />
+@split varchar(10)     --数据分隔符<br />
+)RETURNS varchar(8000)<br />
+AS<br />
+BEGIN<br />
+    DECLARE @splitlen int,@p1 int,@p2 int<br />
+    SELECT @splitlen=LEN(@split+'a')-2,<br />
+        @p1=1,<br />
+        @p2=CHARINDEX(@split,@s+@split)<br />
+    WHILE @pos>1 AND @p1<=@p2<br />
+        SELECT @pos=@pos-1,<br />
+            @p1=@p2+@splitlen+1,<br />
+            @p2=CHARINDEX(@split,@s+@split,@p1)<br />
+    RETURN(CASE<br />
+        WHEN @p1<@p2 THEN STUFF(@s,@p1,@p2-@p1,@value)<br />
+        WHEN @p2>LEN(@s) THEN @s+@value<br />
+        WHEN @p2=@p1 THEN STUFF(@s,@p1,0,@value) <br />
+        ELSE @s END)<br />
+END<br />
+GO<br />
+select dbo.f_setstr('0,0,0,0,0,0,0,0',3,1,',')<br />
+/*<br />
+--------------------------<br />
+0,0,1,0,0,0,0,0<br />
+<br />
+(1 個資料列受到影響)<br />
+*/<br />
+<br />
+<br />
+<br />
+declare @tb table([ID] int,[STR] varchar(45))<br />
+insert @tb<br />
+select 1,'2∮11∮10∮09∮10∮13∮786∮91.93∮69∮100.00'<br />
+<br />
+<br />
+SELECT [STR]<br />
+FROM (<br />
+        SELECT a.id,<br />
+              [STR]=SUBSTRING(a.[STR],number,CHARINDEX('∮',a.[STR]+'∮',number)-b.number),ROW_NUMBER() OVER (ORDER BY GETDATE()) AS RID<br />
+        FROM @tb a<br />
+        JOIN master..spt_values b<br />
+        ON b.type='p' AND CHARINDEX('∮','∮'+a.[STR],number)=number<br />
+     ) A<br />
+WHERE A.RID=7<br />
+<br />
+/*<br />
+STR<br />
+---------------------------------------------<br />
+786<br />
+<br />
+(1 row(s) affected)<br />
+<br />
+<br />
+<br />
+create function f_split(@SourceSql varchar(8000),@StrSeprate varchar(10))<br />
+returns @temp table(a varchar(100))<br />
+--实现split功能 的函数<br />
+--date    :2003-10-14<br />
+as <br />
+begin<br />
+    declare @i int<br />
+    set @SourceSql=rtrim(ltrim(@SourceSql))<br />
+    set @i=charindex(@StrSeprate,@SourceSql)<br />
+    while @i>=1<br />
+    begin<br />
+        insert @temp values(left(@SourceSql,@i-1))<br />
+        set @SourceSql=substring(@SourceSql,@i+1,len(@SourceSql)-@i)<br />
+        set @i=charindex(@StrSeprate,@SourceSql)<br />
+    end<br />
+    if @SourceSql<>'' <br />
+       insert @temp values(@SourceSql)<br />
+    return <br />
+end<br />
+select * from dbo.f_split('1,2,3,4',',')<br />
+<br />
+a                                                                                                    <br />
+-------------------- <br />
+1<br />
+2<br />
+3<br />
+<br />
+<br />
+<br />
+if OBJECT_ID('fn_str') is not null<br />
+drop proc fn_str<br />
+go<br />
+CREATE  PROCEDURE FN_str(<br />
+    @str NVARCHAR(1000)<br />
+)<br />
+<br />
+AS<br />
+BEGIN<br />
+<br />
+<br />
+    DECLARE @i INT,@split nvarchar(20),@j int,@sql nvarchar(2000)<br />
+    SELECT @i=PATINDEX('%/[0-9]%',@str),@j=1<br />
+    SELECT @str=STUFF(@str,1,@i,''),@i=PATINDEX('%/%',@str)<br />
+<br />
+    WHILE @i>0<br />
+    begin<br />
+        SET @split=LEFT(@str,@i-1)<br />
+        IF  @split NOT LIKE '%[^0-9]%'<br />
+            IF @j=1<br />
+                SElECT @sql='select Col1='+@split,@j=@j+1<br />
+            ELSE <br />
+                begin<br />
+                    SELECT @sql=@sql+',Col'+RTRIM(@j)+'='+@split,@j=@j+1<br />
+                END<br />
+        SELECT @str=STUFF(@str,1,@i,''),@i=PATINDEX('%/%',@str),@split=''<br />
+    <br />
+    END<br />
+    exec(@sql)<br />
+END<br />
+go<br />
+DECLARE @str NVARCHAR(1000)<br />
+SET @str='/酒店/特惠套餐/酒店景区/预订二/酒店ID/37764/景点ID/8072/'<br />
+<br />
+exec fn_str  @str<br />
+GO<br />
+/*<br />
+Col1    Col2<br />
+37764    8072<br />
+*/<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:32

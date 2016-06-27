@@ -1,0 +1,125 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>*--数据结构比较 <br />
+<br />
+比较两个数据库中的视图/存储过程的结构(结构比较,不是功能比较) <br />
+<br />
+--邹建 2004.07(引用请保留此信息)--*/ <br />
+<br />
+/*--调用示例 <br />
+<br />
+--调用 <br />
+exec p_compdb 'pubs','northwind' <br />
+--*/ <br />
+create proc p_compdb <br />
+@db1 sysname, --第一个库 <br />
+@db2 sysname --第二个库 <br />
+as <br />
+exec(' <br />
+select 类型=case isnull(a.xtype,b.xtype) when ''V'' then ''视图'' else ''存储过程'' end <br />
+,匹配情况=case <br />
+when a.name is null then ''库 ['+@db1+'] 中无'' <br />
+when b.name is null then ''库 ['+@db2+'] 中无'' <br />
+else ''结构不同'' end <br />
+,对象名称=isnull(a.name,b.name) <br />
+from( <br />
+select a.name,a.xtype,b.colid,b.text <br />
+from ['+@db1+']..sysobjects a,['+@db1+']..syscomments b <br />
+where a.id=b.id and a.xtype in(''V'',''P'') and a.status>=0 <br />
+)a full join( <br />
+select a.name,a.xtype,b.colid,b.text <br />
+from ['+@db2+']..sysobjects a,['+@db2+']..syscomments b <br />
+where a.id=b.id and a.xtype in(''V'',''P'') and a.status>=0 <br />
+)b on a.name=b.name and a.xtype=b.xtype and a.colid=b.colid <br />
+where a.name is null <br />
+or b.name is null <br />
+or isnull(a.text,'''') <>isnull(b.text,'''') <br />
+group by a.name,b.name,a.xtype,b.xtype <br />
+order by 类型,匹配情况,对象名称') <br />
+go <br />
+<br />
+<br />
+表结构比较： <br />
+------------------------------------------------------------------------------------------- <br />
+if exists (select * from dbo.sysobjects where id = object_id(N'[dbo].[p_comparestructure]') and OBJECTPROPERTY(id, N'IsProcedure') = 1) <br />
+drop procedure [dbo].[p_comparestructure] <br />
+GO <br />
+<br />
+/*--比较两个数据库的表结构差异 <br />
+<br />
+可以比较两个数据库的结构差异 <br />
+<br />
+--邹建 2003.9(引用请保留此信息)--*/ <br />
+<br />
+/*--调用示例 <br />
+<br />
+exec p_comparestructure '库1','库2' <br />
+--*/ <br />
+create proc p_comparestructure <br />
+@dbname1 varchar(250),--要比较的数据库名1 <br />
+@dbname2 varchar(250)--要比较的数据库名2 <br />
+as <br />
+create table #tb1(表名1 varchar(250),字段名 varchar(250),序号 int,标识 bit,主键 bit,类型 varchar(250), <br />
+占用字节数 int,长度 int,小数位数 int,允许空 bit,默认值 sql_variant,字段说明 sql_variant) <br />
+<br />
+create table #tb2(表名2 varchar(250),字段名 varchar(250),序号 int,标识 bit,主键 bit,类型 varchar(250), <br />
+占用字节数 int,长度 int,小数位数 int,允许空 bit,默认值 sql_variant,字段说明 sql_variant) <br />
+<br />
+--得到数据库1的结构 <br />
+exec('insert into #tb1 SELECT <br />
+表名=d.name,字段名=a.name,序号=a.colid, <br />
+标识=case when a.status=0x80 then 1 else 0 end, <br />
+主键=case when exists(SELECT 1 FROM '+@dbname1+'..sysobjects where xtype=''PK'' and parent_obj=a.id and name in ( <br />
+SELECT name FROM '+@dbname1+'..sysindexes WHERE indid in( <br />
+SELECT indid FROM '+@dbname1+'..sysindexkeys WHERE id = a.id AND colid=a.colid <br />
+))) then 1 else 0 end, <br />
+类型=b.name,占用字节数=a.length,长度=a.prec,小数位数=a.scale,允许空=a.isnullable, <br />
+默认值=isnull(e.text,''''),字段说明=isnull(g.[value],'''') <br />
+FROM '+@dbname1+'..syscolumns a <br />
+left join '+@dbname1+'..systypes b on a.xtype=b.xusertype <br />
+inner join '+@dbname1+'..sysobjects d on a.id=d.id  and d.xtype=''U'' and  d.name <>''dtproperties'' <br />
+left join '+@dbname1+'..syscomments e on a.cdefault=e.id <br />
+left join '+@dbname1+'..sysproperties g on a.id=g.id and a.colid=g.smallid  <br />
+order by a.id,a.colorder') <br />
+<br />
+--得到数据库2的结构 <br />
+exec('insert into #tb2 SELECT <br />
+表名=d.name,字段名=a.name,序号=a.colid, <br />
+标识=case when a.status=0x80 then 1 else 0 end, <br />
+主键=case when exists(SELECT 1 FROM '+@dbname2+'..sysobjects where xtype=''PK'' and parent_obj=a.id and name in ( <br />
+SELECT name FROM '+@dbname2+'..sysindexes WHERE indid in( <br />
+SELECT indid FROM '+@dbname2+'..sysindexkeys WHERE id = a.id AND colid=a.colid <br />
+))) then 1 else 0 end, <br />
+类型=b.name,占用字节数=a.length,长度=a.prec,小数位数=a.scale,允许空=a.isnullable, <br />
+默认值=isnull(e.text,''''),字段说明=isnull(g.[value],'''') <br />
+FROM '+@dbname2+'..syscolumns a <br />
+left join '+@dbname2+'..systypes b on a.xtype=b.xusertype <br />
+inner join '+@dbname2+'..sysobjects d on a.id=d.id  and d.xtype=''U'' and  d.name <>''dtproperties'' <br />
+left join '+@dbname2+'..syscomments e on a.cdefault=e.id <br />
+left join '+@dbname2+'..sysproperties g on a.id=g.id and a.colid=g.smallid  <br />
+order by a.id,a.colorder') <br />
+--and not exists(select 1 from #tb2 where 表名2=a.表名1) <br />
+select 比较结果=case when a.表名1 is null and b.序号=1 then '库1缺少表：'+b.表名2 <br />
+when b.表名2 is null and a.序号=1 then '库2缺少表:'+a.表名1 <br />
+when a.字段名 is null and exists(select 1 from #tb1 where 表名1=b.表名2) then '库1 ['+b.表名2+'] 缺少字段：'+b.字段名 <br />
+when b.字段名 is null and exists(select 1 from #tb2 where 表名2=a.表名1) then '库2 ['+a.表名1+'] 缺少字段：'+a.字段名 <br />
+when a.标识 <>b.标识 then '标识不同' <br />
+when a.主键 <>b.主键 then '主键设置不同' <br />
+when a.类型 <>b.类型 then '字段类型不同' <br />
+when a.占用字节数 <>b.占用字节数 then '占用字节数' <br />
+when a.长度 <>b.长度 then '长度不同' <br />
+when a.小数位数 <>b.小数位数 then '小数位数不同' <br />
+when a.允许空 <>b.允许空 then '是否允许空不同' <br />
+when a.默认值 <>b.默认值 then '默认值不同' <br />
+when a.字段说明 <>b.字段说明 then '字段说明不同' <br />
+else '' end, <br />
+* <br />
+from #tb1 a <br />
+full join #tb2 b on a.表名1=b.表名2 and a.字段名=b.字段名 <br />
+where a.表名1 is null or a.字段名 is null or b.表名2 is null or b.字段名 is null <br />
+or a.标识 <>b.标识 or a.主键 <>b.主键 or a.类型 <>b.类型 <br />
+or a.占用字节数 <>b.占用字节数 or a.长度 <>b.长度 or a.小数位数 <>b.小数位数 <br />
+or a.允许空 <>b.允许空 or a.默认值 <>b.默认值 or a.字段说明 <>b.字段说明 <br />
+order by isnull(a.表名1,b.表名2),isnull(a.序号,b.序号)--isnull(a.字段名,b.字段名) <br />
+go <br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:09

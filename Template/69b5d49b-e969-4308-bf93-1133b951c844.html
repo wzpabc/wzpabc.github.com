@@ -1,0 +1,297 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>/*<br />
+<br />
+lvl1  lvl2    lvl3    lvl4    lvl <br />
+4      3      4      1        <br />
+3      2      2      1    <br />
+2      2      3      4 <br />
+4      4      3      4 <br />
+3      1      2      2 <br />
+怎么写代码 去比较lvl1、lvl2、lvl3、lvl4 对应每行的值，取其中最小的，将其值添加到lvl列里 <br />
+运行结果应该是 <br />
+lvl <br />
+1 <br />
+1 <br />
+2 <br />
+3 <br />
+1<br />
+<br />
+*/<br />
+<br />
+--方法(一) 函數法<br />
+<br />
+-->Title:Generating test data<br />
+-->Author:wufeng4552<br />
+-->Date :2009-10-16 09:58:16<br />
+<br />
+if not object_id('Tempdb..#t') is null<br />
+    drop table #t<br />
+Go<br />
+Create table #t([lvl1] int,[lvl2] int,[lvl3] int,[lvl4] int,[lvl] int)<br />
+Insert #t<br />
+select 4,3,4,1,null union all<br />
+select 3,2,2,1,null union all<br />
+select 2,2,3,4,null union all<br />
+select 4,4,3,4,null union all<br />
+select 3,1,2,2,null<br />
+Go<br />
+if object_id('UF_minget')is not null drop function UF_minget<br />
+go<br />
+create function UF_minget<br />
+(@col1 int,@col2 int,@col3 int,@col4 int)<br />
+returns int<br />
+as<br />
+  begin<br />
+     declare @t table(col int)<br />
+     insert @t select @col1 union all<br />
+               select @col2 union all<br />
+               select @col3 union all<br />
+               select @col4<br />
+     return(select min(col)from @t)<br />
+  end<br />
+go<br />
+update t set [lvl]=dbo.UF_minget([lvl1],[lvl2],[lvl3],[lvl4])<br />
+from #t t<br />
+select * from #t<br />
+/*<br />
+lvl1        lvl2        lvl3        lvl4        lvl<br />
+----------- ----------- ----------- ----------- -----------<br />
+4           3           4           1           1<br />
+3           2           2           1           1<br />
+2           2           3           4           2<br />
+4           4           3           4           3<br />
+3           1           2           2           1<br />
+<br />
+(5 個資料列受到影響)<br />
+<br />
+<br />
+*/<br />
+<br />
+--方法二  MSSQL2005 XML PATH<br />
+<br />
+-------------------------------------<br />
+--  Author : liangCK 梁爱兰<br />
+--  Comment: 小梁 爱 兰儿<br />
+--  Date   : 2009-10-16 09:57:38<br />
+-------------------------------------<br />
+<br />
+--> 生成测试数据: @T<br />
+DECLARE @T TABLE (lvl1 int,lvl2 int,lvl3 int,lvl4 int,lvl int)<br />
+INSERT INTO @T<br />
+SELECT 4,3,4,1,null UNION ALL<br />
+SELECT 3,2,2,1,null UNION ALL<br />
+SELECT 2,2,3,4,null UNION ALL<br />
+SELECT 4,4,3,4,null UNION ALL<br />
+SELECT 3,1,2,2,null<br />
+<br />
+--SQL查询如下:<br />
+<br />
+UPDATE A SET<br />
+    lvl = B.x.value('min(//row/*)','int')<br />
+FROM @T AS A<br />
+    CROSS APPLY (SELECT x = (SELECT A.* FOR XML PATH('row'),TYPE)) AS B;<br />
+    <br />
+SELECT * FROM @T;<br />
+<br />
+/*<br />
+lvl1        lvl2        lvl3        lvl4        lvl<br />
+----------- ----------- ----------- ----------- -----------<br />
+4           3           4           1           1<br />
+3           2           2           1           1<br />
+2           2           3           4           2<br />
+4           4           3           4           3<br />
+3           1           2           2           1<br />
+<br />
+(5 行受影响)<br />
+<br />
+*/<br />
+--方法(三) 作者 (四方城) <br />
+<br />
+if object_id('[tb]') is not null drop table [tb]<br />
+go<br />
+create table [tb]([lvl1] int,[lvl2] int,[lvl3] int,[lvl4] int,[lvl] int)<br />
+insert [tb]<br />
+select 4,3,4,1,null union all<br />
+select 3,2,2,1,null union all<br />
+select 2,2,3,4,null union all<br />
+select 4,4,3,4,null union all<br />
+select 3,1,2,2,null<br />
+go<br />
+<br />
+create function getmin(@a varchar(8000))   <br />
+  returns int   <br />
+  as   <br />
+  begin declare @ table (id int identity,a char(1))   <br />
+      declare @t int   <br />
+      insert @ select top 8000 null from sysobjects a,sysobjects b   <br />
+      select @t=min(cast(substring(','+@a,id+1,charindex(',',','+@a+',',id+1)-id-1) as int))   <br />
+      from @ where substring(','+@a,id,8000) like ',_%'   <br />
+      return @t   <br />
+  end   <br />
+go<br />
+<br />
+-->查询<br />
+select <br />
+  lvl1,<br />
+  lvl2,<br />
+  lvl3,<br />
+  lvl4,<br />
+  lvl=dbo.getmin(ltrim(lvl1)+','+ltrim(lvl2)+','+ltrim(lvl3)+','+ltrim(lvl4))<br />
+from tb<br />
+<br />
+/**<br />
+lvl1        lvl2        lvl3        lvl4        lvl<br />
+----------- ----------- ----------- ----------- -----------<br />
+4           3           4           1           1<br />
+3           2           2           1           1<br />
+2           2           3           4           2<br />
+4           4           3           4           3<br />
+3           1           2           2           1<br />
+<br />
+(5 行受影响)<br />
+**/<br />
+<br />
+--方法(四)<br />
+<br />
+-->Title:Generating test data<br />
+-->Author:wufeng4552<br />
+-->Date :2009-10-16 09:58:16<br />
+<br />
+if not object_id('Tempdb..#t') is null<br />
+    drop table #t<br />
+Go<br />
+Create table #t([lvl1] int,[lvl2] int,[lvl3] int,[lvl4] int,[lvl] int)<br />
+Insert #t<br />
+select 4,3,4,1,null union all<br />
+select 3,2,2,1,null union all<br />
+select 2,2,3,4,null union all<br />
+select 4,4,3,4,null union all<br />
+select 3,1,2,2,null<br />
+Go<br />
+<br />
+if object_id('UF_minget')is not null drop function UF_minget<br />
+go<br />
+create function UF_minget<br />
+(@s varchar(200))<br />
+returns int<br />
+as<br />
+  begin<br />
+  return(<br />
+    select col=min(substring(@s,number,charindex(',',@s+',',number)-number))<br />
+    from master..spt_values<br />
+    where type='p' and number<=len(@s+'a') and charindex(',',','+@s,number)=number)<br />
+  end<br />
+go<br />
+select <br />
+  [lvl1],<br />
+  [lvl2],<br />
+  [lvl3],<br />
+  [lvl4],<br />
+  [lvl]=dbo.UF_minget(ltrim([lvl1])+','+ltrim([lvl2])+','+ltrim([lvl3])+','+ltrim([lvl4]))<br />
+from #T<br />
+/*<br />
+lvl1        lvl2        lvl3        lvl4        lvl<br />
+----------- ----------- ----------- ----------- -----------<br />
+4           3           4           1           1<br />
+3           2           2           1           1<br />
+2           2           3           4           2<br />
+4           4           3           4           3<br />
+3           1           2           2           1<br />
+<br />
+*/<br />
+<br />
+--方法(五)<br />
+<br />
+-->Title:Generating test data<br />
+-->Author:wufeng4552<br />
+-->Date :2009-10-16 09:58:16<br />
+if not object_id('Tempdb..#t') is null<br />
+    drop table #t<br />
+Go<br />
+Create table #t([lvl1] int,[lvl2] int,[lvl3] int,[lvl4] int,[lvl] int)<br />
+Insert #t<br />
+select 4,3,4,1,null union all<br />
+select 3,2,2,1,null union all<br />
+select 2,2,3,4,null union all<br />
+select 4,4,3,4,null union all<br />
+select 3,1,2,2,null<br />
+Go<br />
+select [lvl1],<br />
+       [lvl2],<br />
+       [lvl3],<br />
+       [lvl4],<br />
+       [lvl]=(select min([lvl1])<br />
+              from (select [lvl1] <br />
+                  union all select [lvl2] <br />
+                  union all select [lvl3] <br />
+                  union all select [lvl4])T)<br />
+from #t<br />
+/*<br />
+lvl1        lvl2        lvl3        lvl4        lvl<br />
+----------- ----------- ----------- ----------- -----------<br />
+4           3           4           1           1<br />
+3           2           2           1           1<br />
+2           2           3           4           2<br />
+4           4           3           4           3<br />
+3           1           2           2           1<br />
+<br />
+(5 個資料列受到影響)<br />
+*/<br />
+--方法六 作者:josy (樹哥)<br />
+<br />
+-->测试数据  <br />
+if object_id('[tb]') is not null drop table [tb]<br />
+go<br />
+create table [tb]([lvl1] int,[lvl2] int,[lvl3] int,[lvl4] int,[lvl] int)<br />
+insert [tb]<br />
+select 4,3,4,1,null union all<br />
+select 3,2,2,1,null union all<br />
+select 2,2,3,4,null union all<br />
+select 4,4,3,4,null union all<br />
+select 3,1,2,2,null<br />
+go<br />
+<br />
+-->函数：返回两个数中值较小的数<br />
+if object_id('F_GetMin')is not null drop function F_GetMin<br />
+go<br />
+CREATE FUNCTION F_GetMin<br />
+(   <br />
+  @arg1   AS   int,   <br />
+  @arg2   AS   int   <br />
+)   <br />
+RETURNS   int   <br />
+AS    <br />
+BEGIN   <br />
+  RETURN CASE   <br />
+           WHEN @arg1<=@arg2 THEN @arg1   <br />
+           WHEN @arg1>@arg2 THEN  @arg2   <br />
+           ELSE   NULL   <br />
+         END   <br />
+END   <br />
+GO   <br />
+<br />
+-->查询<br />
+SELECT <br />
+  lvl1,<br />
+  lvl2,<br />
+  lvl3,<br />
+  lvl4,<br />
+  lvl=dbo.f_getmin(dbo.f_getmin(dbo.f_getmin(lvl1,lvl2),lvl3),lvl4) --函数嵌套<br />
+FROM<br />
+  tb<br />
+<br />
+-->结果<br />
+/**<br />
+lvl1        lvl2        lvl3        lvl4        lvl<br />
+----------- ----------- ----------- ----------- -----------<br />
+4           3           4           1           1<br />
+3           2           2           1           1<br />
+2           2           3           4           2<br />
+4           4           3           4           3<br />
+3           1           2           2           1<br />
+<br />
+(5 行受影响)<br />
+**/<br />
+<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:30

@@ -1,0 +1,139 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>USE Master<br />
+GO<br />
+<br />
+declare<br />
+	@spid int<br />
+;<br />
+<br />
+<br />
+<br />
+select <br />
+	@spid = 246--null:all <br />
+;<br />
+ <br />
+;WITH DATA(spid,blockRelationship,blocked,spidLevel,hostname,program_name,loginame,login_time,BlockDuration,Status,sqlText,Memo,stmt_start,stmt_end,db_Name)<br />
+AS(<br />
+    SELECT spid<br />
+           ,CONVERT(VARCHAR(256),' ') AS blockRelationship<br />
+           ,blocked<br />
+           ,spidLevel = 1<br />
+           ,hostname<br />
+           ,program_name<br />
+           ,loginame<br />
+           ,A.login_time<br />
+           ,DATEDIFF(MINUTE,A.login_time,GETDATE()) AS BlockDuration<br />
+           ,A.Status<br />
+           ,B.text<br />
+           ,Memo = CONVERT (varchar(128), 'BlockRoot')<br />
+           ,A.stmt_start<br />
+           ,A.stmt_end<br />
+		   ,db_name(A.dbid) AS db_Name<br />
+    FROM sys.sysprocesses AS A WITH (NOLOCK) <br />
+       CROSS APPLY sys.dm_exec_sql_text(A.sql_handle) AS B<br />
+    WHERE Blocked = 0<br />
+    UNION ALL<br />
+    SELECT <br />
+           A.spid<br />
+           ,CONVERT(varchar(128),REPLICATE('L' ,B.spidLevel)) + CONVERT (varchar(128), A.blocked) AS Sort<br />
+           ,A.blocked<br />
+           ,spidLevel+1<br />
+           ,A.hostname<br />
+           ,A.program_name<br />
+           ,A.loginame<br />
+           ,A.login_time<br />
+           ,DATEDIFF(MINUTE,A.login_time,GETDATE()) AS BlockDuration<br />
+           ,A.Status<br />
+           ,C.text<br />
+           ,Memo = 'Blocked by ' + CONVERT (varchar(117), A.blocked)<br />
+           ,A.stmt_start<br />
+           ,A.stmt_end<br />
+		   ,db_name(A.dbid) AS db_Name<br />
+    FROM sys.sysprocesses AS A WITH (NOLOCK)<br />
+       INNER JOIN  DATA AS B<br />
+        ON A.blocked = B.spid<br />
+       CROSS APPLY sys.dm_exec_sql_text(A.sql_handle) AS C<br />
+    --WHERE B.blocked = 0<br />
+)<br />
+SELECT spid<br />
+       ,blockRelationship<br />
+       ,blocked<br />
+       ,login_time<br />
+	   ,GETDATE() AS [current_time]<br />
+		,sql_statement = (SELECT TOP 1 SUBSTRING(sqlText,stmt_start / 2+1 , <br />
+                         ( <br />
+                            (<br />
+                            CASE WHEN stmt_end = -1 THEN (LEN(CONVERT(nvarchar(max),sqlText)) * 2) <br />
+                                   ELSE stmt_end END<br />
+                            )  - stmt_start) / 2+1<br />
+                         )<br />
+                      )<br />
+	   ,db_Name<br />
+       ,spidLevel<br />
+       ,hostname<br />
+       ,loginame<br />
+	   ,program_name<br />
+       --,login_time<br />
+       ,BlockDuration<br />
+       ,status<br />
+	   ,sqlText<br />
+       ,Memo<br />
+FROM DATA<br />
+--the block root spid<br />
+WHERE spidLevel = 1<br />
+    AND spID IN(<br />
+                  SELECT blocked<br />
+                  FROM DATA<br />
+              )<br />
+UNION ALL<br />
+SELECT spid<br />
+       ,blockRelationship<br />
+       ,blocked<br />
+       ,login_time<br />
+	   ,GETDATE()<br />
+		,sql_statement = (SELECT TOP 1 SUBSTRING(sqlText,stmt_start / 2+1 , <br />
+                         ( <br />
+                            (<br />
+                            CASE WHEN stmt_end = -1 THEN (LEN(CONVERT(nvarchar(max),sqlText)) * 2) <br />
+                                   ELSE stmt_end END<br />
+                            )  - stmt_start) / 2+1<br />
+                         )<br />
+                      )<br />
+	   ,db_Name<br />
+       ,spidLevel<br />
+       ,hostname<br />
+       ,loginame<br />
+	   ,program_name<br />
+       --,login_time<br />
+       ,BlockDuration<br />
+       ,status<br />
+	   ,sqlText<br />
+       ,Memo<br />
+FROM DATA<br />
+WHERE spidLevel > 1<br />
+<br />
+--kill 68<br />
+<br />
+IF @spid is not null<br />
+<br />
+	SELECT <br />
+		database_name = DB_NAME(s1.dbid)<br />
+		,sql_statement = (SELECT TOP 1 SUBSTRING(s2.text,stmt_start / 2+1 , <br />
+							 ( <br />
+								(<br />
+								CASE WHEN stmt_end = -1 THEN (LEN(CONVERT(nvarchar(max),s2.text)) * 2) <br />
+									   ELSE stmt_end END<br />
+								)  - stmt_start) / 2+1<br />
+							 )<br />
+						  )<br />
+		,s2.text<br />
+		,Duration_min = DATEDIFF(MINUTE,s1.login_time,GETDATE())<br />
+		,s1.hostname<br />
+		,s1.status<br />
+		,s1.cpu<br />
+	FROM sys.sysprocesses AS s1 WITH(NOLOCK)<br />
+		CROSS APPLY sys.dm_exec_sql_text(sql_handle) AS s2 <br />
+	WHERE s1.spid = @spid;<br />
+<br />
+--kill 87<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:06

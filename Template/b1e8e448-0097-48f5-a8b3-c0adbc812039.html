@@ -1,0 +1,28 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>DECLARE @procname NVARCHAR(100) = 'dbo.avnewmanubranchsplit_trend'<br />
+ SELECT DISTINCT @procname        procname,SCHEMA_NAME(t.[schema_id]) + '.' <br />
+        + OBJECT_NAME(referenced_major_id) <br />
+        AS tblname,referenced_major_id<br />
+        FROM sys.sql_dependencies <br />
+        AS sd <br />
+        INNER JOIN sys.tables  AS t ON t.[object_id] = sd.referenced_major_id AND <br />
+        t.[type] = N'U' <br />
+        WHERE sd.[object_id] = OBJECT_ID(@procname)<br />
+        <br />
+        <br />
+        <br />
+DECLARE @procname NVARCHAR(100) = 'dbo.avnewmanubranchsplit_trend'<br />
+ SELECT DISTINCT o.name           procname,SCHEMA_NAME(t.[schema_id]) + '.' <br />
+        + OBJECT_NAME(referenced_major_id) <br />
+        AS tblname,referenced_major_id<br />
+        FROM sys.sql_dependencies <br />
+        AS sd <br />
+        INNER JOIN sys.tables  AS t ON t.[object_id] = sd.referenced_major_id AND <br />
+        t.[type] = N'U'<br />
+        INNER JOIN sys.all_objects o ON(o.[type] = 'P' OR o.[type] = 'X' OR o.[type] = 'PC')<br />
+        AND o.[object_id] = sd.[object_id] <br />
+<br />
+ SELECT * FROM sys.all_objects <br />
+        　　WHERE([type] = 'P' OR [type] = 'X' OR [type] = 'PC') <br />
+        　　ORDER BY [name]<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:33

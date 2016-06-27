@@ -1,0 +1,161 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>/****************************************************************************************************************************************************** <br />
+合并分拆表数据 <br />
+<br />
+整理人：中国风(Roy) <br />
+<br />
+日期:2008.06.06 <br />
+******************************************************************************************************************************************************/ <br />
+<br />
+--> --> (Roy)生成測試數據 <br />
+<br />
+if not object_id('Tab') is null <br />
+    drop table Tab <br />
+Go <br />
+Create table Tab([Col1] int,[Col2] nvarchar(1)) <br />
+Insert Tab <br />
+select 1,N'a' union all <br />
+select 1,N'b' union all <br />
+select 1,N'c' union all <br />
+select 2,N'd' union all <br />
+select 2,N'e' union all <br />
+select 3,N'f' <br />
+Go <br />
+<br />
+合并表: <br />
+<br />
+SQL2000用函数: <br />
+<br />
+go <br />
+if object_id('F_Str') is not null <br />
+    drop function F_Str <br />
+go <br />
+create function F_Str(@Col1 int) <br />
+returns nvarchar(100) <br />
+as <br />
+begin <br />
+    declare @S nvarchar(100) <br />
+    select @S=isnull(@S+',','')+Col2 from Tab where Col1=@Col1 <br />
+    return @S <br />
+end <br />
+go <br />
+Select distinct Col1,Col2=dbo.F_Str(Col1) from Tab <br />
+<br />
+go <br />
+<br />
+SQL2005用XML: <br />
+<br />
+方法1: <br />
+<br />
+select <br />
+    a.Col1,Col2=stuff(b.Col2.value('/R[1]','nvarchar(max)'),1,1,'') <br />
+from <br />
+    (select distinct COl1 from Tab) a <br />
+Cross apply <br />
+    (select COl2=(select N','+Col2 from Tab where Col1=a.COl1 For XML PATH(''), ROOT('R'), TYPE))b <br />
+<br />
+方法2: <br />
+<br />
+select <br />
+    a.Col1,COl2=replace(b.Col2.value('/Tab[1]','nvarchar(max)'),char(44)+char(32),char(44)) <br />
+from <br />
+    (select distinct COl1 from Tab) a <br />
+cross apply <br />
+    (select Col2=(select COl2 from Tab  where COl1=a.COl1 FOR XML AUTO, TYPE) <br />
+                .query(' <Tab> <br />
+                {for $i in /Tab[position() <last()]/@COl2 return concat(string($i),",")} <br />
+                {concat("",string(/Tab[last()]/@COl2))} <br />
+                </Tab>') <br />
+                )b <br />
+<br />
+SQL05用CTE: <br />
+<br />
+;with roy as(select Col1,Col2,row=row_number()over(partition by COl1 order by COl1) from Tab) <br />
+,Roy2 as <br />
+(select COl1,cast(COl2 as nvarchar(100))COl2,row from Roy where row=1 <br />
+union all <br />
+select a.Col1,cast(b.COl2+','+a.COl2 as nvarchar(100)),a.row from Roy a join Roy2 b on a.COl1=b.COl1 and a.row=b.row+1) <br />
+select Col1,Col2 from Roy2 a where row=(select max(row) from roy where Col1=a.COl1) order by Col1 option (MAXRECURSION 0) <br />
+<br />
+<br />
+生成结果: <br />
+/* <br />
+Col1        COl2 <br />
+----------- ------------ <br />
+1          a,b,c <br />
+2          d,e <br />
+3          f <br />
+<br />
+(3 行受影响) <br />
+*/ <br />
+<br />
+<br />
+--参考<br />
+拆分表:<br />
+<br />
+--> --> (Roy)生成測試數據<br />
+ <br />
+if not object_id('Tab') is null<br />
+    drop table Tab<br />
+Go<br />
+Create table Tab([Col1] int,[COl2] nvarchar(5))<br />
+Insert Tab<br />
+select 1,N'a,b,c' union all<br />
+select 2,N'd,e' union all<br />
+select 3,N'f'<br />
+Go<br />
+<br />
+--SQL2000用辅助表:<br />
+if object_id('Tempdb..#Num') is not null<br />
+    drop table #Num<br />
+go<br />
+select top 100 ID=Identity(int,1,1) into #Num from syscolumns a,syscolumns b<br />
+Select <br />
+    a.Col1,COl2=substring(a.Col2,b.ID,charindex(',',a.Col2+',',b.ID)-b.ID) <br />
+from <br />
+    Tab a,#Num b<br />
+where<br />
+    charindex(',',','+a.Col2,b.ID)=b.ID --也可用 substring(','+a.COl2,b.ID,1)=','<br />
+--2000不使用辅助表<br />
+Select<br />
+    a.Col1,COl2=substring(a.Col2,b.number,charindex(',',a.Col2+',',b.number)-b.number) <br />
+from <br />
+    Tab a join master..spt_values  b <br />
+    ON B.type='p' AND B.number BETWEEN 1 AND LEN(A.col2)<br />
+where<br />
+     substring(','+a.COl2,b.number,1)=','<br />
+<br />
+<br />
+SQL2005用Xml:<br />
+<br />
+select <br />
+    a.COl1,b.Col2<br />
+from <br />
+    (select Col1,COl2=convert(xml,'<root><v>'+replace(COl2,',','</v><v>')+'</v></root>') from Tab)a<br />
+outer apply<br />
+    (select Col2=C.v.value('.','nvarchar(100)') from a.COl2.nodes('/root/v')C(v))b<br />
+<br />
+<br />
+<br />
+<br />
+SQL05用CTE:<br />
+<br />
+;with roy as <br />
+(select Col1,COl2=cast(left(Col2,charindex(',',Col2+',')-1) as nvarchar(100)),Split=cast(stuff(COl2+',',1,charindex(',',Col2+','),'') as nvarchar(100)) from Tab<br />
+union all<br />
+select Col1,COl2=cast(left(Split,charindex(',',Split)-1) as nvarchar(100)),Split= cast(stuff(Split,1,charindex(',',Split),'') as nvarchar(100)) from Roy where split>''<br />
+)<br />
+select COl1,COl2 from roy order by COl1 option (MAXRECURSION 0)<br />
+<br />
+生成结果:<br />
+/*<br />
+Col1        COl2<br />
+----------- -----<br />
+1           a<br />
+1           b<br />
+1           c<br />
+2           d<br />
+2           e<br />
+3           f<br />
+*/<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:33

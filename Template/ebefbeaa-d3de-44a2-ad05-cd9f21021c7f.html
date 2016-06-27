@@ -1,0 +1,67 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>SQL语句练习题参考答案 <br />
+1、 select Sname,Ssex,Class from Student;<br />
+2、 select distinct depart from teacher;<br />
+3、 select Sno as '学号',Sname as '姓名',Ssex as '性别',Sbirthday as'出生日期',Class as'班号'from student;<br />
+或<br />
+select Sno as 学号,Sname as 姓名,Ssex as 性别,Sbirthday as 出生日期,Class as 班号 from student;<br />
+4、 select * from score where degree between 60 and 80;<br />
+或select * from score where degree>=60 and degree<=80;<br />
+5、 select * from score where degree in (85,86,88);<br />
+6、 select * from student where class='95031'or Ssex='女';<br />
+7、 select * from student order by class desc;<br />
+8、 select * from score order by cno asc ,degree desc;<br />
+或select * from score order by cno ,degree desc;<br />
+9、 select count(*) as CNT from student where class='95031';<br />
+10、select Sno as '学号',cno as '课程号', degree as '最高分' from score<br />
+where degree=(select max(degree) from score)<br />
+11、select avg(degree)as 课程平均分 from score where cno='3-105';<br />
+12、select cno,avg(degree) from score where cno like'3%'group by cno having   count(*) >5;<br />
+13、select Sno from score group by Sno having min(degree)>70 and max(degree)<90;<br />
+14、select student.Sname,score.Cno,score.degree from student,score where student.Sno=score.Sno;<br />
+15、select x.Sno,y.Cname,x.degree from score x,course y where x.Cno=y.Cno;<br />
+16、select x.Sname,y.Cname,z.degree from student x,course y,score z where x.Sno=z.Sno and z.Cno=y.Cno;<br />
+17、select y.Cno,avg(y.degree) from student x,score y where x.Sno=y.Sno and x.class='95033'group by y.cno;<br />
+18、select Sno,Cno,rank from score,grade where degree between low and upp order by rank;<br />
+19、select x.Cno,x.Sno,x.degree from score x,score y<br />
+where x.cno='3-105' and x.degree>y.degree and y.sno='109'and y.cno='3-105';<br />
+20、<br />
+1,查询成绩非本科最高 select *   from score b   where degree <(select max(degree) from score a where a.cno=b.cno);<br />
+2,查询成绩非本科最高并且选2门以上的学生的成绩:<br />
+21、select x.cno,x.Sno,x.degree from score x,score y where x.degree>y.degree and y.sno='109'and y.cno='3-105';<br />
+select cno,sno,degree from score   where degree >(select degree from score where sno='109' and cno='3-105')<br />
+22、select sno,sname,sbirthday from student where to_char(sbirthday,'yyyy')=(select to_char(sbirthday,'yyyy') from student where sno='108');<br />
+23、select cno,sno,degree from score where cno=(select x.cno from course x,teacher y where x.tno=y.tno and y.tname='张旭');<br />
+24、select tname from teacher where tno in(select x.tno from course x,score y where x.cno=y.cno group by x.tno having count(x.tno)>5);<br />
+25、select * from student where class in('95033','95031');<br />
+26、select distinct cno from score where degree in (select degree from score where degree>85);<br />
+27、select * from score where cno in(select x.cno from course x,teacher y where y.tno=x.tno and y.depart='计算机系');<br />
+28、select tname,prof from teacher where depart='计算机系' and prof not in (select prof from teacher where depart='电子工程系');<br />
+29、select * from score where cno='3-105' and degree>any (select degree from score where cno='3-245')order by degree desc;<br />
+30、select * from score where cno='3-105' and degree>all(select degree from score where cno='3-245');<br />
+31、select tname,tsex,tbirthday from teacher<br />
+union select sname,ssex,sbirthday from student;<br />
+32、select tname,tsex,tbirthday from teacher where tsex='女'<br />
+union select sname,ssex,sbirthday from student where ssex='女';<br />
+33、select * from score a where degree<(select avg(degree)<br />
+from score b where a.cno=b.cno);<br />
+34、select tname,depart from teacher a where exists<br />
+(select * from course b where a.tno=b.tno);<br />
+35、select tname,depart from teacher a where not exists<br />
+(select * from course b where a.tno=b.tno);<br />
+36、select class from student where ssex='男'group by class having count(*)>=2;<br />
+37、select * from student where sname not like'王_';<br />
+38、select sname as 姓名,(to_char(sysdate,'yyyy')-to_char(sbirthday,'yyyy')) as 年龄 from student<br />
+39、select sname,sbirthday as 最大 from student where   sbirthday =(select min (sbirthday) from student)<br />
+union select sname,sbirthday as 最小 from student where sbirthday =(select max(sbirthday) from student)  <br />
+40、select class,sname,sbirthday from student order by class desc,sbirthday;<br />
+41、select x.tname,y.cname from teacher x,course y where x.tno=y.tno and x.tsex='男';<br />
+42、select * from score where degree=(select max(degree)from score);<br />
+43、select sname from student where ssex=(select ssex from student where sname='李军');<br />
+44、select sname from student where ssex=(select ssex from student where sname='李军') and class=(select class from student where sname='李军');<br />
+45、select * from score where sno in(select sno from student where ssex='男') and cno=(select cno from course<br />
+where cname='计算机导论');<br />
+<br />
+<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:12

@@ -1,0 +1,114 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--空间数据的一些操作<br />
+<br />
+1.在创建表时定义geometry类型的列<br />
+例子：<br />
+create table streets<br />
+(<br />
+streetid int identity(1,1),<br />
+streetName nvarchar(20),<br />
+streetGeo geometry<br />
+);<br />
+go<br />
+<br />
+2.向表中插入几何数据<br />
+insert into streets values('street1',geometry::stgeomfromtext('LINESTRING(100 100,20 180, 180 180)',0))<br />
+<br />
+3.从表中获取几何数据<br />
+--注意，直接读取无法看到真实的含义，可以在select 语句将该列的值读取到一个几何数据类型的变量，具体语句如下：<br />
+declare @g geometry<br />
+select @g=streetgeo from streets where streetnam='street1'<br />
+select @g.stastext()<br />
+go<br />
+<br />
+<br />
+4.获取geometry 实例中包含的点<br />
+(1)获取geometry 实例中包含的点数<br />
+使用STNumPoints()函数可以获得geometry实例中包含的点数。例如：<br />
+declare @g geometry<br />
+select @g=streetgeo from streets where streetnam='street1'<br />
+select @g.STNumPoints()<br />
+go<br />
+<br />
+(2)获取geometry 实例中包含的点<br />
+declare @g geometry<br />
+select @g=streetgeo from streets where streetnam='street1'<br />
+select @g.STPointN(2).Tostring()<br />
+go<br />
+<br />
+(3)获取起始点和终点<br />
+declare @g geometry<br />
+select @g=streetgeo from streets where streetnam='street1'<br />
+select @g.STStartPoint().ToString() as 起始点,@g.STEndPoint().ToString() as 终点<br />
+go<br />
+<br />
+(4)获取多边形的中心点<br />
+declare @g geometry<br />
+set @g=geometry::STGeomFromText('POLYGON(0 0,0 2, 2 2,0 2, 0 0))',0);<br />
+select @g.STCentroid().Tostring();<br />
+<br />
+5.获取geometry实例的维度信息<br />
+(1)返回对象的维度<br />
+使用STDimension()函数可以获取对象的维度信息。<br />
+例如：<br />
+declare @g geometry;<br />
+set @g=geometry::STGeomFromText('POINT(3,4)',));<br />
+select @g.STAsText(),@g.STDimension()<br />
+go<br />
+结果是：<br />
+/*<br />
+POINT(3,4),0<br />
+*/<br />
+<br />
+(2)计算对象的长度<br />
+使用STLength()函数可以计算一维或二维对象的长度。例如：<br />
+declare @g geometry<br />
+select @g=streetgeo from streets where streetnam='street1'<br />
+select @g.STLength()<br />
+go<br />
+<br />
+(3)计算对象的面积<br />
+使用STArea()函数可以计算二维对象的面积。例如：<br />
+declare @g geometry<br />
+set @g=geometr::STGeomFromText('POLYGON((0 0,2 0, 2 2,0 2,0 0))',0);<br />
+select @g.STArea()<br />
+<br />
+6.检查是否为空<br />
+在使用geometry实例之前，需要判断是否为空，可以使用STlsEmpty()函数实现此功能，当geometry实例为空时，则返回1，否则返回0<br />
+declare @g geometry;<br />
+set @g=geometry::STGeomFromText('POLYGON EMPTY',0);<br />
+select @g STlsEmpty();<br />
+set @g=geometry::STGeomFromText('POLYGON((0 0,2 0, 2 2,0 2,0 0))',0);<br />
+select @g STlsEmpty();<br />
+返回结果为1和0<br />
+<br />
+7.判断geometry实例是否为简单<br />
+满足下面条件的geometry实例子=被称为简单的geometry实例<br />
+(1)实例中任何一个图形都不与自身相交，但其终点除外。<br />
+(2)实例上任意两个图形可以在某个点相交，但两个边界上的点除外。<br />
+当geometry 实例为简单实例时，返回1，否则返回0<br />
+例如：<br />
+declare @g geometry;<br />
+set @g=geometry::STGeomFromText('LINESTRING(0 0,2 2,0 2,2 0)',0);<br />
+select @g.STlsSimple();<br />
+结果为1<br />
+declare @g geometry;<br />
+set @g=geometry::STGeomFromText('LINESTRING(0 0,0 2,2 2,2 0)',0);<br />
+select @g.STlsSimple();<br />
+结果为0<br />
+<br />
+8.返回geometry实例的边界<br />
+除Point和MultiPoint实例外，其他geometry实例都存在边界.使用STBoundary()函数可以返回geometry实例的边界<br />
+下面是在LineString实例上应用STBoundary()函数的实例。<br />
+declare @g geometry;<br />
+set @g=geometry::STGeomFromText('LINESTRING(1 1,2 2,0 2,2 1)',0);<br />
+select @g.STBoundary().Tostring();<br />
+返回结果为Multipoint((2,1),(1,1)),即LineString实例的起点和终点.<br />
+Polygon和MultiPolygon实例的边界值为Multipoint 实例。下面是Polygon应用STBoundary()函数的实例。<br />
+declare @g geometry;<br />
+set @g=geometry::STGeomFromText('POLYGON((0 0,0 3,3 3,3 0,0 0)(1 1,1 2, 2 1,1 1))',10);<br />
+select @g.STBoundary().Tostring();<br />
+返回结果为Multilinestring((1 1,1 2,2 1,1 1),(0 0 ,3 0 , 3 3, 0 3,0 0)),即Polygon的环。<br />
+<br />
+---这次先写这么多，太多了，下次再写<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:06

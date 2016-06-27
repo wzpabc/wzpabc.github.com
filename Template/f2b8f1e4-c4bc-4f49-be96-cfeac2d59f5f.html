@@ -1,0 +1,56 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>/*不同服务器数据库之间的数据操作*/<br />
+<br />
+--创建链接服务器 <br />
+exec sp_addlinkedserver   'ITSV ', ' ', 'SQLOLEDB ', '远程服务器名或ip地址 ' <br />
+exec sp_addlinkedsrvlogin  'ITSV ', 'false ',null, '用户名 ', '密码 ' <br />
+<br />
+--查询示例 <br />
+select * from ITSV.数据库名.dbo.表名 <br />
+<br />
+--导入示例 <br />
+select * into 表 from ITSV.数据库名.dbo.表名 <br />
+<br />
+--以后不再使用时删除链接服务器 <br />
+exec sp_dropserver  'ITSV ', 'droplogins ' <br />
+<br />
+--连接远程/局域网数据(openrowset/openquery/opendatasource) <br />
+--1、openrowset <br />
+<br />
+--查询示例 <br />
+select * from openrowset( 'SQLOLEDB ', 'sql服务器名 '; '用户名 '; '密码 ',数据库名.dbo.表名) <br />
+<br />
+--生成本地表 <br />
+select * into 表 from openrowset( 'SQLOLEDB ', 'sql服务器名 '; '用户名 '; '密码 ',数据库名.dbo.表名) <br />
+<br />
+--把本地表导入远程表 <br />
+insert openrowset( 'SQLOLEDB ', 'sql服务器名 '; '用户名 '; '密码 ',数据库名.dbo.表名) <br />
+select *from 本地表 <br />
+<br />
+--更新本地表 <br />
+update b <br />
+set b.列A=a.列A <br />
+ from openrowset( 'SQLOLEDB ', 'sql服务器名 '; '用户名 '; '密码 ',数据库名.dbo.表名)as a inner join 本地表 b <br />
+on a.column1=b.column1 <br />
+<br />
+--openquery用法需要创建一个连接 <br />
+<br />
+--首先创建一个连接创建链接服务器 <br />
+exec sp_addlinkedserver   'ITSV ', ' ', 'SQLOLEDB ', '远程服务器名或ip地址 ' <br />
+--查询 <br />
+select * <br />
+FROM openquery(ITSV,  'SELECT *  FROM 数据库.dbo.表名 ') <br />
+--把本地表导入远程表 <br />
+insert openquery(ITSV,  'SELECT *  FROM 数据库.dbo.表名 ') <br />
+select * from 本地表 <br />
+--更新本地表 <br />
+update b <br />
+set b.列B=a.列B <br />
+FROM openquery(ITSV,  'SELECT * FROM 数据库.dbo.表名 ') as a  <br />
+inner join 本地表 b on a.列A=b.列A <br />
+<br />
+--3、opendatasource/openrowset <br />
+SELECT   * <br />
+FROM   opendatasource( 'SQLOLEDB ',  'Data Source=ip/ServerName;User ID=登陆名;Password=密码 ' ).test.dbo.roy_ta <br />
+--把本地表导入远程表 <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:31

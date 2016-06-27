@@ -1,0 +1,24 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--循环数据库压缩日志文件(假设日志文件fileid=2)<br />
+create table #db(id int identity(1,1),name varchar(80),dbsize int,mdfsize int,ldfsize int)<br />
+insert into #db<br />
+	select a.name,SUM(b.size)*8/1024 as 'dbsize[MB]',<br />
+		SUM(case when b.type<>1 then b.size else 0 end)*8/1024 as 'datafilesize[MB]',<br />
+		SUM(case when b.type=1 then b.size else 0 end)*8/1024 as 'logfilesize[MB]'<br />
+	from sys.databases as a<br />
+		inner join sys.master_files as b on a.database_id=b.database_id<br />
+	where a.database_id>4<br />
+	group by a.name<br />
+	order by SUM(case when b.type=1 then b.size else 0 end)--按日志从大到小排序<br />
+declare @min_id int,@max_id int,@tmp_db varchar(80),@s varchar(max)<br />
+select @min_id=min(id),@max_id=max(id) from #db where ldfsize>0--此处指定日志文件大于多少M的<br />
+while @min_id<=@max_id<br />
+	begin<br />
+		select @tmp_db=name,@min_id=@min_id+1 from #db where id=@min_id<br />
+		set @s='BACKUP LOG '+@tmp_db+' with no_log'<br />
+		exec(@s)<br />
+		set @s='use '+@tmp_db+';dbcc shrinkfile(2)'<br />
+		exec(@s)<br />
+	end<br />
+ drop table #db<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:12

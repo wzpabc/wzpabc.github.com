@@ -1,0 +1,138 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>---------------------------------<br />
+--  Author: liangCK 小梁<br />
+--  Title : 查每个分组前N条记录<br />
+--  Date  : 2008-11-13 17:19:23<br />
+---------------------------------<br />
+<br />
+--> 生成测试数据: #T<br />
+IF OBJECT_ID('tempdb.dbo.#T') IS NOT NULL DROP TABLE #T<br />
+CREATE TABLE #T (ID VARCHAR(3),GID INT,Author VARCHAR(29),Title VARCHAR(39),Date DATETIME)<br />
+INSERT INTO #T<br />
+SELECT '001',1,'邹建','深入浅出SQLServer2005开发管理与应用实例','2008-05-10' UNION ALL<br />
+SELECT '002',1,'胡百敬','SQLServer2005性能调校','2008-03-22' UNION ALL<br />
+SELECT '003',1,'格罗夫Groff.J.R.','SQL完全手册','2009-07-01' UNION ALL<br />
+SELECT '004',1,'KalenDelaney','SQLServer2005技术内幕存储引擎','2008-08-01' UNION ALL<br />
+SELECT '005',2,'Alex.Kriegel.Boris.M.Trukhnov','SQL宝典','2007-10-05' UNION ALL<br />
+SELECT '006',2,'飞思科技产品研发中心','SQLServer2000高级管理与开发','2007-09-10' UNION ALL<br />
+SELECT '007',2,'胡百敬','SQLServer2005数据库开发详解','2008-06-15' UNION ALL<br />
+SELECT '008',3,'陈浩奎','SQLServer2000存储过程与XML编程','2005-09-01' UNION ALL<br />
+SELECT '009',3,'赵松涛','SQLServer2005系统管理实录','2008-10-01' UNION ALL<br />
+SELECT '010',3,'黄占涛','SQL技术手册','2006-01-01'<br />
+<br />
+--SQL查询如下:<br />
+<br />
+--按GID分组,查每个分组中Date最新的前2条记录<br />
+<br />
+<br />
+--1.字段ID唯一时:<br />
+SELECT * FROM #T AS T WHERE ID IN(SELECT TOP 2 ID FROM #T WHERE GID=T.GID ORDER BY Date DESC)<br />
+<br />
+--2.如果ID不唯一时:<br />
+SELECT * FROM #T AS T WHERE 2>(SELECT COUNT(*) FROM #T WHERE GID=T.GID AND Date>T.Date)<br />
+<br />
+--SQL Server 2005 使用新方法<br />
+<br />
+--3.使用ROW_NUMBER()进行排位分组<br />
+SELECT ID,GID,Author,Title,Date<br />
+FROM<br />
+(<br />
+   SELECT rid=ROW_NUMBER() OVER(PARTITION BY GID ORDER BY Date DESC),*<br />
+   FROM #T<br />
+) AS T<br />
+WHERE rid<=2<br />
+<br />
+--4.使用APPLY<br />
+SELECT DISTINCT b.*<br />
+FROM #T AS a<br />
+CROSS APPLY<br />
+(<br />
+    SELECT TOP(2) * FROM #T WHERE a.GID=GID ORDER BY Date DESC<br />
+) AS b<br />
+<br />
+<br />
+--结果<br />
+/*<br />
+<br />
+ID   GID         Author                        Title                                   Date<br />
+---- ----------- ----------------------------- --------------------------------------- -----------------------<br />
+003  1           格罗夫Groff.J.R.                 SQL完全手册                                 2009-07-01 00:00:00.000<br />
+004  1           KalenDelaney                  SQLServer2005技术内幕存储引擎                   2008-08-01 00:00:00.000<br />
+005  2           Alex.Kriegel.Boris.M.Trukhnov SQL宝典                                   2007-10-05 00:00:00.000<br />
+007  2           胡百敬                           SQLServer2005数据库开发详解                    2008-06-15 00:00:00.000<br />
+009  3           赵松涛                           SQLServer2005系统管理实录                     2008-10-01 00:00:00.000<br />
+010  3           黄占涛                           SQL技术手册                                 2006-01-01 00:00:00.000<br />
+<br />
+(6 行受影响)<br />
+*/<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+--得到每组前几条数据<br />
+--假設每組Col1中， Col3不會重復<br />
+<br />
+--建立測試環境<br />
+Create Table TEST<br />
+(Col1 Varchar(10),<br />
+ Col2 Varchar(10),<br />
+ Col3 Int)<br />
+--插入數據<br />
+Insert TEST Select 'BD1V','Label', 4<br />
+Union All Select 'BD1V', 'BATT', 2<br />
+Union All Select 'BD1V', 'ODD', 3<br />
+Union All Select 'BD1V', 'HDD', 5<br />
+Union All Select 'BD1V', 'LCD', 1<br />
+Union All Select 'BD1W','HDD', 3<br />
+Union All Select 'BD1W','RAM', 8<br />
+Union All Select 'BD1W','TP CABLE', 5<br />
+Union All Select 'BD1W','LCD', 6<br />
+Union All Select 'BD1W','Label', 2<br />
+Union All Select 'BL3', 'LCD CABLE', 7<br />
+Union All Select 'BL3', 'LABEL', 6<br />
+Union All Select 'BL3', 'LCD', 5<br />
+Union All Select 'BL3', 'RAM', 1<br />
+Union All Select 'BL3D', 'Label', 4<br />
+GO<br />
+--測試<br />
+--方法一：<br />
+Select Col1, Col2, Col3 From TEST A<br />
+Where (Select Count(*) From TEST Where Col1 = A.Col1 And Col3 > A.Col3) < 3<br />
+Order By Col1, Col3 Desc<br />
+--方法二：<br />
+Select Col1, Col2, Col3 From TEST A<br />
+Where Exists (Select Count(*) From TEST Where Col1 = A.Col1 And Col3 > A.Col3 Having Count(*) < 3)<br />
+Order By Col1, Col3 Desc<br />
+--方法三：<br />
+Select Col1, Col2, Col3 From TEST A<br />
+Where Col3 In (Select TOP 3 Col3 From TEST Where Col1 = A.Col1 Order By Col3 Desc)<br />
+Order By Col1, Col3 Desc<br />
+GO<br />
+--刪除測試環境<br />
+Drop Table TEST<br />
+--結果<br />
+/*<br />
+Col1  Col2   Col3<br />
+BD1V HDD  5<br />
+BD1V Label  4<br />
+BD1V ODD  3<br />
+BD1W RAM  8<br />
+BD1W LCD   6<br />
+BD1W TP CABLE 5<br />
+BL3  LCD CABLE 7<br />
+BL3  LABEL  6<br />
+BL3  LCD   5<br />
+BL3D Label  4<br />
+*/<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:06

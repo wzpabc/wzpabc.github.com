@@ -1,0 +1,47 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>syscolumns<br />
+每个表和视图中的每列在表中占一行，存储过程中的每个参数在表中也占一行。该表位于每个数据库中。<br />
+<br />
+列名 数据类型 描述 <br />
+name sysname 列名或过程参数的名称。 <br />
+id int 该列所属的表对象 ID，或与该参数关联的存储过程 ID。 <br />
+xtype tinyint systypes 中的物理存储类型。 <br />
+typestat tinyint 仅限内部使用。 <br />
+xusertype smallint 扩展的用户定义数据类型 ID。 <br />
+length smallint systypes 中的最大物理存储长度。 <br />
+xprec tinyint 仅限内部使用。 <br />
+xscale tinyint 仅限内部使用。 <br />
+colid smallint 列或参数 ID。 <br />
+xoffset smallint 仅限内部使用。 <br />
+bitpos tinyint 仅限内部使用。 <br />
+reserved tinyint 仅限内部使用。 <br />
+colstat smallint 仅限内部使用。 <br />
+cdefault int 该列的默认值 ID。 <br />
+domain int 该列的规则或 CHECK 约束 ID。 <br />
+number smallint 过程分组时（0 表示非过程项）的子过程号。 <br />
+colorder smallint 仅限内部使用。 <br />
+autoval varbinary(255) 仅限内部使用。 <br />
+offset smallint 该列所在行的偏移量；如果为负，表示可变长度行。 <br />
+status tinyint 用于描述列或参数属性的位图： <br />
+0x08 = 列允许空值。<br />
+0x10 = 当添加 varchar 或 varbinary 列时，ANSI 填充生效。保留 varchar 列的尾随空格，保留 varbinary 列的尾随零。<br />
+0x40 = 参数为 OUTPUT 参数。<br />
+0x80 = 列为标识列。<br />
+ <br />
+type tinyint systypes 中的物理存储类型。 <br />
+usertype smallint systypes 中的用户定义数据类型 ID。 <br />
+printfmt varchar(255) 仅限内部使用。 <br />
+prec smallint 该列的精度级别。 <br />
+scale int 该列的小数位数。 <br />
+iscomputed int 表示是否已计算该列的标志： <br />
+0 = 未计算。<br />
+1 = 已计算。<br />
+ <br />
+isoutparam int 表示该过程参数是否是输出参数： <br />
+1 = 真。<br />
+0 = 假。<br />
+ <br />
+isnullable int 表示该列是否允许空值： <br />
+1 = 真。<br />
+0 = 假。<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:06

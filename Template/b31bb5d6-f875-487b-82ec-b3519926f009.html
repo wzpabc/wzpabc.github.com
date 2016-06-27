@@ -1,0 +1,2280 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>/* Complete Code Listing for "Performance Tuning with<br />
+SQL Server DMVs" by Tim Ford and Louis Davidson<br />
+<br />
+Please report errata to: http://drsql.org/dmvbook.aspx<br />
+*/<br />
+<br />
+/*---------------------------------------------*/<br />
+/* CHAPTER 1: USING DYNAMIC MANAGEMENT OBJECTS */<br />
+/*---------------------------------------------*/<br />
+<br />
+-- Listing 1.1: Performance troubleshooting based on wait times<br />
+SELECT  wait_type ,<br />
+        SUM(wait_time_ms / 1000) AS [wait_time_s]<br />
+FROM    sys.dm_os_wait_stats DOWS<br />
+WHERE   wait_type NOT IN ( 'SLEEP_TASK', 'BROKER_TASK_STOP',<br />
+                           'SQLTRACE_BUFFER_FLUSH', 'CLR_AUTO_EVENT',<br />
+                           'CLR_MANUAL_EVENT', 'LAZYWRITER_SLEEP' )<br />
+GROUP BY wait_type<br />
+ORDER BY SUM(wait_time_ms) DESC<br />
+<br />
+-- Listing 1.2: Taking the baseline measurement<br />
+SELECT  DB_NAME(mf.database_id) AS databaseName ,<br />
+        mf.physical_name ,<br />
+        divfs.num_of_reads ,<br />
+   --other columns removed in this section. See listing 6-14 for complete code<br />
+        GETDATE() AS baselineDate<br />
+INTO    #baseline<br />
+FROM    sys.dm_io_virtual_file_stats(NULL, NULL) AS divfs<br />
+        JOIN sys.master_files AS mf ON mf.database_id = divfs.database_id<br />
+                                       AND mf.file_id = divfs.file_id<br />
+<br />
+-- Listing 1.3: Returning accumulated file reads since the baseline measurement<br />
+WITH  currentLine<br />
+        AS ( SELECT   DB_NAME(mf.database_id) AS databaseName ,<br />
+                        mf.physical_name ,<br />
+                        num_of_reads ,<br />
+        --other columms removed<br />
+                        GETDATE() AS currentlineDate<br />
+             FROM     sys.dm_io_virtual_file_stats(NULL, NULL) AS divfs<br />
+                        JOIN sys.master_files AS mf<br />
+                          ON mf.database_id = divfs.database_id<br />
+                             AND mf.file_id = divfs.file_id<br />
+             )<br />
+  SELECT  currentLine.databaseName ,<br />
+        currentLine.physical_name ,<br />
+       --gets the time diference in milliseconds since the baseline was taken<br />
+        DATEDIFF(millisecond,baseLineDate,currentLineDate) AS elapsed_ms,<br />
+        --gets the change in time since the baseline was taken<br />
+        currentLine.num_of_reads - #baseline.num_of_reads AS num_of_reads<br />
+        --other columns removed<br />
+  FROM  currentLine<br />
+      INNER JOIN #baseline ON #baseLine.databaseName = currentLine.databaseName<br />
+        AND #baseLine.physical_name = currentLine.physical_name <br />
+<br />
+/*-----------------------------------------------*/<br />
+/* CHAPTER 2: CONNECTIONS, SESSIONS AND REQUESTS */<br />
+/*-----------------------------------------------*/<br />
+<br />
+-- Listing 2.1: Run the query against sysprocesses.<br />
+SELECT  spid ,<br />
+        cmd ,<br />
+        sql_handle<br />
+FROM    sys.sysprocesses<br />
+WHERE   DB_NAME(dbid) = 'SimpleTalk'<br />
+<br />
+-- Listing 2.2: Run the query against sys.dm_exec_requests.<br />
+SELECT  session_id ,<br />
+        command ,<br />
+        sql_handle<br />
+FROM    sys.dm_exec_requests<br />
+WHERE   DB_NAME(database_id) = 'SimpleTalk'<br />
+<br />
+-- Listing 2.3: Who is connected?<br />
+-- Get a count of SQL connections by IP address<br />
+SELECT  dec.client_net_address ,<br />
+        des.program_name ,<br />
+        des.host_name ,<br />
+      --des.login_name ,<br />
+        COUNT(dec.session_id) AS connection_count<br />
+FROM    sys.dm_exec_sessions AS des<br />
+        INNER JOIN sys.dm_exec_connections AS dec<br />
+                       ON des.session_id = dec.session_id<br />
+-- WHERE   LEFT(des.host_name, 2) = 'WK'<br />
+GROUP BY dec.client_net_address ,<br />
+         des.program_name ,<br />
+         des.host_name <br />
+      -- des.login_name<br />
+-- HAVING COUNT(dec.session_id) > 1<br />
+ORDER BY des.program_name,<br />
+         dec.client_net_address ;<br />
+<br />
+-- Listing 2.4: Who is executing what via SSMS?<br />
+SELECT  dec.client_net_address ,<br />
+        des.host_name ,<br />
+        dest.text<br />
+FROM    sys.dm_exec_sessions des<br />
+        INNER JOIN sys.dm_exec_connections dec<br />
+                     ON des.session_id = dec.session_id<br />
+        CROSS APPLY sys.dm_exec_sql_text(dec.most_recent_sql_handle) dest<br />
+WHERE   des.program_name LIKE 'Microsoft SQL Server Management Studio%'<br />
+ORDER BY des.program_name ,<br />
+        dec.client_net_address<br />
+<br />
+-- Listing 2.5: Return session-level settings for the current session.<br />
+SELECT  des.text_size ,<br />
+        des.language ,<br />
+        des.date_format ,<br />
+        des.date_first ,<br />
+        des.quoted_identifier ,<br />
+        des.arithabort ,<br />
+        des.ansi_null_dflt_on ,<br />
+        des.ansi_defaults ,<br />
+        des.ansi_warnings ,<br />
+        des.ansi_padding ,<br />
+        des.ansi_nulls ,<br />
+        des.concat_null_yields_null ,<br />
+        des.transaction_isolation_level ,<br />
+        des.lock_timeout ,<br />
+        des.deadlock_priority<br />
+FROM    sys.dm_exec_sessions des<br />
+WHERE   des.session_id = @@SPID<br />
+<br />
+-- Listing 2.6: Logins with more than one session.<br />
+SELECT  login_name ,<br />
+        COUNT(session_id) AS session_count<br />
+FROM    sys.dm_exec_sessions<br />
+WHERE   is_user_process = 1<br />
+GROUP BY login_name<br />
+ORDER BY login_name<br />
+<br />
+-- Listing 2.7: Identify sessions with context switching.<br />
+SELECT  session_id ,<br />
+        login_name ,<br />
+        original_login_name<br />
+FROM    sys.dm_exec_sessions<br />
+WHERE   is_user_process = 1<br />
+        AND login_name <> original_login_name<br />
+<br />
+-- Listing 2.8: Sessions that are open but have been inactive for more than 5 days.<br />
+DECLARE @days_old SMALLINT <br />
+SELECT  @days_old = 5 <br />
+<br />
+SELECT  des.session_id ,<br />
+        des.login_time ,<br />
+        des.last_request_start_time ,<br />
+        des.last_request_end_time ,<br />
+        des.[status] ,<br />
+        des.[program_name] ,<br />
+        des.cpu_time ,<br />
+        des.total_elapsed_time ,<br />
+        des.memory_usage ,<br />
+        des.total_scheduled_time ,<br />
+        des.total_elapsed_time ,<br />
+        des.reads ,<br />
+        des.writes ,<br />
+        des.logical_reads ,<br />
+        des.row_count ,<br />
+        des.is_user_process<br />
+FROM    sys.dm_exec_sessions des<br />
+        INNER JOIN sys.dm_tran_session_transactions dtst<br />
+                       ON des.session_id = dtst.session_id<br />
+WHERE   des.is_user_process = 1<br />
+        AND DATEDIFF(dd, des.last_request_end_time, GETDATE()) > @days_old<br />
+        AND des.status != 'Running'<br />
+ORDER BY des.last_request_end_time<br />
+<br />
+-- Listing 2.9: Identifying sessions with orphaned transactions.<br />
+SELECT  des.session_id ,<br />
+        des.login_time ,<br />
+        des.last_request_start_time ,<br />
+        des.last_request_end_time ,<br />
+        des.host_name ,<br />
+        des.login_name<br />
+FROM    sys.dm_exec_sessions des<br />
+        INNER JOIN sys.dm_tran_session_transactions dtst<br />
+                       ON des.session_id = dtst.session_id<br />
+        LEFT JOIN sys.dm_exec_requests der<br />
+                       ON dtst.session_id = der.session_id<br />
+WHERE   der.session_id IS NULL<br />
+ORDER BY des.session_id<br />
+<br />
+-- Listing 2.10: Retrieving the text for a currently executing ad hoc query.<br />
+SELECT  dest.text ,<br />
+        dest.dbid ,<br />
+        dest.objectid<br />
+FROM    sys.dm_exec_requests AS der<br />
+        CROSS APPLY sys.dm_exec_sql_text(der.sql_handle) AS dest<br />
+WHERE   session_id = @@spid ;<br />
+<br />
+-- Listing 2.11: Retrieving the text for a currently executing batch.<br />
+SELECT  dest.text<br />
+FROM    sys.dm_exec_requests AS der<br />
+        CROSS APPLY sys.dm_exec_sql_text(der.sql_handle) AS dest<br />
+WHERE   session_id <> @@spid<br />
+        AND text LIKE '%waitfor%' ;<br />
+<br />
+-- Listing 2.12: Creating the test stored procedure.<br />
+CREATE PROCEDURE dbo.test<br />
+AS <br />
+    SELECT  *<br />
+    FROM    sys.objects<br />
+    WAITFOR DELAY '00:10:00';<br />
+<br />
+-- Listing 2.13: Returning the text of an executing stored procedure<br />
+SELECT  dest.dbid ,<br />
+        dest.objectid ,<br />
+        dest.encrypted ,<br />
+        dest.text<br />
+FROM    sys.dm_exec_requests AS der<br />
+        CROSS APPLY sys.dm_exec_sql_text(der.sql_handle) <br />
+                                                    AS dest<br />
+WHERE   objectid = object_id('test', 'p');<br />
+<br />
+-- Listing 2.14: Parsing the SQL text using statement_start_offset and statement_end_offset.<br />
+SELECT  der.statement_start_offset ,<br />
+        der.statement_end_offset ,<br />
+        SUBSTRING(dest.text, der.statement_start_offset / 2,<br />
+                  ( CASE WHEN der.statement_end_offset = -1<br />
+                         THEN DATALENGTH(dest.text)<br />
+                         ELSE der.statement_end_offset<br />
+                    END - der.statement_start_offset ) / 2)<br />
+                                                AS statement_executing ,<br />
+        dest.text AS [full statement code]<br />
+FROM    sys.dm_exec_requests der<br />
+        INNER JOIN sys.dm_exec_sessions des<br />
+                       ON des.session_id = der.session_id<br />
+        CROSS APPLY sys.dm_exec_sql_text(der.sql_handle) dest<br />
+WHERE   des.is_user_process = 1<br />
+        AND der.session_id <> @@spid<br />
+ORDER BY der.session_id ;<br />
+<br />
+-- Listing 2.15: Investigating offsets.<br />
+WAITFOR DELAY '00:01' ; <br />
+BEGIN TRANSACTION <br />
+-- WAITFOR DELAY '00:01' ; <br />
+INSERT  INTO AdventureWorks.Production.ProductCategory<br />
+        ( Name, ModifiedDate )<br />
+VALUES  ( 'Reflectors', GETDATE() ) <br />
+ROLLBACK TRANSACTION <br />
+<br />
+SELECT  Name ,<br />
+        ModifiedDate<br />
+FROM    AdventureWorks.Production.ProductCategory<br />
+WHERE   Name = 'Reflectors' ; <br />
+-- WAITFOR DELAY '00:01' ;<br />
+<br />
+-- Listing 2.16: Requests by CPU consumption.<br />
+SELECT  der.session_id ,<br />
+        DB_NAME(der.database_id) AS database_name ,<br />
+        deqp.query_plan ,<br />
+        SUBSTRING(dest.text, der.statement_start_offset / 2,<br />
+                  ( CASE WHEN der.statement_end_offset = -1<br />
+                         THEN DATALENGTH(dest.text)<br />
+                         ELSE der.statement_end_offset<br />
+                    END - der.statement_start_offset ) / 2)<br />
+                                        AS [statement executing] ,<br />
+        der.cpu_time<br />
+      --der.granted_query_memory<br />
+      --der.wait_time<br />
+      --der.total_elapsed_time<br />
+      --der.reads <br />
+FROM    sys.dm_exec_requests der<br />
+        INNER JOIN sys.dm_exec_sessions des<br />
+                       ON des.session_id = der.session_id<br />
+        CROSS APPLY sys.dm_exec_sql_text(der.sql_handle) dest<br />
+        CROSS APPLY sys.dm_exec_query_plan(der.plan_handle) deqp<br />
+WHERE   des.is_user_process = 1<br />
+        AND der.session_id <> @@spid<br />
+ORDER BY der.cpu_time DESC ;<br />
+-- ORDER BY der.granted_query_memory DESC ;<br />
+-- ORDER BY der.wait_time DESC;<br />
+-- ORDER BY der.total_elapsed_time DESC;<br />
+-- ORDER BY der.reads DESC;<br />
+<br />
+-- Listing 2.17: Who is running what?<br />
+--  Who is running what at this instant <br />
+SELECT  dest.text AS [Command text] ,<br />
+        des.login_time ,<br />
+        des.[host_name] ,<br />
+        des.[program_name] ,<br />
+        der.session_id ,<br />
+        dec.client_net_address ,<br />
+        der.status ,<br />
+        der.command ,<br />
+        DB_NAME(der.database_id) AS DatabaseName<br />
+FROM    sys.dm_exec_requests der<br />
+        INNER JOIN sys.dm_exec_connections dec<br />
+                       ON der.session_id = dec.session_id<br />
+        INNER JOIN sys.dm_exec_sessions des<br />
+                       ON des.session_id = der.session_id<br />
+        CROSS APPLY sys.dm_exec_sql_text(sql_handle) AS dest<br />
+WHERE   des.is_user_process = 1<br />
+<br />
+-- Listing 2.18: sp_who results.<br />
+EXEC sp_who;<br />
+<br />
+-- Listing 2.20: A better sp_who2.<br />
+SELECT  des.session_id ,<br />
+        des.status ,<br />
+        des.login_name ,<br />
+        des.[HOST_NAME] ,<br />
+        der.blocking_session_id ,<br />
+        DB_NAME(der.database_id) AS database_name ,<br />
+        der.command ,<br />
+        des.cpu_time ,<br />
+        des.reads ,<br />
+        des.writes ,<br />
+        dec.last_write ,<br />
+        des.[program_name] ,<br />
+        der.wait_type ,<br />
+        der.wait_time ,<br />
+        der.last_wait_type ,<br />
+        der.wait_resource ,<br />
+        CASE des.transaction_isolation_level<br />
+          WHEN 0 THEN 'Unspecified'<br />
+          WHEN 1 THEN 'ReadUncommitted'<br />
+          WHEN 2 THEN 'ReadCommitted'<br />
+          WHEN 3 THEN 'Repeatable'<br />
+          WHEN 4 THEN 'Serializable'<br />
+          WHEN 5 THEN 'Snapshot'<br />
+        END AS transaction_isolation_level ,<br />
+        OBJECT_NAME(dest.objectid, der.database_id) AS OBJECT_NAME ,<br />
+        SUBSTRING(dest.text, der.statement_start_offset / 2,<br />
+                  ( CASE WHEN der.statement_end_offset = -1<br />
+                         THEN DATALENGTH(dest.text)<br />
+                         ELSE der.statement_end_offset<br />
+                    END - der.statement_start_offset ) / 2)<br />
+                                          AS [executing statement] ,<br />
+        deqp.query_plan<br />
+FROM    sys.dm_exec_sessions des<br />
+        LEFT JOIN sys.dm_exec_requests der<br />
+                      ON des.session_id = der.session_id<br />
+        LEFT JOIN sys.dm_exec_connections dec<br />
+                      ON des.session_id = dec.session_id<br />
+        CROSS APPLY sys.dm_exec_sql_text(der.sql_handle) dest<br />
+        CROSS APPLY sys.dm_exec_query_plan(der.plan_handle) deqp<br />
+WHERE   des.session_id <> @@SPID<br />
+ORDER BY des.session_id<br />
+<br />
+/*-----------------------------------------------*/<br />
+/* CHAPTER 3: QUERIES AND QUERY PLANS            */<br />
+/*-----------------------------------------------*/<br />
+<br />
+-- Listing 3-1: Flushing the cache of plans belonging to a particular database<br />
+--Determine the id of your database<br />
+DECLARE @intDBID INTEGER<br />
+SET @intDBID = ( SELECT dbid<br />
+                 FROM   master.dbo.sysdatabases<br />
+                 WHERE  name = 'mydatabasename'<br />
+               )<br />
+<br />
+--Flush the procedure cache for your database<br />
+DBCC FLUSHPROCINDB (@intDBID)<br />
+<br />
+-- Listing 3-2: Retrieving the query plan for a cached stored procedure<br />
+CREATE PROCEDURE ShowQueryText<br />
+AS <br />
+    SELECT TOP 10<br />
+            object_id ,<br />
+            name<br />
+    FROM    sys.objects ;<br />
+   --waitfor delay '00:00:00'<br />
+    SELECT TOP 10<br />
+            object_id ,<br />
+            name<br />
+    FROM    sys.objects ;<br />
+    SELECT TOP 10<br />
+            object_id ,<br />
+            name<br />
+    FROM    sys.procedures ;<br />
+GO<br />
+EXEC dbo.ShowQueryText ;<br />
+GO<br />
+SELECT  deqp.dbid ,<br />
+        deqp.objectid ,<br />
+        deqp.encrypted ,<br />
+        deqp.query_plan<br />
+FROM    sys.dm_exec_query_stats deqs<br />
+        CROSS APPLY sys.dm_exec_query_plan(deqs.plan_handle) AS deqp<br />
+WHERE   objectid = OBJECT_ID('ShowQueryText', 'p') ;<br />
+<br />
+-- Listing 3-3: Viewing the sql_handle and plan_handle<br />
+SELECT  deqs.plan_handle ,<br />
+        deqs.sql_handle ,<br />
+        execText.text<br />
+FROM    sys.dm_exec_query_stats deqs<br />
+        CROSS APPLY sys.dm_exec_sql_text(deqs.plan_handle) AS execText<br />
+WHERE   execText.text LIKE 'CREATE PROCEDURE ShowQueryText%'<br />
+<br />
+-- Listing 3-4: Extracting the SQL text for individual queries in a batch<br />
+SELECT  CHAR(13) + CHAR(10)<br />
+        + CASE WHEN deqs.statement_start_offset = 0<br />
+                    AND deqs.statement_end_offset = -1<br />
+               THEN '-- see objectText column--'<br />
+               ELSE '-- query --' + CHAR(13) + CHAR(10)<br />
+                    + SUBSTRING(execText.text, deqs.statement_start_offset / 2,<br />
+                                ( ( CASE WHEN deqs.statement_end_offset = -1<br />
+                                         THEN DATALENGTH(execText.text)<br />
+                                         ELSE deqs.statement_end_offset<br />
+                                    END ) - deqs.statement_start_offset ) / 2)<br />
+          END AS queryText ,<br />
+        deqp.query_plan<br />
+FROM    sys.dm_exec_query_stats deqs<br />
+        CROSS APPLY sys.dm_exec_sql_text(deqs.plan_handle) AS execText<br />
+        CROSS APPLY sys.dm_exec_query_plan(deqs.plan_handle) deqp<br />
+WHERE   execText.text LIKE 'CREATE PROCEDURE ShowQueryText%'<br />
+<br />
+-- Listing 3-5: Returning the Plan using sys.dm_exec_text_query_plan<br />
+SELECT  deqp.dbid ,<br />
+        deqp.objectid ,<br />
+        CAST(detqp.query_plan AS XML) AS singleStatementPlan ,<br />
+        deqp.query_plan AS batch_query_plan ,<br />
+        --this won't actually work in all cases because nominal plans aren't<br />
+        -- cached, so you won't see a plan for waitfor if you uncomment it<br />
+        ROW_NUMBER() OVER ( ORDER BY Statement_Start_offset )<br />
+                                                AS query_position ,<br />
+        CASE WHEN deqs.statement_start_offset = 0<br />
+                  AND deqs.statement_end_offset = -1<br />
+             THEN '-- see objectText column--'<br />
+             ELSE '-- query --' + CHAR(13) + CHAR(10)<br />
+                  + SUBSTRING(execText.text, deqs.statement_start_offset / 2,<br />
+                              ( ( CASE WHEN deqs.statement_end_offset = -1<br />
+                                       THEN DATALENGTH(execText.text)<br />
+                                       ELSE deqs.statement_end_offset<br />
+                                  END ) - deqs.statement_start_offset ) / 2)<br />
+        END AS queryText<br />
+FROM    sys.dm_exec_query_stats deqs<br />
+        CROSS APPLY sys.dm_exec_text_query_plan(deqs.plan_handle,<br />
+                                                deqs.statement_start_offset,<br />
+                                                deqs.statement_end_offset)<br />
+                                                                     AS detqp<br />
+        CROSS APPLY sys.dm_exec_query_plan(deqs.plan_handle) AS deqp<br />
+        CROSS APPLY sys.dm_exec_sql_text(deqs.plan_handle) AS execText<br />
+WHERE   deqp.objectid = OBJECT_ID('ShowQueryText', 'p') ;<br />
+<br />
+-- Listing 3-6: Retreiving the plans for compiled objects<br />
+SELECT  refcounts ,<br />
+        usecounts ,<br />
+        size_in_bytes ,<br />
+        cacheobjtype ,<br />
+        objtype<br />
+FROM    sys.dm_exec_cached_plans<br />
+WHERE   objtype IN ( 'proc', 'prepared ' ) ;<br />
+<br />
+-- Listing 3-7: Total number of cached plans<br />
+SELECT  COUNT(*)<br />
+FROM    sys.dm_exec_cached_plans ;<br />
+<br />
+-- Listing 3-8: An overview of plan reuse<br />
+SELECT  MAX(CASE WHEN usecounts BETWEEN 10 AND 100 THEN '10-100'<br />
+                 WHEN usecounts BETWEEN 101 AND 1000 THEN '101-1000'<br />
+                 WHEN usecounts BETWEEN 1001 AND 5000 THEN '1001-5000'<br />
+                 WHEN usecounts BETWEEN 5001 AND 10000 THEN '5001-10000'<br />
+                 ELSE CAST(usecounts AS VARCHAR(100))<br />
+            END) AS usecounts ,<br />
+        COUNT(*) AS countInstance<br />
+FROM    sys.dm_exec_cached_plans<br />
+GROUP BY CASE WHEN usecounts BETWEEN 10 AND 100 THEN 50<br />
+              WHEN usecounts BETWEEN 101 AND 1000 THEN 500<br />
+              WHEN usecounts BETWEEN 1001 AND 5000 THEN 2500<br />
+              WHEN usecounts BETWEEN 5001 AND 10000 THEN 7500<br />
+              ELSE usecounts<br />
+         END<br />
+ORDER BY CASE WHEN usecounts BETWEEN 10 AND 100 THEN 50<br />
+              WHEN usecounts BETWEEN 101 AND 1000 THEN 500<br />
+              WHEN usecounts BETWEEN 1001 AND 5000 THEN 2500<br />
+              WHEN usecounts BETWEEN 5001 AND 10000 THEN 7500<br />
+              ELSE usecounts<br />
+         END DESC ;<br />
+<br />
+-- Listing 3-9: Investigating the most-used plans<br />
+SELECT TOP 2 WITH TIES<br />
+        decp.usecounts ,<br />
+        decp.cacheobjtype ,<br />
+        decp.objtype ,<br />
+        deqp.query_plan ,<br />
+        dest.text<br />
+FROM    sys.dm_exec_cached_plans decp<br />
+        CROSS APPLY sys.dm_exec_query_plan(decp.plan_handle) AS deqp<br />
+        CROSS APPLY sys.dm_exec_sql_text(decp.plan_handle) AS dest<br />
+ORDER BY usecounts DESC ;<br />
+<br />
+-- Listing 3-10: Examining plan reuse for a single procedure<br />
+SELECT  usecounts ,<br />
+        cacheobjtype ,<br />
+        objtype ,<br />
+        OBJECT_NAME(dest.objectid)<br />
+FROM    sys.dm_exec_cached_plans decp<br />
+        CROSS APPLY sys.dm_exec_sql_text(decp.plan_handle) AS dest<br />
+WHERE   dest.objectid = OBJECT_ID('<procedureName>')<br />
+        AND dest.dbid = DB_ID()<br />
+ORDER BY usecounts DESC ;<br />
+<br />
+-- Listing 3-11: Examining single-use plans in the cache<br />
+-- Find single-use, ad-hoc queries that are bloating the plan cache<br />
+SELECT TOP ( 100 )<br />
+        [text] ,<br />
+        cp.size_in_bytes<br />
+FROM    sys.dm_exec_cached_plans AS cp<br />
+        CROSS APPLY sys.dm_exec_sql_text(plan_handle)<br />
+WHERE   cp.cacheobjtype = 'Compiled Plan'<br />
+        AND cp.objtype = 'Adhoc'<br />
+        AND cp.usecounts = 1<br />
+ORDER BY cp.size_in_bytes DESC ;<br />
+-- Listing 3-12: Non-parameterized ad-hoc SQL<br />
+-- Query 1<br />
+SELECT  FirstName ,<br />
+        LastName<br />
+FROM    dbo.Employee<br />
+WHERE   EmpID = 5<br />
+<br />
+-- Query 2<br />
+SELECT  FirstName ,<br />
+        LastName<br />
+FROM    dbo.Employee<br />
+WHERE   EmpID = 187<br />
+<br />
+-- Listing 3-13: Examining plan attributes<br />
+SELECT  CAST(depa.attribute AS VARCHAR(30)) AS attribute ,<br />
+        CAST(depa.value AS VARCHAR(30)) AS value ,<br />
+        depa.is_cache_key<br />
+FROM    ( SELECT TOP 1<br />
+                    *<br />
+          FROM      sys.dm_exec_cached_plans<br />
+          ORDER BY  usecounts DESC<br />
+        ) decp<br />
+        OUTER APPLY sys.dm_exec_plan_attributes(decp.plan_handle) depa<br />
+WHERE   is_cache_key = 1<br />
+ORDER BY usecounts DESC ;<br />
+<br />
+-- Listing 3-14: Finding the CPU-intensive queries<br />
+SELECT TOP 3<br />
+        total_worker_time ,<br />
+        execution_count ,<br />
+        total_worker_time / execution_count AS [Avg CPU Time] ,<br />
+        CASE WHEN deqs.statement_start_offset = 0<br />
+                  AND deqs.statement_end_offset = -1<br />
+             THEN '-- see objectText column--'<br />
+             ELSE '-- query --' + CHAR(13) + CHAR(10)<br />
+                  + SUBSTRING(execText.text, deqs.statement_start_offset / 2,<br />
+                              ( ( CASE WHEN deqs.statement_end_offset = -1<br />
+                                       THEN DATALENGTH(execText.text)<br />
+                                       ELSE deqs.statement_end_offset<br />
+                                  END ) - deqs.statement_start_offset ) / 2)<br />
+        END AS queryText<br />
+FROM    sys.dm_exec_query_stats deqs<br />
+        CROSS APPLY sys.dm_exec_sql_text(deqs.plan_handle) AS execText<br />
+ORDER BY deqs.total_worker_time DESC ;<br />
+<br />
+-- Listing 3-15: Grouping by sql_handle to see query stats at the batch level<br />
+SELECT TOP 100<br />
+        SUM(total_logical_reads) AS total_logical_reads ,<br />
+        COUNT(*) AS num_queries , --number of individual queries in batch<br />
+        --not all usages need be equivalent, in the case of looping<br />
+        --or branching code<br />
+        MAX(execution_count) AS execution_count ,<br />
+        MAX(execText.text) AS queryText<br />
+FROM    sys.dm_exec_query_stats deqs<br />
+        CROSS APPLY sys.dm_exec_sql_text(deqs.sql_handle) AS execText<br />
+GROUP BY deqs.sql_handle<br />
+HAVING  AVG(total_logical_reads / execution_count) <> SUM(total_logical_reads)<br />
+        / SUM(execution_count)<br />
+ORDER BY 1 DESC <br />
+<br />
+-- Listing 3-16: Investigating logical reads performed by cached stored procedures<br />
+-- Top Cached SPs By Total Logical Reads (SQL 2008 only).<br />
+-- Logical reads relate to memory pressure<br />
+SELECT TOP ( 25 )<br />
+        p.name AS [SP Name] ,<br />
+        deps.total_logical_reads AS [TotalLogicalReads] ,<br />
+        deps.total_logical_reads / deps.execution_count AS [AvgLogicalReads] ,<br />
+        deps.execution_count ,<br />
+        ISNULL(deps.execution_count / DATEDIFF(Second, deps.cached_time,<br />
+                                           GETDATE()), 0) AS [Calls/Second] ,<br />
+        deps.total_elapsed_time ,<br />
+        deps.total_elapsed_time / deps.execution_count AS [avg_elapsed_time] ,<br />
+        deps.cached_time<br />
+FROM    sys.procedures AS p<br />
+        INNER JOIN sys.dm_exec_procedure_stats<br />
+                       AS deps ON p.[object_id] = deps.[object_id]<br />
+WHERE   deps.database_id = DB_ID()<br />
+ORDER BY deps.total_logical_reads DESC ;<br />
+<br />
+<br />
+-- Listing 3-17: Examine optimizer counters<br />
+SELECT  counter ,<br />
+        occurrence ,<br />
+        value<br />
+FROM    sys.dm_exec_query_optimizer_info<br />
+WHERE   counter IN ( 'optimizations', 'elapsed time', 'final cost' ) ;<br />
+<br />
+<br />
+-- Listing 3-18: Trivial changes to query text can affect plan reuse<br />
+SELECT  COUNTER ,<br />
+        OCCURRENCE ,<br />
+        VALUE<br />
+FROM    SYS.DM_EXEC_QUERY_OPTIMIZER_INFO<br />
+WHERE   COUNTER IN ( 'optimizations', 'elapsed time', 'final cost' ) ;<br />
+<br />
+/*-----------------------------------------------*/<br />
+/* CHAPTER 4: TRANSACTIONS                       */<br />
+/*-----------------------------------------------*/<br />
+<br />
+-- Listing 4.1: All statements within SQL Server are transactional.<br />
+SELECT  DTAT.transaction_id<br />
+FROM    sys.dm_tran_active_transactions DTAT<br />
+WHERE   DTAT.name <> 'worktable' ; <br />
+<br />
+SELECT  DTAT.transaction_id<br />
+FROM    sys.dm_tran_active_transactions DTAT<br />
+WHERE   DTAT.name <> 'worktable' ; <br />
+<br />
+BEGIN TRAN <br />
+SELECT  DTAT.transaction_id<br />
+FROM    sys.dm_tran_active_transactions DTAT<br />
+WHERE   DTAT.name <> 'worktable' ; <br />
+<br />
+SELECT  DTAT.transaction_id<br />
+FROM    sys.dm_tran_active_transactions DTAT<br />
+WHERE   DTAT.name <> 'worktable' ; <br />
+COMMIT TRAN<br />
+<br />
+-- Listing 4.2: An uncommitted update of the Production table in AdventureWorks.<br />
+BEGIN TRANSACTION <br />
+UPDATE [Production].[ProductCategory] <br />
+SET [Name] = 'Parts' <br />
+WHERE [Name] = 'Components'; <br />
+--ROLLBACK TRANSACTION<br />
+<br />
+-- Listing 4.3: Locking due to single UPDATE statement against a user table in SQL Server.<br />
+SELECT  [resource_type] ,<br />
+        DB_NAME([resource_database_id]) AS [Database Name] ,<br />
+        CASE WHEN DTL.resource_type IN ( 'DATABASE', 'FILE', 'METADATA' )<br />
+             THEN DTL.resource_type<br />
+             WHEN DTL.resource_type = 'OBJECT'<br />
+             THEN OBJECT_NAME(DTL.resource_associated_entity_id,<br />
+                              DTL.[resource_database_id])<br />
+             WHEN DTL.resource_type IN ( 'KEY', 'PAGE', 'RID' )<br />
+             THEN ( SELECT  OBJECT_NAME([object_id])<br />
+                    FROM    sys.partitions<br />
+                    WHERE   sys.partitions.hobt_id = <br />
+                                            DTL.resource_associated_entity_id<br />
+                  )<br />
+             ELSE 'Unidentified'<br />
+        END AS requested_object_name ,<br />
+        [request_mode] ,<br />
+        [resource_description]<br />
+FROM    sys.dm_tran_locks DTL<br />
+WHERE   DTL.[resource_type] <> 'DATABASE' ;<br />
+-- Listing 4.4: A simple query against the ProductCategory table, which will be blocked.<br />
+SELECT  *<br />
+FROM    [Production].[ProductCategory] ;<br />
+<br />
+-- Listing 4.5: Which sessions are causing blocking and what statement are they running? <br />
+SELECT  DTL.[request_session_id] AS [session_id] ,<br />
+        DB_NAME(DTL.[resource_database_id]) AS [Database] ,<br />
+        DTL.resource_type ,<br />
+        CASE WHEN DTL.resource_type IN ( 'DATABASE', 'FILE', 'METADATA' )<br />
+             THEN DTL.resource_type<br />
+             WHEN DTL.resource_type = 'OBJECT'<br />
+             THEN OBJECT_NAME(DTL.resource_associated_entity_id,<br />
+                              DTL.[resource_database_id])<br />
+             WHEN DTL.resource_type IN ( 'KEY', 'PAGE', 'RID' )<br />
+             THEN ( SELECT  OBJECT_NAME([object_id])<br />
+                    FROM    sys.partitions<br />
+                    WHERE   sys.partitions.hobt_id = <br />
+                                            DTL.resource_associated_entity_id<br />
+                  )<br />
+             ELSE 'Unidentified'<br />
+        END AS [Parent Object] ,<br />
+        DTL.request_mode AS [Lock Type] ,<br />
+        DTL.request_status AS [Request Status] ,<br />
+        DER.[blocking_session_id] ,<br />
+        DES.[login_name] ,<br />
+        CASE DTL.request_lifetime<br />
+          WHEN 0 THEN DEST_R.TEXT<br />
+          ELSE DEST_C.TEXT<br />
+        END AS [Statement]<br />
+FROM    sys.dm_tran_locks DTL<br />
+        LEFT JOIN sys.[dm_exec_requests] DER<br />
+                   ON DTL.[request_session_id] = DER.[session_id]<br />
+        INNER JOIN sys.dm_exec_sessions DES<br />
+                   ON DTL.request_session_id = DES.[session_id]<br />
+        INNER JOIN sys.dm_exec_connections DEC<br />
+                   ON DTL.[request_session_id] = DEC.[most_recent_session_id]<br />
+        OUTER APPLY sys.dm_exec_sql_text(DEC.[most_recent_sql_handle])<br />
+                                                         AS DEST_C<br />
+        OUTER APPLY sys.dm_exec_sql_text(DER.sql_handle) AS DEST_R<br />
+WHERE   DTL.[resource_database_id] = DB_ID()<br />
+        AND DTL.[resource_type] NOT IN ( 'DATABASE', 'METADATA' )<br />
+ORDER BY DTL.[request_session_id] ;<br />
+<br />
+-- Listing 4.6: Investigating locking and blocking based on waiting tasks<br />
+USE [AdventureWorks] ;<br />
+GO<br />
+SELECT  DTL.[resource_type] AS [resource type] ,<br />
+        CASE WHEN DTL.[resource_type] IN ( 'DATABASE', 'FILE', 'METADATA' )<br />
+             THEN DTL.[resource_type]<br />
+             WHEN DTL.[resource_type] = 'OBJECT'<br />
+             THEN OBJECT_NAME(DTL.resource_associated_entity_id)<br />
+             WHEN DTL.[resource_type] IN ( 'KEY', 'PAGE', 'RID' )<br />
+             THEN ( SELECT  OBJECT_NAME([object_id])<br />
+                    FROM    sys.partitions<br />
+                    WHERE   sys.partitions.[hobt_id] = <br />
+                                 DTL.[resource_associated_entity_id]<br />
+                  )<br />
+             ELSE 'Unidentified'<br />
+        END AS [Parent Object] ,<br />
+        DTL.[request_mode] AS [Lock Type] ,<br />
+        DTL.[request_status] AS [Request Status] ,<br />
+        DOWT.[wait_duration_ms] AS [wait duration ms] ,<br />
+        DOWT.[wait_type] AS [wait type] ,<br />
+        DOWT.[session_id] AS [blocked session id] ,<br />
+        DES_blocked.[login_name] AS [blocked_user] ,<br />
+        SUBSTRING(dest_blocked.text, der.statement_start_offset / 2,<br />
+                  ( CASE WHEN der.statement_end_offset = -1<br />
+                         THEN DATALENGTH(dest_blocked.text)<br />
+                         ELSE der.statement_end_offset<br />
+                    END - der.statement_start_offset ) / 2<br />
+                                              AS [blocked_command] ,<br />
+        DOWT.[blocking_session_id] AS [blocking session id] ,<br />
+        DES_blocking.[login_name] AS [blocking user] ,<br />
+        DEST_blocking.[text] AS [blocking command] ,<br />
+        DOWT.resource_description AS [blocking resource detail]<br />
+FROM    sys.dm_tran_locks DTL<br />
+        INNER JOIN sys.dm_os_waiting_tasks DOWT<br />
+                    ON DTL.lock_owner_address = DOWT.resource_address<br />
+        INNER JOIN sys.[dm_exec_requests] DER<br />
+                    ON DOWT.[session_id] = DER.[session_id]<br />
+        INNER JOIN sys.dm_exec_sessions DES_blocked<br />
+                    ON DOWT.[session_id] = DES_Blocked.[session_id]<br />
+        INNER JOIN sys.dm_exec_sessions DES_blocking<br />
+                    ON DOWT.[blocking_session_id] = DES_Blocking.[session_id]<br />
+        INNER JOIN sys.dm_exec_connections DEC<br />
+                    ON DTL.[request_session_id] = DEC.[most_recent_session_id]<br />
+        CROSS APPLY sys.dm_exec_sql_text(DEC.[most_recent_sql_handle])<br />
+                                                         AS DEST_Blocking<br />
+        CROSS APPLY sys.dm_exec_sql_text(DER.sql_handle) AS DEST_Blocked<br />
+WHERE   DTL.[resource_database_id] = DB_ID()<br />
+<br />
+-- Listing 4.7: An uncommitted UPDATE transaction on the Production.Culture table<br />
+BEGIN TRANSACTION<br />
+UPDATE  Production.Culture<br />
+SET     Name = 'English-British'<br />
+WHERE   Name = 'English' ;<br />
+--ROLLBACK TRANSACTION<br />
+<br />
+-- Listing 4.8: A blocked query against the Production.Culture table<br />
+SELECT  ModifiedDate<br />
+FROM    Production.Culture<br />
+WHERE   Name = 'English' ;<br />
+<br />
+-- Listing 4.9:An INSERT against the Production.Culture table<br />
+INSERT  INTO Production.Culture<br />
+        ( CultureID, Name )<br />
+VALUES  ( 'jp', 'Japanese' ) ;<br />
+<br />
+SELECT  *<br />
+FROM    Production.Culture ;<br />
+<br />
+-- Listing 4.10: Basic query against sys.dm_tran_session_transactions for transactions on the current session.<br />
+BEGIN TRANSACTION <br />
+SELECT  DTST.[session_id] ,<br />
+        DTST.[transaction_id] ,<br />
+        DTST.[is_user_transaction]<br />
+FROM    sys.[dm_tran_session_transactions] AS DTST<br />
+WHERE   DTST.[session_id] = @@SPID<br />
+ORDER BY DTST.[transaction_id] <br />
+COMMIT<br />
+<br />
+-- Listing 4.11: Querying sys.dm_db_tran_active_transactions.<br />
+SELECT  DTAT.transaction_id ,<br />
+        DTAT.[name] ,<br />
+        DTAT.transaction_begin_time ,<br />
+        CASE DTAT.transaction_type<br />
+          WHEN 1 THEN 'Read/write'<br />
+          WHEN 2 THEN 'Read-only'<br />
+          WHEN 3 THEN 'System'<br />
+          WHEN 4 THEN 'Distributed'<br />
+        END AS transaction_type ,<br />
+        CASE DTAT.transaction_state<br />
+          WHEN 0 THEN 'Not fully initialized'<br />
+          WHEN 1 THEN 'Initialized, not started'<br />
+          WHEN 2 THEN 'Active'<br />
+          WHEN 3 THEN 'Ended' -- only applies to read-only transactions<br />
+          WHEN 4 THEN 'Commit initiated'-- distributed transactions only<br />
+          WHEN 5 THEN 'Prepared, awaiting resolution' <br />
+          WHEN 6 THEN 'Committed'<br />
+          WHEN 7 THEN 'Rolling back'<br />
+          WHEN 8 THEN 'Rolled back'<br />
+        END AS transaction_state ,<br />
+        CASE DTAT.dtc_state<br />
+          WHEN 1 THEN 'Active'<br />
+          WHEN 2 THEN 'Prepared'<br />
+          WHEN 3 THEN 'Committed'<br />
+          WHEN 4 THEN 'Aborted'<br />
+          WHEN 5 THEN 'Recovered'<br />
+        END AS dtc_state<br />
+FROM    sys.dm_tran_active_transactions DTAT<br />
+        INNER JOIN sys.dm_tran_session_transactions DTST<br />
+                         ON DTAT.transaction_id = DTST.transaction_id<br />
+WHERE   [DTST].[is_user_transaction] = 1<br />
+ORDER BY DTAT.transaction_begin_time <br />
+<br />
+-- Listing 4.12: Eliminating worktables from the results returned by active_transactions.<br />
+?<br />
+FROM sys.dm_tran_active_transactions DTAT <br />
+WHERE DTAT.name <> 'worktable' <br />
+ORDER BY DTAT.transaction_begin_time<br />
+<br />
+-- Listing 4.13: Decoding the integer values returned by database_transaction_state.<br />
+        CASE SDTDT.database_transaction_state<br />
+          WHEN 1 THEN 'Not initialized'<br />
+          WHEN 3 THEN 'initialized, but not producing log records'<br />
+          WHEN 4 THEN 'Producing log records'<br />
+          WHEN 5 THEN 'Prepared'<br />
+          WHEN 10 THEN 'Committed'<br />
+          WHEN 11 THEN 'Rolled back'<br />
+          WHEN 12 THEN 'Commit in process'<br />
+<br />
+-- Listing 4.14: Transaction log impact of active transactions.<br />
+SELECT DTST.[session_id], <br />
+ DES.[login_name] AS [Login Name], <br />
+ DB_NAME (DTDT.database_id) AS [Database], <br />
+ DTDT.[database_transaction_begin_time] AS [Begin Time], <br />
+ -- DATEDIFF(ms,DTDT.[database_transaction_begin_time], GETDATE()) AS [Duration ms], <br />
+ CASE DTAT.transaction_type <br />
+   WHEN 1 THEN 'Read/write' <br />
+    WHEN 2 THEN 'Read-only' <br />
+    WHEN 3 THEN 'System' <br />
+    WHEN 4 THEN 'Distributed' <br />
+  END AS [Transaction Type], <br />
+  CASE DTAT.transaction_state <br />
+    WHEN 0 THEN 'Not fully initialized' <br />
+    WHEN 1 THEN 'Initialized, not started' <br />
+    WHEN 2 THEN 'Active' <br />
+    WHEN 3 THEN 'Ended' <br />
+    WHEN 4 THEN 'Commit initiated' <br />
+    WHEN 5 THEN 'Prepared, awaiting resolution' <br />
+    WHEN 6 THEN 'Committed' <br />
+    WHEN 7 THEN 'Rolling back' <br />
+    WHEN 8 THEN 'Rolled back' <br />
+  END AS [Transaction State], <br />
+ DTDT.[database_transaction_log_record_count] AS [Log Records], <br />
+ DTDT.[database_transaction_log_bytes_used] AS [Log Bytes Used], <br />
+ DTDT.[database_transaction_log_bytes_reserved] AS [Log Bytes RSVPd], <br />
+ DEST.[text] AS [Last Transaction Text], <br />
+ DEQP.[query_plan] AS [Last Query Plan] <br />
+FROM sys.dm_tran_database_transactions DTDT <br />
+ INNER JOIN sys.dm_tran_session_transactions DTST <br />
+   ON DTST.[transaction_id] = DTDT.[transaction_id] <br />
+ INNER JOIN sys.[dm_tran_active_transactions] DTAT <br />
+   ON DTST.[transaction_id] = DTAT.[transaction_id] <br />
+ INNER JOIN sys.[dm_exec_sessions] DES <br />
+   ON DES.[session_id] = DTST.[session_id] <br />
+ INNER JOIN sys.dm_exec_connections DEC <br />
+   ON DEC.[session_id] = DTST.[session_id] <br />
+ LEFT JOIN sys.dm_exec_requests DER <br />
+   ON DER.[session_id] = DTST.[session_id] <br />
+ CROSS APPLY sys.dm_exec_sql_text (DEC.[most_recent_sql_handle]) AS DEST <br />
+ OUTER APPLY sys.dm_exec_query_plan (DER.[plan_handle]) AS DEQP <br />
+ORDER BY DTDT.[database_transaction_log_bytes_used] DESC;<br />
+-- ORDER BY [Duration ms] DESC;<br />
+<br />
+-- Listing 4.15: Enabling Snapshot isolation at the database level<br />
+ALTER DATABASE Test SET ALLOW_SNAPSHOT_ISOLATION ON;<br />
+<br />
+-- Listing 4.16: Enabling SNAPSHOT isolation mode for a given session.<br />
+SET TRANSACTION ISOLATION LEVEL SNAPSHOT;<br />
+<br />
+-- Listing 4.17: Enabling READ_COMMITTED_SNAPSHOT mode for a database.<br />
+ALTER DATABASE Test SET READ_COMMITTED_SNAPSHOT ON;<br />
+<br />
+-- Listing 4.18: Which databases are using snapshot isolation?<br />
+SELECT  SD.[name] ,<br />
+        SD.snapshot_isolation_state_desc ,<br />
+        SD.is_read_committed_snapshot_on<br />
+FROM    sys.databases SD<br />
+WHERE   SD.snapshot_isolation_state_desc = 'ON'   <br />
+<br />
+<br />
+-- Listing 4.19: Creating the sample Culture table.<br />
+CREATE TABLE [dbo].[Culture]<br />
+    (<br />
+      [CultureID] [nchar](6) NOT NULL ,<br />
+      [Name] NVARCHAR(50) NOT NULL ,<br />
+      [ModifiedDate] [datetime] NOT NULL ,<br />
+      CONSTRAINT [PK_Culture_CultureID] PRIMARY KEY CLUSTERED<br />
+        ( [CultureID] ASC )<br />
+        WITH ( PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF,<br />
+               IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON,<br />
+               ALLOW_PAGE_LOCKS = ON ) ON [PRIMARY]<br />
+    )<br />
+ON  [PRIMARY]<br />
+GO<br />
+<br />
+-- Listing 4.20: Enabling snapshot isolation in the DMV database.<br />
+-- Specify that snapshot isolation is enabled<br />
+-- does not affect the default behavior.<br />
+ALTER DATABASE DMV  SET ALLOW_SNAPSHOT_ISOLATION ON ;<br />
+GO<br />
+<br />
+-- READ_COMMITTED_SNAPSHOT becomes the default isolation level.<br />
+ALTER DATABASE DMV  SET READ_COMMITTED_SNAPSHOT ON ;<br />
+GO<br />
+<br />
+-- Listing 4.21: Tab 1, query then update the Culture table.<br />
+USE DMV ;<br />
+GO<br />
+<br />
+SELECT  CultureID ,<br />
+        Name<br />
+FROM    dbo.Culture ;<br />
+<br />
+BEGIN TRANSACTION<br />
+UPDATE  dbo.[Culture]<br />
+SET     [Name] = 'English-British'<br />
+WHERE   [Name] = 'English' ;<br />
+<br />
+-- COMMIT ; <br />
+-- ROLLBACK;<br />
+<br />
+-- Listing 4.22: Tab 2, an open transaction that inserts a row into the Culture table.<br />
+USE DMV ;<br />
+GO<br />
+<br />
+BEGIN TRANSACTION ;<br />
+INSERT  INTO dbo.[Culture] ([CultureID], [Name], [ModifiedDate])<br />
+VALUES  ('jp', 'Japanese', '2010-08-01') ;<br />
+-- COMMIT ;  <br />
+<br />
+-- Listing 4.23: Tab 3, a query using SNAPSHOT isolation.<br />
+IF @@TRANCOUNT = 0 <br />
+    BEGIN ;<br />
+        SET TRANSACTION ISOLATION LEVEL SNAPSHOT ;<br />
+        PRINT 'Beginning transaction' ;<br />
+        BEGIN TRANSACTION ; <br />
+    END ;<br />
+SELECT  CultureID ,<br />
+        Name<br />
+FROM    dbo.Culture ;<br />
+--commit;<br />
+<br />
+-- Listing 4.24: Tab 4, a query using READ_COMMITTED_SNAPSHOT isolation.<br />
+IF @@TRANCOUNT = 0 <br />
+    BEGIN ;<br />
+-- since we have already set READ_COMMITTED_SNAPSHOT to ON<br />
+-- this is  READ_COMMITTED_SNAPSHOT<br />
+        SET TRANSACTION ISOLATION LEVEL READ COMMITTED ;<br />
+        PRINT 'Beginning transaction' ;<br />
+        BEGIN TRANSACTION ; <br />
+    END ;<br />
+SELECT  CultureID ,<br />
+        Name<br />
+FROM    dbo.Culture ;<br />
+-- COMMIT;<br />
+<br />
+-- Listing 4.25: A count of currently active snapshot transactions.<br />
+SELECT  COUNT([transaction_sequence_num]) AS [snapshot transaction count]<br />
+FROM    sys.dm_tran_transactions_snapshot ;<br />
+<br />
+-- Listing 4.26: Interrogating the active_snapshot_database_transactions DMV.<br />
+SELECT  DTASDT.transaction_id ,<br />
+        DTASDT.session_id ,<br />
+        DTASDT.transaction_sequence_num ,<br />
+        DTASDT.first_snapshot_sequence_num ,<br />
+        DTASDT.commit_sequence_num ,<br />
+        DTASDT.is_snapshot ,<br />
+        DTASDT.elapsed_time_seconds ,<br />
+        DEST.text AS [command text]<br />
+FROM    sys.dm_tran_active_snapshot_database_transactions DTASDT<br />
+        INNER JOIN sys.dm_exec_connections DEC<br />
+                       ON DTASDT.session_id = DEC.most_recent_session_id<br />
+        INNER JOIN sys.dm_tran_database_transactions DTDT<br />
+                       ON DTASDT.transaction_id = DTDT.transaction_id<br />
+        CROSS APPLY sys.dm_exec_sql_text(DEC.most_recent_sql_handle) AS DEST<br />
+WHERE   DTDT.database_id = DB_ID()<br />
+<br />
+-- Listing 4.27: Correlating the activity of the various transactions that are using the version store.<br />
+SELECT  DTTS.[transaction_sequence_num] ,<br />
+        trx_current.[session_id] AS current_session_id ,<br />
+        DES_current.[login_name] AS [current session login] ,<br />
+        DEST_current.text AS [current session command] ,<br />
+        DTTS.[snapshot_sequence_num] ,<br />
+        trx_existing.[session_id] AS existing_session_id ,<br />
+        DES_existing.[login_name] AS [existing session login] ,<br />
+        DEST_existing.text AS [existing session command]<br />
+FROM    sys.dm_tran_transactions_snapshot DTTS<br />
+        INNER JOIN sys.[dm_tran_active_snapshot_database_transactions]<br />
+                                                                trx_current<br />
+                         ON DTTS.[transaction_sequence_num] = <br />
+                                  trx_current.[transaction_sequence_num]<br />
+        INNER JOIN sys.[dm_exec_connections] DEC_current<br />
+                         ON trx_current.[session_id] = <br />
+                                         DEC_current.[most_recent_session_id]<br />
+        INNER JOIN sys.[dm_exec_sessions] DES_current<br />
+                         ON DEC_current.[most_recent_session_id] = <br />
+                                         DES_current.[session_id]<br />
+        INNER JOIN sys.[dm_tran_active_snapshot_database_transactions]<br />
+                                                               trx_existing<br />
+                         ON DTTS.[snapshot_sequence_num] =<br />
+                                   trx_existing.[transaction_sequence_num]<br />
+        INNER JOIN sys.[dm_exec_connections] DEC_existing<br />
+                         ON trx_existing.[session_id] =<br />
+                                         DEC_existing.[most_recent_session_id]<br />
+        INNER JOIN sys.[dm_exec_sessions] DES_existing<br />
+                         ON DEC_existing.[most_recent_session_id] =<br />
+                                           DES_existing.[session_id]<br />
+        CROSS APPLY sys.[dm_exec_sql_text]<br />
+                         (DEC_current.[most_recent_sql_handle]) DEST_current<br />
+        CROSS APPLY sys.[dm_exec_sql_text]<br />
+                         (DEC_existing.[most_recent_sql_handle]) DEST_existing<br />
+ORDER BY DTTS.[transaction_sequence_num] ,<br />
+        DTTS.[snapshot_sequence_num] ;<br />
+<br />
+-- Listing 4.28: Returning raw data from sys.dm_tra_version_store.<br />
+SELECT  DB_NAME(DTVS.database_id) AS [Database Name] ,<br />
+        DTVS.[transaction_sequence_num] ,<br />
+        DTVS.[version_sequence_num] ,<br />
+        CASE DTVS.[status]<br />
+          WHEN 0 THEN '1'<br />
+          WHEN 1 THEN '2'<br />
+        END AS [pages] ,<br />
+        DTVS.[record_length_first_part_in_bytes]<br />
+        + DTVS.[record_length_second_part_in_bytes] AS [record length (bytes)]<br />
+FROM    sys.dm_tran_version_store DTVS<br />
+ORDER BY DB_NAME(DTVS.database_id) ,<br />
+        DTVS.transaction_sequence_num ,<br />
+        DTVS.version_sequence_num<br />
+<br />
+-- Listing 4.29: Storage requirements for the version store in the AdventureWorks database.<br />
+SELECT  DB_NAME(DTVS.[database_id]) ,<br />
+        SUM(DTVS.[record_length_first_part_in_bytes]<br />
+            + DTVS.[record_length_second_part_in_bytes]) AS [total store bytes consumed]<br />
+FROM    sys.dm_tran_version_store DTVS<br />
+GROUP BY DB_NAME(DTVS.[database_id]) ;<br />
+<br />
+-- Listing 4.30: Finding the highest-consuming version store record within tempdb.<br />
+WITH    version_store ( [rowset_id], [bytes consumed] )<br />
+          AS ( SELECT TOP 1<br />
+                        [rowset_id] ,<br />
+                        SUM([record_length_first_part_in_bytes]<br />
+                            + [record_length_second_part_in_bytes])<br />
+                                                          AS [bytes consumed]<br />
+               FROM     sys.dm_tran_version_store<br />
+               GROUP BY [rowset_id]<br />
+               ORDER BY SUM([record_length_first_part_in_bytes]<br />
+                            + [record_length_second_part_in_bytes])<br />
+             )<br />
+    SELECT  VS.[rowset_id] ,<br />
+            VS.[bytes consumed] ,<br />
+            DB_NAME(DTVS.[database_id]) AS [database name] ,<br />
+            DTASDT.[session_id] AS session_id ,<br />
+            DES.[login_name] AS [session login] ,<br />
+            DEST.text AS [session command]<br />
+    FROM    version_store VS<br />
+            INNER JOIN sys.[dm_tran_version_store] DTVS<br />
+                         ON VS.rowset_id = DTVS.[rowset_id]<br />
+            INNER JOIN sys.[dm_tran_active_snapshot_database_transactions]<br />
+                                                                      DTASDT<br />
+                         ON DTVS.[transaction_sequence_num] = <br />
+                                           DTASDT.[transaction_sequence_num]<br />
+            INNER JOIN sys.dm_exec_connections DEC<br />
+                         ON DTASDT.[session_id] = DEC.[most_recent_session_id]<br />
+            INNER JOIN sys.[dm_exec_sessions] DES<br />
+                         ON DEC.[most_recent_session_id] = DES.[session_id]<br />
+            CROSS APPLY sys.[dm_exec_sql_text](DEC.[most_recent_sql_handle]) <br />
+                                                                       DEST ;<br />
+<br />
+-- Listing 4.31: Returning raw data from sys.dm_tran_top_version_generators.<br />
+SELECT  DB_NAME(DTTVG.[database_id]) ,<br />
+        DTTVG.[rowset_id] ,<br />
+        DTTVG.[aggregated_record_length_in_bytes]<br />
+FROM    sys.[dm_tran_top_version_generators] DTTVG<br />
+ORDER BY DTTVG.[aggregated_record_length_in_bytes] DESC ;<br />
+<br />
+/*-----------------------------------------------*/<br />
+/* CHAPTER 5: INDEXING STRATEGY AND MAINTENANCE  */<br />
+/*-----------------------------------------------*/<br />
+<br />
+-- Listing 5.1: Querying index use in the AdventureWorks database.<br />
+SELECT  DB_NAME(ddius.[database_id]) AS database_name ,<br />
+        OBJECT_NAME(ddius.[object_id], DB_ID('AdventureWorks'))<br />
+                                                  AS [object_name] ,<br />
+        asi.[name] AS index_name ,<br />
+        ddius.user_seeks + ddius.user_scans + ddius.user_lookups AS user_reads<br />
+FROM    sys.dm_db_index_usage_stats ddius<br />
+        INNER JOIN AdventureWorks.sys.indexes asi<br />
+                   ON ddius.[object_id] = asi.[object_id]<br />
+                      AND ddius.index_id = asi.index_id ;<br />
+<br />
+-- Listing 5.2: The combination of object_id and index_id cannot guarantee uniqueness at the instance level.<br />
+SELECT  DB_NAME(ddius.[database_id]) AS [database_name] ,<br />
+        ddius.[database_id] ,<br />
+        ddius.[object_id] ,<br />
+        ddius.[index_id]<br />
+FROM    sys.[dm_db_index_usage_stats] ddius<br />
+        INNER JOIN AdventureWorks.sys.[indexes] asi<br />
+            ON ddius.[object_id] = asi.[object_id]<br />
+               AND ddius.[index_id] = asi.[index_id]<br />
+<br />
+-- Listing 5.3: Usage stats for indexes that have been used to resolve a query.<br />
+SELECT  OBJECT_NAME(ddius.[object_id], ddius.database_id) AS [object_name] ,<br />
+        ddius.index_id ,<br />
+        ddius.user_seeks ,<br />
+        ddius.user_scans ,<br />
+        ddius.user_lookups ,<br />
+        ddius.user_seeks + ddius.user_scans + ddius.user_lookups <br />
+                                                     AS user_reads ,<br />
+        ddius.user_updates AS user_writes ,<br />
+        ddius.last_user_scan ,<br />
+        ddius.last_user_update<br />
+FROM    sys.dm_db_index_usage_stats ddius<br />
+WHERE   ddius.database_id > 4 -- filter out system tables<br />
+        AND OBJECTPROPERTY(ddius.object_id, 'IsUserTable') = 1<br />
+        AND ddius.index_id > 0  -- filter out heaps <br />
+ORDER BY ddius.user_scans DESC<br />
+<br />
+-- Listing 5.4: Finding unused indexes.<br />
+-- List unused indexes<br />
+SELECT  OBJECT_NAME(i.[object_id]) AS [Table Name] ,<br />
+        i.name<br />
+FROM    sys.indexes AS i<br />
+        INNER JOIN sys.objects AS o ON i.[object_id] = o.[object_id]<br />
+WHERE   i.index_id NOT IN ( SELECT  ddius.index_id<br />
+                            FROM    sys.dm_db_index_usage_stats AS ddius<br />
+                            WHERE   ddius.[object_id] = i.[object_id]<br />
+                                    AND i.index_id = ddius.index_id<br />
+                                    AND database_id = DB_ID() )<br />
+        AND o.[type] = 'U'<br />
+ORDER BY OBJECT_NAME(i.[object_id]) ASC ;<br />
+<br />
+-- Listing 5.5: Querying sys.dm_db_index_usage_stats for indexes that are being maintained but not used.<br />
+SELECT  '[' + DB_NAME() + '].[' + su.[name] + '].[' + o.[name] + ']'<br />
+            AS [statement] ,<br />
+        i.[name] AS [index_name] ,<br />
+        ddius.[user_seeks] + ddius.[user_scans] + ddius.[user_lookups]<br />
+            AS [user_reads] ,<br />
+        ddius.[user_updates] AS [user_writes] ,<br />
+        SUM(SP.rows) AS [total_rows]<br />
+FROM    sys.dm_db_index_usage_stats ddius<br />
+        INNER JOIN sys.indexes i ON ddius.[object_id] = i.[object_id]<br />
+                                     AND i.[index_id] = ddius.[index_id]<br />
+        INNER JOIN sys.partitions SP ON ddius.[object_id] = SP.[object_id]<br />
+                                        AND SP.[index_id] = ddius.[index_id]<br />
+        INNER JOIN sys.objects o ON ddius.[object_id] = o.[object_id]<br />
+        INNER JOIN sys.sysusers su ON o.[schema_id] = su.[UID]<br />
+WHERE   ddius.[database_id] = DB_ID() -- current database only<br />
+        AND OBJECTPROPERTY(ddius.[object_id], 'IsUserTable') = 1<br />
+        AND ddius.[index_id] > 0<br />
+GROUP BY su.[name] ,<br />
+        o.[name] ,<br />
+        i.[name] ,<br />
+        ddius.[user_seeks] + ddius.[user_scans] + ddius.[user_lookups] ,<br />
+        ddius.[user_updates]<br />
+HAVING  ddius.[user_seeks] + ddius.[user_scans] + ddius.[user_lookups] = 0<br />
+ORDER BY ddius.[user_updates] DESC ,<br />
+        su.[name] ,<br />
+        o.[name] ,<br />
+        i.[name ]<br />
+<br />
+-- Listing 5.6: How old are the index usage stats?<br />
+SELECT  DATEDIFF(DAY, sd.crdate, GETDATE()) AS days_history<br />
+FROM    sys.sysdatabases sd<br />
+WHERE   sd.[name] = 'tempdb' ;<br />
+<br />
+-- Listing 5.7: Finding rarely used indexes.<br />
+-- Potentially inefficent non-clustered indexes (writes > reads)<br />
+SELECT  OBJECT_NAME(ddius.[object_id]) AS [Table Name] ,<br />
+        i.name AS [Index Name] ,<br />
+        i.index_id ,<br />
+        user_updates AS [Total Writes] ,<br />
+        user_seeks + user_scans + user_lookups AS [Total Reads] ,<br />
+        user_updates - ( user_seeks + user_scans + user_lookups )<br />
+            AS [Difference]<br />
+FROM    sys.dm_db_index_usage_stats AS ddius WITH ( NOLOCK )<br />
+        INNER JOIN sys.indexes AS i WITH ( NOLOCK )<br />
+            ON ddius.[object_id] = i.[object_id]<br />
+            AND i.index_id = ddius.index_id<br />
+WHERE   OBJECTPROPERTY(ddius.[object_id], 'IsUserTable') = 1<br />
+        AND ddius.database_id = DB_ID()<br />
+        AND user_updates > ( user_seeks + user_scans + user_lookups )<br />
+        AND i.index_id > 1<br />
+ORDER BY [Difference] DESC ,<br />
+        [Total Writes] DESC ,<br />
+        [Total Reads] ASC ;<br />
+<br />
+-- Listing 5.8: Detailed write information for unused indexes.<br />
+SELECT  '[' + DB_NAME() + '].[' + su.[name] + '].[' + o.[name] + ']'<br />
+                                                       AS [statement] ,<br />
+        i.[name] AS [index_name] ,<br />
+        ddius.[user_seeks] + ddius.[user_scans] + ddius.[user_lookups]<br />
+            AS [user_reads] ,<br />
+        ddius.[user_updates] AS [user_writes] ,<br />
+        ddios.[leaf_insert_count] ,<br />
+        ddios.[leaf_delete_count] ,<br />
+        ddios.[leaf_update_count] ,<br />
+        ddios.[nonleaf_insert_count] ,<br />
+        ddios.[nonleaf_delete_count] ,<br />
+        ddios.[nonleaf_update_count]<br />
+FROM    sys.dm_db_index_usage_stats ddius<br />
+        INNER JOIN sys.indexes i ON ddius.[object_id] = i.[object_id]<br />
+                                     AND i.[index_id] = ddius.[index_id]<br />
+        INNER JOIN sys.partitions SP ON ddius.[object_id] = SP.[object_id]<br />
+                                        AND SP.[index_id] = ddius.[index_id]<br />
+        INNER JOIN sys.objects o ON ddius.[object_id] = o.[object_id]<br />
+        INNER JOIN sys.sysusers su ON o.[schema_id] = su.[UID]<br />
+        INNER JOIN sys.[dm_db_index_operational_stats](DB_ID(), NULL, NULL,<br />
+                                                       NULL)<br />
+                  AS ddios<br />
+                      ON ddius.[index_id] = ddios.[index_id]<br />
+                         AND ddius.[object_id] = ddios.[object_id]<br />
+                         AND SP.[partition_number] = ddios.[partition_number]<br />
+                         AND ddius.[database_id] = ddios.[database_id]<br />
+WHERE OBJECTPROPERTY(ddius.[object_id], 'IsUserTable') = 1<br />
+      AND ddius.[index_id] > 0<br />
+      AND ddius.[user_seeks] + ddius.[user_scans] + ddius.[user_lookups] = 0<br />
+ORDER BY ddius.[user_updates] DESC ,<br />
+        su.[name] ,<br />
+        o.[name] ,<br />
+        i.[name ]<br />
+<br />
+-- Listing 5.9: Retrieving locking and blocking details for each index.<br />
+SELECT  '[' + DB_NAME(ddios.[database_id]) + '].[' + su.[name] + '].['<br />
+        + o.[name] + ']' AS [statement] ,<br />
+        i.[name] AS 'index_name' ,<br />
+        ddios.[partition_number] ,<br />
+        ddios.[row_lock_count] ,<br />
+        ddios.[row_lock_wait_count] ,<br />
+        CAST (100.0 * ddios.[row_lock_wait_count]<br />
+        / ( ddios.[row_lock_count] ) AS DECIMAL(5, 2)) AS [%_times_blocked] ,<br />
+        ddios.[row_lock_wait_in_ms] ,<br />
+        CAST (1.0 * ddios.[row_lock_wait_in_ms]<br />
+        / ddios.[row_lock_wait_count] AS DECIMAL(15, 2))<br />
+             AS [avg_row_lock_wait_in_ms]<br />
+FROM    sys.dm_db_index_operational_stats(DB_ID(), NULL, NULL, NULL) ddios<br />
+        INNER JOIN sys.indexes i ON ddios.[object_id] = i.[object_id]<br />
+                                     AND i.[index_id] = ddios.[index_id]<br />
+        INNER JOIN sys.objects o ON ddios.[object_id] = o.[object_id]<br />
+        INNER JOIN sys.sysusers su ON o.[schema_id] = su.[UID]<br />
+WHERE   ddios.row_lock_wait_count > 0<br />
+        AND OBJECTPROPERTY(ddios.[object_id], 'IsUserTable') = 1<br />
+        AND i.[index_id] > 0<br />
+ORDER BY ddios.[row_lock_wait_count] DESC ,<br />
+        su.[name] ,<br />
+        o.[name] ,<br />
+        i.[name ]<br />
+<br />
+-- Listing 5.10: Investigating latch waits.<br />
+SELECT  '[' + DB_NAME() + '].[' + OBJECT_SCHEMA_NAME(ddios.[object_id])<br />
+        + '].[' + OBJECT_NAME(ddios.[object_id]) + ']' AS [object_name] ,<br />
+        i.[name] AS index_name ,<br />
+        ddios.page_io_latch_wait_count ,<br />
+        ddios.page_io_latch_wait_in_ms ,<br />
+        ( ddios.page_io_latch_wait_in_ms / ddios.page_io_latch_wait_count )<br />
+                                             AS avg_page_io_latch_wait_in_ms<br />
+FROM    sys.dm_db_index_operational_stats(DB_ID(), NULL, NULL, NULL) ddios<br />
+        INNER JOIN sys.indexes i ON ddios.[object_id] = i.[object_id]<br />
+                                    AND i.index_id = ddios.index_id<br />
+WHERE   ddios.page_io_latch_wait_count > 0<br />
+        AND OBJECTPROPERTY(i.object_id, 'IsUserTable') = 1<br />
+ORDER BY ddios.page_io_latch_wait_count DESC ,<br />
+        avg_page_io_latch_wait_in_ms DESC <br />
+<br />
+-- Listing 5.11: Investigating lock escalation.<br />
+SELECT  OBJECT_NAME(ddios.[object_id], ddios.database_id) AS [object_name] ,<br />
+        i.name AS index_name ,<br />
+        ddios.index_id ,<br />
+        ddios.partition_number ,<br />
+        ddios.index_lock_promotion_attempt_count ,<br />
+        ddios.index_lock_promotion_count ,<br />
+        ( ddios.index_lock_promotion_attempt_count<br />
+          / ddios.index_lock_promotion_count ) AS percent_success<br />
+FROM    sys.dm_db_index_operational_stats(DB_ID(), NULL, NULL, NULL) ddios<br />
+        INNER JOIN sys.indexes i ON ddios.object_id = i.object_id<br />
+                                    AND ddios.index_id = i.index_id<br />
+WHERE   ddios.index_lock_promotion_count > 0<br />
+ORDER BY index_lock_promotion_count DESC ;<br />
+<br />
+-- Listing 5.12: Indexes associated with lock contention.<br />
+SELECT  OBJECT_NAME(ddios.object_id, ddios.database_id) AS object_name ,<br />
+        i.name AS index_name ,<br />
+        ddios.index_id ,<br />
+        ddios.partition_number ,<br />
+        ddios.page_lock_wait_count ,<br />
+        ddios.page_lock_wait_in_ms ,<br />
+        CASE WHEN DDMID.database_id IS NULL THEN 'N'<br />
+             ELSE 'Y'<br />
+        END AS missing_index_identified<br />
+FROM    sys.dm_db_index_operational_stats(DB_ID(), NULL, NULL, NULL) ddios<br />
+        INNER JOIN sys.indexes i ON ddios.object_id = i.object_id<br />
+                                    AND ddios.index_id = i.index_id<br />
+        LEFT OUTER JOIN ( SELECT DISTINCT<br />
+                                    database_id ,<br />
+                                    object_id<br />
+                          FROM      sys.dm_db_missing_index_details<br />
+                        ) AS DDMID ON DDMID.database_id = ddios.database_id<br />
+                                      AND DDMID.object_id = ddios.object_id<br />
+WHERE   ddios.page_lock_wait_in_ms > 0<br />
+ORDER BY ddios.page_lock_wait_count DESC ;<br />
+-- Listing 5.13: Finding beneficial missing indexes.<br />
+SELECT  user_seeks * avg_total_user_cost * ( avg_user_impact * 0.01 ) AS [index_advantage] ,<br />
+        dbmigs.last_user_seek ,<br />
+        dbmid.[statement] AS [Database.Schema.Table] ,<br />
+        dbmid.equality_columns ,<br />
+        dbmid.inequality_columns ,<br />
+        dbmid.included_columns ,<br />
+        dbmigs.unique_compiles ,<br />
+        dbmigs.user_seeks ,<br />
+        dbmigs.avg_total_user_cost ,<br />
+        dbmigs.avg_user_impact<br />
+FROM    sys.dm_db_missing_index_group_stats AS dbmigs WITH ( NOLOCK )<br />
+        INNER JOIN sys.dm_db_missing_index_groups AS dbmig WITH ( NOLOCK )<br />
+                    ON dbmigs.group_handle = dbmig.index_group_handle<br />
+        INNER JOIN sys.dm_db_missing_index_details AS dbmid WITH ( NOLOCK )<br />
+                    ON dbmig.index_handle = dbmid.index_handle<br />
+WHERE   dbmid.[database_id] = DB_ID()<br />
+ORDER BY index_advantage DESC ;<br />
+<br />
+-- Listing 5.14: Investigating fragmented indexes.<br />
+SELECT  '[' + DB_NAME() + '].[' + OBJECT_SCHEMA_NAME(ddips.[object_id],<br />
+                                                     DB_ID()) + '].['<br />
+        + OBJECT_NAME(ddips.[object_id], DB_ID()) + ']' AS [statement] ,<br />
+        i.[name] AS [index_name] ,<br />
+        ddips.[index_type_desc] ,<br />
+        ddips.[partition_number] ,<br />
+        ddips.[alloc_unit_type_desc] ,<br />
+        ddips.[index_depth] ,<br />
+        ddips.[index_level] ,<br />
+        CAST(ddips.[avg_fragmentation_in_percent] AS SMALLINT)<br />
+            AS [avg_frag_%] ,<br />
+        CAST(ddips.[avg_fragment_size_in_pages] AS SMALLINT)<br />
+            AS [avg_frag_size_in_pages] ,<br />
+        ddips.[fragment_count] ,<br />
+        ddips.[page_count]<br />
+FROM    sys.dm_db_index_physical_stats(DB_ID(), NULL,<br />
+                                         NULL, NULL, 'limited') ddips<br />
+        INNER JOIN sys.[indexes] i ON ddips.[object_id] = i.[object_id]<br />
+                                       AND ddips.[index_id] = i.[index_id]<br />
+WHERE   ddips.[avg_fragmentation_in_percent] > 15<br />
+        AND ddips.[page_count] > 500<br />
+ORDER BY ddips.[avg_fragmentation_in_percent] ,<br />
+        OBJECT_NAME(ddips.[object_id], DB_ID()) ,<br />
+        i.[name ]<br />
+<br />
+/*-----------------------------------------------------*/<br />
+/* CHAPTER 6: PHYSICAL DISK STATISTICS AND UTILIZATION */<br />
+/*-----------------------------------------------------*/<br />
+<br />
+-- Listing 6.1: Number of rows in clustered tables and heaps.<br />
+SELECT  object_schema_name(ddps.object_id) + <br />
+                '.' + OBJECT_NAME(ddps.object_id) AS name ,<br />
+        SUM(ddps.row_count) AS row_count<br />
+FROM    sys.dm_db_partition_stats AS ddps<br />
+        JOIN sys.indexes ON indexes.object_id = ddps.object_id<br />
+                            AND indexes.index_id = ddps.index_id<br />
+WHERE   indexes.type_desc IN ( 'CLUSTERED', 'HEAP' )<br />
+  and   objectproperty(ddps.object_id,'IsMSShipped') = 0<br />
+GROUP   BY ddps.object_id <br />
+<br />
+-- Listing 6.2: Creating a three-partition salesOrder table.<br />
+CREATE PARTITION FUNCTION PFdateRange (SMALLDATETIME)<br />
+AS RANGE LEFT FOR VALUES ('20020101','20030101') ;<br />
+GO<br />
+CREATE PARTITION SCHEME PSdateRange<br />
+AS PARTITION PFdateRange ALL TO ( [PRIMARY] )<br />
+GO<br />
+<br />
+CREATE TABLE salesOrder<br />
+    (<br />
+      salesOrderId INT ,<br />
+      customerId INT ,<br />
+      orderAmount DECIMAL(10, 2) ,<br />
+      orderDate SMALLDATETIME ,<br />
+      CONSTRAINT PKsalesOrder PRIMARY KEY NONCLUSTERED ( salesOrderId )<br />
+        ON [Primary] ,<br />
+      CONSTRAINT AKsalesOrder UNIQUE CLUSTERED ( salesOrderId, orderDate )<br />
+    )<br />
+--the ON clause causes this clustered table to be partitioned by orderDate <br />
+--using the partition function/scheme<br />
+ON  PSdateRange(orderDate)<br />
+GO<br />
+--Generate some random data<br />
+INSERT  INTO salesOrder<br />
+        SELECT  SalesOrderId ,<br />
+                CustomerId ,<br />
+                TotalDue ,<br />
+                OrderDate<br />
+        FROM    AdventureWorks.Sales.SalesOrderHeader<br />
+<br />
+-- Listing 6.3: Number of rows in each object, per partition.<br />
+SELECT  indexes.name ,<br />
+        indexes.type_desc ,<br />
+        dps.row_count AS row_count ,<br />
+        partition_id<br />
+FROM    sys.dm_db_partition_stats AS dps<br />
+        JOIN sys.indexes ON indexes.object_id = dps.object_id<br />
+                            AND indexes.index_id = dps.index_id<br />
+WHERE   OBJECT_ID('salesOrder') = dps.object_id<br />
+<br />
+-- Listing 6.4: Physical characteristics of each partition.<br />
+SELECT  OBJECT_NAME(indexes.object_id) AS Object_Name ,<br />
+        ddps.index_id AS Index_ID ,<br />
+        ddps.partition_number ,<br />
+        ddps.row_count ,<br />
+        ddps.used_page_count ,<br />
+        ddps.in_row_reserved_page_count ,<br />
+        ddps.lob_reserved_page_count ,<br />
+        CASE pf.boundary_value_on_right<br />
+          WHEN 1 THEN 'less than'<br />
+          ELSE 'less than or equal to'<br />
+        END AS comparison ,<br />
+        value<br />
+FROM    sys.dm_db_partition_stats ddps<br />
+        JOIN sys.indexes ON ddps.object_id = indexes.object_id<br />
+                            AND ddps.index_id = indexes.index_id<br />
+        JOIN sys.partition_schemes ps<br />
+                  ON ps.data_space_id = indexes.data_space_id<br />
+        JOIN sys.partition_functions pf ON pf.function_id = ps.function_id<br />
+        LEFT OUTER JOIN sys.partition_range_values prv<br />
+                  ON pf.function_id = prv.function_id<br />
+                     AND ddps.partition_number = prv.boundary_id<br />
+WHERE   OBJECT_NAME(ddps.object_id) = 'salesOrder '<br />
+        AND ddps.index_id IN ( 0, 1 ) --CLUSTERED table or HEAP<br />
+<br />
+-- Listing 6.5: The testClusteredIdentity clustered table, with an IDENTITY clustering key.<br />
+CREATE TABLE testClusteredIdentity<br />
+    (<br />
+      testClusteredId INT<br />
+        IDENTITY<br />
+        CONSTRAINT PKtestClusteredIdentity PRIMARY KEY CLUSTERED ,<br />
+      value VARCHAR(1000)<br />
+    )<br />
+GO<br />
+<br />
+INSERT INTO testClusteredIdentity(value)<br />
+SELECT replicate('a',1000) --only allows 8 rows per page.<br />
+GO 100<br />
+<br />
+-- Listing 6.6: Fragmentation statistics for the testClusteredIdentity clustered table.<br />
+SELECT  avg_fragmentation_in_percent AS avgFragPct ,<br />
+        fragment_count AS fragCount ,<br />
+        avg_fragment_size_in_pages AS avgFragSize<br />
+FROM    sys.dm_db_index_physical_stats(DB_ID(), NULL, NULL, NULL, 'DETAILED')<br />
+WHERE   index_type_desc = 'CLUSTERED INDEX'<br />
+        AND index_level = 0 -- the other levels are the index pages<br />
+        AND OBJECT_NAME(object_id) = 'testClusteredIdentity'<br />
+<br />
+-- Listing 6.7: The testClustered clustered table, with a GUID clustering key.<br />
+CREATE TABLE testClustered<br />
+    (<br />
+      testClusteredId UNIQUEIDENTIFIER<br />
+        CONSTRAINT PKtestClustered PRIMARY KEY CLUSTERED ,<br />
+      value VARCHAR(1000)<br />
+    )<br />
+<br />
+INSERT INTO testClustered<br />
+SELECT NEWID(), replicate('a',1000)<br />
+GO 100<br />
+<br />
+-- Listing 6.8: The testHeap heap structure.<br />
+CREATE TABLE testHeap<br />
+    (<br />
+      testHeapId UNIQUEIDENTIFIER<br />
+        CONSTRAINT PKtestHeap PRIMARY KEY NONCLUSTERED ,<br />
+      value VARCHAR(100)<br />
+    )<br />
+<br />
+INSERT INTO testHeap<br />
+SELECT NEWID(),'a'<br />
+GO 100<br />
+<br />
+-- Listing 6.9: Fragmentation statistics for testHeap.<br />
+SELECT  avg_fragmentation_in_percent AS avgFragPct ,<br />
+        fragment_count AS fragCount ,<br />
+        avg_fragment_size_in_pages AS avgFragSize ,<br />
+        forwarded_record_count AS forwardPointers<br />
+FROM    sys.dm_db_index_physical_stats(DB_ID(), NULL, NULL, NULL, 'DETAILED')<br />
+WHERE   index_type_desc = 'HEAP'<br />
+        AND index_level = 0 -- the other levels are the index pages<br />
+        AND OBJECT_NAME(object_id) = 'testHeap'<br />
+<br />
+-- Listing 6.10: Updating the value column in testHeap with bigger values.<br />
+UPDATE testHeap<br />
+SET    value = REPLICATE('a',100)<br />
+<br />
+-- Listing 6.11: Capturing I/O statistics when reading the testheap table.<br />
+SET STATISTICS I/O ON<br />
+SELECT  *<br />
+FROM    testHeap<br />
+SET STATISTICS I/O OFF<br />
+<br />
+-- Listing 6.12: Rebuilding a heap to remove fragmentation (SQL 2008 only).<br />
+ALTER TABLE testHeap REBUILD<br />
+<br />
+-- Listing 6.13: Capturing baseline disk I/O statistics from sys.dm_io_virtual_file_stats in a temporary table.<br />
+SELECT  DB_NAME(mf.database_id) AS databaseName ,<br />
+        mf.physical_name ,<br />
+        divfs.num_of_reads ,<br />
+        divfs.num_of_bytes_read ,<br />
+        divfs.io_stall_read_ms ,<br />
+        divfs.num_of_writes ,<br />
+        divfs.num_of_bytes_written ,<br />
+        divfs.io_stall_write_ms ,<br />
+        divfs.io_stall ,<br />
+        size_on_disk_bytes ,<br />
+        GETDATE() AS baselineDate<br />
+INTO    #baseline<br />
+FROM    sys.dm_io_virtual_file_stats(NULL, NULL) AS divfs<br />
+        JOIN sys.master_files AS mf ON mf.database_id = divfs.database_id<br />
+                                       AND mf.file_id = divfs.file_id<br />
+<br />
+-- Listing 6.14: Querying the #baseline temporary table.<br />
+SELECT  physical_name ,<br />
+        num_of_reads ,<br />
+        num_of_bytes_read ,<br />
+        io_stall_read_ms<br />
+FROM    #baseline<br />
+WHERE   databaseName = 'DatabaseName'<br />
+<br />
+-- Listing 6.15: Capturing 10 seconds of disk I/O statistics, since the baseline measurement.<br />
+WITH  currentLine<br />
+        AS ( SELECT   DB_NAME(mf.database_id) AS databaseName ,<br />
+                        mf.physical_name ,<br />
+                        num_of_reads ,<br />
+                        num_of_bytes_read ,<br />
+                        io_stall_read_ms ,<br />
+                        num_of_writes ,<br />
+                        num_of_bytes_written ,<br />
+                        io_stall_write_ms ,<br />
+                        io_stall ,<br />
+                        size_on_disk_bytes ,<br />
+                        GETDATE() AS currentlineDate<br />
+             FROM     sys.dm_io_virtual_file_stats(NULL, NULL) AS divfs<br />
+                        JOIN sys.master_files AS mf<br />
+                          ON mf.database_id = divfs.database_id<br />
+                             AND mf.file_id = divfs.file_id<br />
+             )<br />
+  SELECT  currentLine.databaseName ,<br />
+        LEFT(currentLine.physical_name, 1) AS drive ,<br />
+        currentLine.physical_name ,<br />
+        DATEDIFF(millisecond,baseLineDate,currentLineDate) AS elapsed_ms,<br />
+        currentLine.io_stall - #baseline.io_stall AS io_stall_ms ,<br />
+        currentLine.io_stall_read_ms - #baseline.io_stall_read_ms<br />
+                                                      AS io_stall_read_ms ,<br />
+        currentLine.io_stall_write_ms - #baseline.io_stall_write_ms<br />
+                                                      AS io_stall_write_ms ,<br />
+        currentLine.num_of_reads - #baseline.num_of_reads AS num_of_reads ,<br />
+        currentLine.num_of_bytes_read - #baseline.num_of_bytes_read<br />
+                                                      AS num_of_bytes_read ,<br />
+        currentLine.num_of_writes - #baseline.num_of_writes AS num_of_writes ,<br />
+        currentLine.num_of_bytes_written - #baseline.num_of_bytes_written<br />
+                                                      AS num_of_bytes_written<br />
+  FROM  currentLine<br />
+      INNER JOIN #baseline ON #baseLine.databaseName = currentLine.databaseName<br />
+        AND #baseLine.physical_name = currentLine.physical_name <br />
+  WHERE #baseline.databaseName = 'DatabaseName'   <br />
+<br />
+-- Listing 6.16: Returning pending I/O requests.<br />
+SELECT  mf.physical_name ,<br />
+        dipir.io_pending ,<br />
+        dipir.io_pending_ms_ticks<br />
+FROM    sys.dm_io_pending_io_requests AS dipir<br />
+        JOIN sys.dm_io_virtual_file_stats(NULL, NULL) AS divfs<br />
+                                    ON dipir.io_handle = divfs.file_handle<br />
+        JOIN sys.master_files AS mf ON divfs.database_id = mf.database_id<br />
+                                       AND divfs.file_id = mf.file_id<br />
+ORDER BY dipir.io_pending , --Show I/O completed by the OS first <br />
+        dipir.io_pending_ms_ticks DESC  <br />
+<br />
+-- Listing 6.17: The read/write ratio, by database, for amount of data transferred.<br />
+--uses a LIKE comparison to only include desired databases, rather than<br />
+--using the database_id parameter of sys.dm_io_virtual_file_stats<br />
+--if you have a rather large number of databases, this may not be the <br />
+--optimal way to execute the query, but this gives you flexibility<br />
+--to look at multiple databases simultaneously.<br />
+DECLARE @databaseName SYSNAME<br />
+SET @databaseName = '%'<br />
+ --'%' gives all databases<br />
+<br />
+SELECT  CAST(SUM(num_of_bytes_read) AS DECIMAL)<br />
+        / ( CAST(SUM(num_of_bytes_written) AS DECIMAL)<br />
+            + CAST(SUM(num_of_bytes_read) AS DECIMAL) ) AS RatioOfReads ,<br />
+        CAST(SUM(num_of_bytes_written) AS DECIMAL)<br />
+        / ( CAST(SUM(num_of_bytes_written) AS DECIMAL)<br />
+            + CAST(SUM(num_of_bytes_read) AS DECIMAL) ) AS RatioOfWrites ,<br />
+        SUM(num_of_bytes_read) AS TotalBytesRead ,<br />
+        SUM(num_of_bytes_written) AS TotalBytesWritten<br />
+FROM    sys.dm_io_virtual_file_stats(NULL, NULL) AS divfs<br />
+WHERE   DB_NAME(database_id) LIKE @databaseName  <br />
+<br />
+-- Listing 6.18: The read/write ratio, by drive, for amount of data transferred.<br />
+DECLARE @databaseName SYSNAME<br />
+SET @databaseName = '%'<br />
+ --'%' gives all databases<br />
+<br />
+SELECT  LEFT(physical_name, 1) AS drive ,<br />
+        CAST(SUM(num_of_bytes_read) AS DECIMAL)<br />
+        / ( CAST(SUM(num_of_bytes_written) AS DECIMAL)<br />
+            + CAST(SUM(num_of_bytes_read) AS DECIMAL) ) AS RatioOfReads ,<br />
+        CAST(SUM(num_of_bytes_written) AS DECIMAL)<br />
+        / ( CAST(SUM(num_of_bytes_written) AS DECIMAL)<br />
+            + CAST(SUM(num_of_bytes_read) AS DECIMAL) ) AS RatioOfWrites ,<br />
+        SUM(num_of_bytes_read) AS TotalBytesRead ,<br />
+        SUM(num_of_bytes_written) AS TotalBytesWritten<br />
+FROM    sys.dm_io_virtual_file_stats(NULL, NULL) AS divfs<br />
+        JOIN sys.master_files AS mf ON mf.database_id = divfs.database_id<br />
+                                       AND mf.file_id = divfs.file_id<br />
+WHERE   DB_NAME(divfs.database_id) LIKE @databaseName<br />
+GROUP BY LEFT(mf.physical_name, 1)<br />
+<br />
+-- Listing 6.19: The read/write ratio, by database, for number of read/write operations.<br />
+DECLARE @databaseName SYSNAME<br />
+SET @databaseName = 'BusyDatabase'<br />
+ --obviously not the real name<br />
+ --'%' gives all databases<br />
+<br />
+SELECT  CAST(SUM(num_of_reads) AS DECIMAL)<br />
+        / ( CAST(SUM(num_of_writes) AS DECIMAL)<br />
+            + CAST(SUM(num_of_reads) AS DECIMAL) ) AS RatioOfReads ,<br />
+        CAST(SUM(num_of_writes) AS DECIMAL)<br />
+        / ( CAST(SUM(num_of_reads) AS DECIMAL)<br />
+            + CAST(SUM(num_of_writes) AS DECIMAL) ) AS RatioOfWrites ,<br />
+        SUM(num_of_reads) AS TotalReadOperations ,<br />
+        SUM(num_of_writes) AS TotalWriteOperations<br />
+FROM    sys.dm_io_virtual_file_stats(NULL, NULL) AS divfs<br />
+WHERE   DB_NAME(database_id) LIKE @databaseName<br />
+<br />
+-- Listing 6.20: Read/write ratio for all objects in a given database.<br />
+DECLARE @databaseName SYSNAME<br />
+SET @databaseName = 'BusyDatabase' --obviously not the real name<br />
+ --'%' gives all databases<br />
+<br />
+SELECT  CASE <br />
+        WHEN ( SUM(user_updates + user_seeks + user_scans + user_lookups) = 0 )<br />
+             THEN NULL<br />
+             ELSE ( CAST(SUM(user_seeks + user_scans + user_lookups)<br />
+                                                               AS DECIMAL)<br />
+                    / CAST(SUM(user_updates + user_seeks + user_scans<br />
+                               + user_lookups) AS DECIMAL) )<br />
+        END AS RatioOfReads ,<br />
+        CASE <br />
+        WHEN ( SUM(user_updates + user_seeks + user_scans + user_lookups) = 0 )<br />
+             THEN NULL<br />
+             ELSE ( CAST(SUM(user_updates) AS DECIMAL)<br />
+                    / CAST(SUM(user_updates + user_seeks + user_scans<br />
+                               + user_lookups) AS DECIMAL) )<br />
+        END AS RatioOfWrites ,<br />
+        SUM(user_updates + user_seeks + user_scans + user_lookups)<br />
+                                                      AS TotalReadOperations ,<br />
+        SUM(user_updates) AS TotalWriteOperations<br />
+FROM    sys.dm_db_index_usage_stats AS ddius<br />
+WHERE   DB_NAME(database_id) LIKE @databaseName <br />
+<br />
+-- Listing 6.21: Read/write ratio per object.<br />
+--only works in the context of the database due to sys.indexes usage<br />
+USE BusyDatabase<br />
+ --obviously not the real name<br />
+<br />
+SELECT  OBJECT_NAME(ddius.object_id) AS object_name ,<br />
+       CASE<br />
+        WHEN ( SUM(user_updates + user_seeks + user_scans + user_lookups) = 0 )<br />
+        THEN NULL<br />
+        ELSE ( CAST(SUM(user_seeks + user_scans + user_lookups) AS DECIMAL)<br />
+                    / CAST(SUM(user_updates + user_seeks + user_scans<br />
+                               + user_lookups) AS DECIMAL) )<br />
+        END AS RatioOfReads ,<br />
+       CASE <br />
+        WHEN ( SUM(user_updates + user_seeks + user_scans + user_lookups) = 0 )<br />
+        THEN NULL<br />
+        ELSE ( CAST(SUM(user_updates) AS DECIMAL)<br />
+                    / CAST(SUM(user_updates + user_seeks + user_scans<br />
+                               + user_lookups) AS DECIMAL) )<br />
+        END AS RatioOfWrites ,<br />
+        SUM(user_updates + user_seeks + user_scans + user_lookups)<br />
+                                                  AS TotalReadOperations ,<br />
+        SUM(user_updates) AS TotalWriteOperations<br />
+FROM    sys.dm_db_index_usage_stats AS ddius<br />
+        JOIN sys.indexes AS i ON ddius.object_id = i.object_id<br />
+                                 AND ddius.index_id = i.index_id<br />
+WHERE   i.type_desc IN ( 'CLUSTERED', 'HEAP' ) --only works in Current db<br />
+GROUP BY ddius.object_id<br />
+ORDER BY OBJECT_NAME(ddius.object_id)<br />
+<br />
+-- Listing 6.22: An overview of tempdb utilization.<br />
+SELECT  mf.physical_name ,<br />
+        mf.size AS entire_file_page_count ,<br />
+        dfsu.version_store_reserved_page_count ,<br />
+        dfsu.unallocated_extent_page_count ,<br />
+        dfsu.user_object_reserved_page_count ,<br />
+        dfsu.internal_object_reserved_page_count ,<br />
+        dfsu.mixed_extent_page_count<br />
+FROM    sys.dm_db_file_space_usage dfsu<br />
+        JOIN sys.master_files AS mf ON mf.database_id = dfsu.database_id<br />
+                                       AND mf.file_id = dfsu.file_id <br />
+<br />
+-- Listing 6.23: tempdb file size and version store usage.<br />
+SELECT  SUM(mf.size) AS entire_page_count ,<br />
+        SUM(dfsu.version_store_reserved_page_count) AS version_store_reserved_page_count<br />
+FROM    sys.dm_db_file_space_usage dfsu<br />
+        JOIN sys.master_files AS mf ON mf.database_id = dfsu.database_id<br />
+                                       AND mf.file_id = dfsu.file_id <br />
+<br />
+<br />
+/*-----------------------------------------------*/<br />
+/* CHAPTER 7: OS AND HARDWARE INTERACTION        */<br />
+/*-----------------------------------------------*/<br />
+<br />
+-- Listing 7.1: Resetting the wait statistics.<br />
+DBCC SQLPERF ('sys.dm_os_wait_stats', CLEAR);<br />
+<br />
+-- Listing 7.2: The most common waits.<br />
+SELECT TOP 3<br />
+        wait_type ,<br />
+        waiting_tasks_count ,<br />
+        wait_time_ms / 1000.0 AS wait_time_sec ,<br />
+        CASE WHEN waiting_tasks_count = 0 THEN NULL<br />
+             ELSE wait_time_ms / 1000.0 / waiting_tasks_count<br />
+        END AS avg_wait_time_sec ,<br />
+        max_wait_time_ms / 1000.0 AS max_wait_time_sec ,<br />
+        ( wait_time_ms - signal_wait_time_ms ) / 1000.0 AS resource_wait_time_sec<br />
+FROM    sys.dm_os_wait_stats<br />
+WHERE   wait_type NOT IN --tasks that are actually good or expected<br />
+                         --to be waited on<br />
+( 'CLR_SEMAPHORE', 'LAZYWRITER_SLEEP', 'RESOURCE_QUEUE', 'SLEEP_TASK',<br />
+  'SLEEP_SYSTEMTASK', 'WAITFOR' )<br />
+ORDER BY waiting_tasks_count DESC<br />
+<br />
+-- Listing 7.3: Report on top resource waits.<br />
+-- Isolate top waits for server instance since last restart <br />
+-- or statistics clear<br />
+WITH    Waits<br />
+          AS ( SELECT   wait_type ,<br />
+                        wait_time_ms / 1000. AS wait_time_sec ,<br />
+                        100. * wait_time_ms / SUM(wait_time_ms) OVER ( ) AS pct ,<br />
+                        ROW_NUMBER() OVER ( ORDER BY wait_time_ms DESC ) AS rn<br />
+               FROM     sys.dm_os_wait_stats<br />
+               WHERE    wait_type NOT IN ( 'CLR_SEMAPHORE', 'LAZYWRITER_SLEEP',<br />
+                                           'RESOURCE_QUEUE', 'SLEEP_TASK',<br />
+                                           'SLEEP_SYSTEMTASK',<br />
+                                           'SQLTRACE_BUFFER_FLUSH', 'WAITFOR',<br />
+                                           'LOGMGR_QUEUE', 'CHECKPOINT_QUEUE' )<br />
+             )<br />
+    SELECT  wait_type ,<br />
+            CAST(wait_time_sec AS DECIMAL(12, 2)) AS wait_time_sec ,<br />
+            CAST(pct AS DECIMAL(12, 2)) AS wait_time_percentage<br />
+    FROM    Waits<br />
+    WHERE   pct > 1<br />
+    ORDER BY wait_time_sec DESC<br />
+<br />
+-- Listing 7.4: Seeking out locking waits.<br />
+SELECT  wait_type ,<br />
+        waiting_tasks_count ,<br />
+        wait_time_ms ,<br />
+        max_wait_time_ms<br />
+FROM    sys.dm_os_wait_stats<br />
+WHERE   wait_type LIKE 'LCK%'<br />
+        AND Waiting_tasks_count > 0<br />
+ORDER BY waiting_tasks_count DESC<br />
+<br />
+-- Listing 7.5: Is there any CPU pressure?<br />
+-- Total waits are wait_time_ms (high signal waits indicates CPU pressure)<br />
+SELECT  CAST(100.0 * SUM(signal_wait_time_ms) / SUM(wait_time_ms)<br />
+                              AS NUMERIC(20,2)) AS [%signal (cpu) waits] ,<br />
+        CAST(100.0 * SUM(wait_time_ms - signal_wait_time_ms)<br />
+        / SUM(wait_time_ms) AS NUMERIC(20, 2)) AS [%resource waits]<br />
+FROM    sys.dm_os_wait_stats ;<br />
+<br />
+-- Listing 7.6: Returning a list of PerfMon counter types.<br />
+SELECT DISTINCT<br />
+        cntr_type<br />
+FROM    sys.dm_os_performance_counters<br />
+ORDER BY cntr_type<br />
+<br />
+cntr_type<br />
+-----------<br />
+65792<br />
+272696576<br />
+537003264<br />
+1073874176<br />
+1073939712<br />
+<br />
+-- Listing 7.7: Returning the values of directly usable PerfMon counters.<br />
+DECLARE @PERF_COUNTER_LARGE_RAWCOUNT INT <br />
+SELECT  @PERF_COUNTER_LARGE_RAWCOUNT = 65792<br />
+<br />
+SELECT  object_name ,<br />
+        counter_name ,<br />
+        instance_name ,<br />
+        cntr_value<br />
+FROM    sys.dm_os_performance_counters<br />
+WHERE   cntr_type = @PERF_COUNTER_LARGE_RAWCOUNT<br />
+ORDER BY object_name ,<br />
+        counter_name ,<br />
+        instance_name<br />
+<br />
+-- Listing 7.8: Monitoring changes in the size of the transaction log.<br />
+--the default instance reports as SQLServer, but other <br />
+--instances as MSSQL$InstanceName<br />
+DECLARE @object_name SYSNAME<br />
+SET @object_name = CASE WHEN @@servicename = 'MSSQLSERVER' THEN 'SQLServer'<br />
+                        ELSE 'MSSQL$' + @@serviceName<br />
+                   END + ':Databases'<br />
+<br />
+DECLARE @PERF_COUNTER_LARGE_RAWCOUNT INT <br />
+SELECT  @PERF_COUNTER_LARGE_RAWCOUNT = 65792<br />
+<br />
+SELECT  object_name ,<br />
+        counter_name ,<br />
+        instance_name ,<br />
+        cntr_value<br />
+FROM    sys.dm_os_performance_counters<br />
+WHERE   cntr_type = @PERF_COUNTER_LARGE_RAWCOUNT<br />
+        AND object_name = @object_name<br />
+        AND counter_name IN ( 'Log Growths', 'Log Shrinks' )<br />
+        AND cntr_value > 0<br />
+ORDER BY object_name ,<br />
+        counter_name ,<br />
+        instance_name<br />
+<br />
+-- Listing 7.9: Which deprecated features are still in use?<br />
+DECLARE @object_name SYSNAME<br />
+SET @object_name = CASE WHEN @@servicename = 'MSSQLSERVER' THEN 'SQLServer'<br />
+                        ELSE 'MSSQL$' + @@serviceName<br />
+                   END + ':Deprecated Features'<br />
+DECLARE @PERF_COUNTER_LARGE_RAWCOUNT INT <br />
+SELECT  @PERF_COUNTER_LARGE_RAWCOUNT = 65792<br />
+<br />
+SELECT  object_name ,<br />
+        counter_name ,<br />
+        instance_name ,<br />
+        cntr_value<br />
+FROM    sys.dm_os_performance_counters<br />
+WHERE   cntr_type = @PERF_COUNTER_LARGE_RAWCOUNT<br />
+        AND object_name = @object_name<br />
+        AND cntr_value > 0<br />
+<br />
+-- Listing 7.10: Returning the values of ratio PerfMon counters.<br />
+DECLARE @PERF_LARGE_RAW_FRACTION INT ,<br />
+    @PERF_LARGE_RAW_BASE INT <br />
+SELECT  @PERF_LARGE_RAW_FRACTION = 537003264 ,<br />
+        @PERF_LARGE_RAW_BASE = 1073939712 <br />
+<br />
+SELECT  dopc_fraction.object_name ,<br />
+        dopc_fraction.instance_name ,<br />
+        dopc_fraction.counter_name ,<br />
+         --when divisor is 0, return I return NULL to indicate<br />
+         --divide by 0/no values captured<br />
+        CAST(dopc_fraction.cntr_value AS FLOAT)<br />
+        / CAST(CASE dopc_base.cntr_value<br />
+                 WHEN 0 THEN NULL<br />
+                 ELSE dopc_base.cntr_value<br />
+               END AS FLOAT) AS cntr_value<br />
+FROM    sys.dm_os_performance_counters AS dopc_base<br />
+        JOIN sys.dm_os_performance_counters AS dopc_fraction<br />
+            ON dopc_base.cntr_type = @PERF_LARGE_RAW_BASE<br />
+               AND dopc_fraction.cntr_type = @PERF_LARGE_RAW_FRACTION<br />
+               AND dopc_base.object_name = dopc_fraction.object_name<br />
+               AND dopc_base.instance_name = dopc_fraction.instance_name<br />
+               AND ( REPLACE(dopc_base.counter_name,<br />
+                'base', '') = dopc_fraction.counter_name<br />
+              --Worktables From Cache has "odd" name where <br />
+              --Ratio was left off<br />
+               OR REPLACE(dopc_base.counter_name,<br />
+               'base', '') = ( REPLACE(dopc_fraction.counter_name,<br />
+               'ratio', '') )<br />
+               )<br />
+ORDER BY dopc_fraction.object_name ,<br />
+         dopc_fraction.instance_name ,<br />
+         dopc_fraction.counter_name<br />
+<br />
+-- Listing 7.11: Returning the current value for the buffer cache hit ratio.<br />
+DECLARE @object_name SYSNAME<br />
+SET @object_name = CASE WHEN @@servicename = 'MSSQLSERVER' THEN 'SQLServer'<br />
+                        ELSE 'MSSQL$' + @@serviceName<br />
+                   END + ':Buffer Manager'<br />
+DECLARE<br />
+    @PERF_LARGE_RAW_FRACTION INT ,<br />
+    @PERF_LARGE_RAW_BASE INT <br />
+SELECT  @PERF_LARGE_RAW_FRACTION = 537003264 ,<br />
+        @PERF_LARGE_RAW_BASE = 1073939712 <br />
+<br />
+SELECT  dopc_fraction.object_name ,<br />
+        dopc_fraction.instance_name ,<br />
+        dopc_fraction.counter_name ,<br />
+     --when divisor is 0, return I return NULL to indicate<br />
+     --divide by 0/no values captured<br />
+        CAST(dopc_fraction.cntr_value AS FLOAT)<br />
+        / CAST(CASE dopc_base.cntr_value<br />
+                 WHEN 0 THEN NULL<br />
+                 ELSE dopc_base.cntr_value<br />
+               END AS FLOAT) AS cntr_value<br />
+FROM    sys.dm_os_performance_counters AS dopc_base<br />
+        JOIN sys.dm_os_performance_counters AS dopc_fraction<br />
+            ON dopc_base.cntr_type = @PERF_LARGE_RAW_BASE<br />
+               AND dopc_fraction.cntr_type = @PERF_LARGE_RAW_FRACTION<br />
+               AND dopc_base.object_name = dopc_fraction.object_name<br />
+               AND dopc_base.instance_name = dopc_fraction.instance_name<br />
+               AND ( REPLACE(dopc_base.counter_name,<br />
+                'base', '') = dopc_fraction.counter_name<br />
+      --Worktables From Cache has "odd" name where <br />
+      --Ratio was left off<br />
+               OR REPLACE(dopc_base.counter_name,<br />
+                'base', '') = ( REPLACE(dopc_fraction.counter_name,<br />
+                'ratio', '') )<br />
+                )<br />
+WHERE   dopc_fraction.object_name = @object_name<br />
+        AND dopc_fraction.instance_name = ''<br />
+        AND dopc_fraction.counter_name = 'Buffer cache hit ratio'<br />
+ORDER BY dopc_fraction.object_name ,<br />
+        dopc_fraction.instance_name ,<br />
+        dopc_fraction.counter_name<br />
+<br />
+-- Listing 7.12: Returning the values of "per second average" PerfMon counters.<br />
+DECLARE @PERF_COUNTER_BULK_COUNT INT  <br />
+SELECT  @PERF_COUNTER_BULK_COUNT = 272696576 <br />
+<br />
+--Holds initial state<br />
+DECLARE @baseline TABLE<br />
+    (<br />
+      object_name NVARCHAR(256) ,<br />
+      counter_name NVARCHAR(256) ,<br />
+      instance_name NVARCHAR(256) ,<br />
+      cntr_value BIGINT ,<br />
+      cntr_type INT ,<br />
+      time DATETIME DEFAULT ( GETDATE() )<br />
+    )<br />
+<br />
+DECLARE @current TABLE<br />
+    (<br />
+      object_name NVARCHAR(256) ,<br />
+      counter_name NVARCHAR(256) ,<br />
+      instance_name NVARCHAR(256) ,<br />
+      cntr_value BIGINT ,<br />
+      cntr_type INT ,<br />
+      time DATETIME DEFAULT ( GETDATE() )<br />
+    )<br />
+<br />
+--capture the initial state of bulk counters<br />
+INSERT  INTO @baseline<br />
+        ( object_name ,<br />
+          counter_name ,<br />
+          instance_name ,<br />
+          cntr_value ,<br />
+          cntr_type<br />
+        )<br />
+        SELECT  object_name ,<br />
+                counter_name ,<br />
+                instance_name ,<br />
+                cntr_value ,<br />
+                cntr_type<br />
+        FROM    sys.dm_os_performance_counters AS dopc<br />
+        WHERE   cntr_type = @PERF_COUNTER_BULK_COUNT<br />
+<br />
+WAITFOR DELAY '00:00:05' --the code will work regardless of delay chosen<br />
+<br />
+--get the followon state of the counters<br />
+INSERT  INTO @current<br />
+        ( object_name ,<br />
+          counter_name ,<br />
+          instance_name ,<br />
+          cntr_value ,<br />
+          cntr_type<br />
+        )<br />
+        SELECT  object_name ,<br />
+                counter_name ,<br />
+                instance_name ,<br />
+                cntr_value ,<br />
+                cntr_type<br />
+        FROM    sys.dm_os_performance_counters AS dopc<br />
+        WHERE   cntr_type = @PERF_COUNTER_BULK_COUNT<br />
+<br />
+SELECT  dopc.object_name ,<br />
+        dopc.instance_name ,<br />
+        dopc.counter_name ,<br />
+        --ms to second conversion factor<br />
+        1000 *<br />
+        --current value less the previous value<br />
+       ( ( dopc.cntr_value - prev_dopc.cntr_value )<br />
+           --divided by the number of milliseconds that pass <br />
+           --casted as float to get fractional results. Float<br />
+           --lets really big or really small numbers to work<br />
+          / CAST(DATEDIFF(ms, prev_dopc.time, dopc.time) AS FLOAT) )<br />
+                                                       AS cntr_value<br />
+       --simply join on the names of the counters<br />
+FROM    @current AS dopc<br />
+        JOIN @baseline AS prev_dopc ON prev_dopc.object_name = dopc.object_name<br />
+                             AND prev_dopc.instance_name = dopc.instance_name<br />
+                             AND prev_dopc.counter_name = dopc.counter_name<br />
+WHERE   dopc.cntr_type = @PERF_COUNTER_BULK_COUNT<br />
+        AND 1000 * ( ( dopc.cntr_value - prev_dopc.cntr_value )<br />
+                     / CAST(DATEDIFF(ms, prev_dopc.time, dopc.time) AS FLOAT) )<br />
+/*  default to only showing non-zero values */ <> 0<br />
+ORDER BY dopc.object_name ,<br />
+        dopc.instance_name ,<br />
+        dopc.counter_name<br />
+<br />
+-- Listing 7.13: Returning the values for the "average number of operations" PerfMon counters.<br />
+DECLARE @PERF_AVERAGE_BULK INT ,<br />
+    @PERF_LARGE_RAW_BASE INT <br />
+<br />
+SELECT  @PERF_AVERAGE_BULK = 1073874176 ,<br />
+        @PERF_LARGE_RAW_BASE = 1073939712 <br />
+<br />
+SELECT  dopc_avgBulk.object_name ,<br />
+        dopc_avgBulk.instance_name ,<br />
+        dopc_avgBulk.counter_name ,<br />
+        CAST(dopc_avgBulk.cntr_value AS FLOAT) <br />
+         --when divisor is 0, return NULL to indicate<br />
+         --divide by 0<br />
+        / CAST(CASE dopc_base.cntr_value<br />
+                 WHEN 0 THEN NULL<br />
+                 ELSE dopc_base.cntr_value<br />
+               END AS FLOAT) AS cntr_value<br />
+FROM    sys.dm_os_performance_counters dopc_base<br />
+        JOIN sys.dm_os_performance_counters dopc_avgBulk<br />
+            ON dopc_base.cntr_type = @PERF_LARGE_RAW_BASE<br />
+             AND dopc_avgBulk.cntr_type = @PERF_AVERAGE_BULK<br />
+             AND dopc_base.object_name = dopc_avgBulk.object_name<br />
+             AND dopc_base.instance_name = dopc_avgBulk.instance_name<br />
+        --Average Wait Time has (ms) in name, <br />
+        --so it has handled "special"<br />
+             AND ( REPLACE(dopc_base.counter_name,<br />
+              'base', '') = dopc_avgBulk.counter_name<br />
+             OR REPLACE(dopc_base.counter_name,<br />
+              'base', '') = REPLACE(dopc_avgBulk.counter_name,<br />
+              '(ms)', '')<br />
+             )<br />
+ORDER BY dopc_avgBulk.object_name ,<br />
+        dopc_avgBulk.instance_name ,<br />
+        dopc_avgBulk.counter_name<br />
+<br />
+-- Listing 7.14: CPU configuration details.<br />
+-- Hardware information from SQL Server 2008 <br />
+-- (Cannot distinguish between HT and multi-core)<br />
+SELECT  cpu_count AS [Logical CPU Count] ,<br />
+        hyperthread_ratio AS [Hyperthread Ratio] ,<br />
+        cpu_count / hyperthread_ratio AS [Physical CPU Count] ,<br />
+        physical_memory_in_bytes / 1048576 AS [Physical Memory (MB)] ,<br />
+        sqlserver_start_time<br />
+FROM    sys.dm_os_sys_info ;<br />
+<br />
+-- Listing 7.15: Interrogating memory configuration.<br />
+--Determine if this is a 32- or 64-bit SQL Server edition<br />
+DECLARE @ServerAddressing AS TINYINT<br />
+SELECT  @serverAddressing = CASE WHEN CHARINDEX('64',<br />
+                                                CAST(SERVERPROPERTY('Edition')<br />
+                                                     AS VARCHAR(100))) > 0<br />
+                                 THEN 64<br />
+                                 ELSE 32<br />
+                            END ;<br />
+<br />
+SELECT  cpu_count / hyperthread_ratio AS SocketCount ,<br />
+        physical_memory_in_bytes / 1024 / 1024 AS physical_memory_mb ,<br />
+        virtual_memory_in_bytes / 1024 / 1024 AS sql_max_virtual_memory_mb ,<br />
+           -- same with other bpool columns as they are page oriented. <br />
+           -- Multiplying by 8 takes it to 8K, then / 1024 to convert to mb<br />
+        bpool_committed * 8 / 1024 AS buffer_pool_committed_mb ,<br />
+           --64 bit OS does not have limitations with addressing as 32 did<br />
+        CASE WHEN @serverAddressing = 32<br />
+             THEN CASE WHEN virtual_memory_in_bytes / 1024 /<br />
+                                                     ( 2048 * 1024 ) < 1<br />
+                       THEN 'off'<br />
+                       ELSE 'on'<br />
+                  END<br />
+             ELSE 'N/A on 64 bit'<br />
+        END AS [/3GB switch]<br />
+FROM    sys.dm_os_sys_info<br />
+<br />
+-- Listing 7.16: Investigating scheduler activity.<br />
+-- Get Avg task count and Avg runnable task count<br />
+SELECT  AVG(current_tasks_count) AS [Avg Task Count] ,<br />
+        AVG(runnable_tasks_count) AS [Avg Runnable Task Count]<br />
+FROM    sys.dm_os_schedulers<br />
+WHERE   scheduler_id < 255<br />
+        AND [status] = 'VISIBLE ONLINE' ;<br />
+<br />
+-- Listing 7.17: Investigating potential disk I/O or CPU pressure.<br />
+SELECT  scheduler_id ,<br />
+        cpu_id ,<br />
+        Status ,<br />
+        is_online ,<br />
+        is_idle ,<br />
+        current_tasks_count ,<br />
+        runnable_tasks_count ,<br />
+        current_workers_count ,<br />
+        active_workers_count ,<br />
+        work_queue_count ,<br />
+        pending_disk_io_count ,<br />
+        load_factor<br />
+FROM    sys.dm_os_schedulers<br />
+WHERE   scheduler_id < 255<br />
+        AND runnable_tasks_count > 0 <br />
+     -- AND pending_disk_io_count > 0<br />
+<br />
+-- Listing 7.18: Are there sufficient worker threads for the workload?<br />
+SELECT  AVG(work_queue_count)<br />
+FROM    sys.dm_os_schedulers<br />
+WHERE   status = 'VISIBLE ONLINE'<br />
+<br />
+-- Listing 7.19: Investigating context switching.<br />
+SELECT  scheduler_id ,<br />
+        preemptive_switches_count ,<br />
+        context_switches_count ,<br />
+        idle_switches_count ,<br />
+        failed_to_create_worker<br />
+FROM    sys.dm_os_schedulers<br />
+WHERE   scheduler_id < 255<br />
+<br />
+-- Listing 7.20: Is NUMA enabled?<br />
+-- Is NUMA enabled<br />
+SELECT  CASE COUNT(DISTINCT parent_node_id)<br />
+          WHEN 1 THEN 'NUMA disabled'<br />
+          ELSE 'NUMA enabled'<br />
+        END<br />
+FROM    sys.dm_os_schedulers<br />
+WHERE   parent_node_id <> 32 ;<br />
+<br />
+-- Listing 7.21: Recent CPU utilization.<br />
+-- Get CPU Utilization History for last 30 minutes (in one minute intervals)<br />
+-- This version works with SQL Server 2008 and SQL Server 2008 R2 only<br />
+DECLARE @ts_now BIGINT = ( SELECT   cpu_ticks / ( cpu_ticks / ms_ticks )<br />
+                           FROM     sys.dm_os_sys_info<br />
+                         ) ; <br />
+<br />
+SELECT TOP ( 30 )<br />
+        SQLProcessUtilization AS [SQL Server Process CPU Utilization] ,<br />
+        SystemIdle AS [System Idle Process] ,<br />
+        100 - SystemIdle ?SQLProcessUtilization<br />
+                             AS [Other Process CPU Utilization] ,<br />
+        DATEADD(ms, -1 * ( @ts_now - [timestamp] ), GETDATE())<br />
+                             AS [Event Time]<br />
+FROM    ( SELECT    record.value('(./Record/@id)[1]', 'int') AS record_id ,<br />
+                    record.value('(./Record/SchedulerMonitorEvent/<br />
+                                     SystemHealth/SystemIdle)[1]', 'int')<br />
+                                                             AS [SystemIdle] ,<br />
+                    record.value('(./Record/SchedulerMonitorEvent/<br />
+                                     SystemHealth/ProcessUtilization)[1]', <br />
+                                     'int')<br />
+                                                AS [SQLProcessUtilization] ,<br />
+                    [timestamp]<br />
+          FROM      ( SELECT    [timestamp] ,<br />
+                                CONVERT(XML, record) AS [record]<br />
+                      FROM      sys.dm_os_ring_buffers<br />
+                      WHERE     ring_buffer_type = <br />
+                                         N'RING_BUFFER_SCHEDULER_MONITOR'<br />
+                                AND record LIKE N'%<SystemHealth>%'<br />
+                    ) AS x<br />
+        ) AS y<br />
+ORDER BY record_id DESC ;<br />
+<br />
+-- Listing 7.22: System memory usage.<br />
+SELECT  total_physical_memory_kb / 1024 AS total_physical_memory_mb ,<br />
+        available_physical_memory_kb / 1024 AS available_physical_memory_mb ,<br />
+        total_page_file_kb / 1024 AS total_page_file_mb ,<br />
+        available_page_file_kb / 1024 AS available_page_file_mb ,<br />
+        system_memory_state_desc<br />
+FROM    sys.dm_os_sys_memory<br />
+<br />
+-- Listing 7.23: Memory usage by the SQL Server process.<br />
+SELECT  physical_memory_in_use_kb ,<br />
+        virtual_address_space_committed_kb ,<br />
+        virtual_address_space_available_kb ,<br />
+        page_fault_count ,<br />
+        process_physical_memory_low ,<br />
+        process_virtual_memory_low<br />
+FROM    sys.dm_os_process_memory<br />
+<br />
+-- Listing 7.24: Memory allocation in the buffer pool.<br />
+-- Get total buffer usage by database<br />
+SELECT  DB_NAME(database_id) AS [Database Name] ,<br />
+        COUNT(*) * 8 / 1024.0 AS [Cached Size (MB)]<br />
+FROM    sys.dm_os_buffer_descriptors<br />
+WHERE   database_id > 4 -- exclude system databases<br />
+        AND database_id <> 32767 -- exclude ResourceDB<br />
+GROUP BY DB_NAME(database_id)<br />
+ORDER BY [Cached Size (MB)] DESC ;<br />
+<br />
+-- Breaks down buffers by object (table, index) in the buffer pool<br />
+SELECT  OBJECT_NAME(p.[object_id]) AS [ObjectName] ,<br />
+        p.index_id ,<br />
+        COUNT(*) / 128 AS [Buffer size(MB)] ,<br />
+        COUNT(*) AS [Buffer_count]<br />
+FROM    sys.allocation_units AS a<br />
+        INNER JOIN sys.dm_os_buffer_descriptors<br />
+                 AS b ON a.allocation_unit_id = b.allocation_unit_id<br />
+        INNER JOIN sys.partitions AS p ON a.container_id = p.hobt_id<br />
+WHERE   b.database_id = DB_ID()<br />
+        AND p.[object_id] > 100 -- exclude system objects<br />
+GROUP BY p.[object_id] ,<br />
+        p.index_id<br />
+ORDER BY buffer_count DESC ;<br />
+<br />
+-- Listing 7.25: Buffer pool usage.<br />
+-- Buffer Pool Usage for instance<br />
+SELECT TOP(20) [type], SUM(single_pages_kb) AS [SPA Mem, Kb] <br />
+FROM sys.dm_os_memory_clerks <br />
+GROUP BY [type]  <br />
+ORDER BY SUM(single_pages_kb) DESC;<br />
+<br />
+-- Listing 7.26: Which queries have requested, or have had to wait for, large memory grants?<br />
+-- Shows the memory required by both running (non-null grant_time) <br />
+-- and waiting queries (null grant_time)<br />
+-- SQL Server 2008 version<br />
+SELECT  DB_NAME(st.dbid) AS [DatabaseName] ,<br />
+        mg.requested_memory_kb ,<br />
+        mg.ideal_memory_kb ,<br />
+        mg.request_time ,<br />
+        mg.grant_time ,<br />
+        mg.query_cost ,<br />
+        mg.dop ,<br />
+        st.[text]<br />
+FROM    sys.dm_exec_query_memory_grants AS mg<br />
+        CROSS APPLY sys.dm_exec_sql_text(plan_handle) AS st<br />
+WHERE   mg.request_time < COALESCE(grant_time, '99991231')<br />
+ORDER BY mg.requested_memory_kb DESC ;<br />
+<br />
+-- Shows the memory required by both running (non-null grant_time) <br />
+-- and waiting queries (null grant_time)<br />
+-- SQL Server 2005 version<br />
+SELECT  DB_NAME(st.dbid) AS [DatabaseName] ,<br />
+        mg.requested_memory_kb ,<br />
+        mg.request_time ,<br />
+        mg.grant_time ,<br />
+        mg.query_cost ,<br />
+        mg.dop ,<br />
+        st.[text]<br />
+FROM    sys.dm_exec_query_memory_grants AS mg<br />
+        CROSS APPLY sys.dm_exec_sql_text(plan_handle) AS st<br />
+WHERE   mg.request_time < COALESCE(grant_time, '99991231')<br />
+ORDER BY mg.requested_memory_kb DESC ;<br />
+<br />
+-- Listing 7.27: Returning the cache counters.<br />
+SELECT  type ,<br />
+        name ,<br />
+        single_pages_kb ,<br />
+        multi_pages_kb ,<br />
+        single_pages_in_use_kb ,<br />
+        multi_pages_in_use_kb ,<br />
+        entries_count ,<br />
+        entries_in_use_count<br />
+FROM    sys.dm_os_memory_cache_counters<br />
+ORDER BY type,name;<br />
+<br />
+-- Listing 7.28: Investigating the use of the plan cache.<br />
+SELECT  name ,<br />
+        type ,<br />
+        entries_count ,<br />
+        entries_in_use_count<br />
+FROM    sys.dm_os_memory_cache_counters<br />
+WHERE   type IN ( 'CACHESTORE_SQLCP', 'CACHESTORE_OBJCP' ) <br />
+               --ad hoc plans and object plans<br />
+ORDER BY name ,<br />
+        type<br />
+<br />
+-- Listing 7.29: Investigating plan reuse counts.<br />
+--in a different connection, execute this all at once:<br />
+USE tempdb<br />
+go<br />
+CREATE PROCEDURE test<br />
+AS <br />
+    WAITFOR DELAY '00:00:30'<br />
+    SELECT  *<br />
+    FROM    sys.sysobjects<br />
+go<br />
+EXECUTE test<br />
+<br />
+-- Listing 7.30: Resetting the latch statistics.<br />
+DBCC SQLPERF ('sys.dm_os_latch_stats', CLEAR);<br />
+<br />
+-- Listing 7.31: Seeking out latch waits.<br />
+SELECT  latch_class ,<br />
+        waiting_requests_count AS waitCount ,<br />
+        wait_time_ms AS waitTime ,<br />
+        max_wait_time_ms AS maxWait<br />
+FROM    sys.dm_os_latch_stats<br />
+ORDER BY wait_time_ms DESC<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:32

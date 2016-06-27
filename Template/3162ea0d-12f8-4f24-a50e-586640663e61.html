@@ -1,0 +1,22 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>CREATE FUNCTION dbo.f_hex_dec(@s varchar(16))<br />
+RETURNS bigint<br />
+AS<br />
+BEGIN<br />
+--作者：pbsql<br />
+--参数不得含'0'～'9'、'a'～'f'、'A'～'F'之外的任意字符（首尾空格除外），否则返回0<br />
+  DECLARE @i int,@result bigint<br />
+  SELECT @i=0,@result=0,@s=RTRIM(LTRIM(UPPER(REVERSE(@s))))<br />
+  WHILE @i<LEN(@s)<br />
+  BEGIN<br />
+    IF SUBSTRING(@s,@i+1,1) not between '0' and '9' and SUBSTRING(@s,@i+1,1) not between 'A' and 'F'<br />
+    BEGIN<br />
+      SELECT @result=0<br />
+      break<br />
+    END<br />
+    SELECT @result=@result+(CHARINDEX(SUBSTRING(@s,@i+1,1),'0123456789ABCDEF')-1)*POWER(16,@i),@i=@i+1<br />
+  END<br />
+  RETURN @result<br />
+END<br />
+GO<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:31

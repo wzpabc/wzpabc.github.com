@@ -1,0 +1,199 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--结合sys.indexes和sys.index_columns,sys.objects,sys.columns查询索引所属的表或视图的信息<br />
+select<br />
+  o.name as 表名,<br />
+  i.name as 索引名,<br />
+  c.name as 列名,<br />
+  i.type_desc as 类型描述,<br />
+  is_primary_key as 主键约束,<br />
+  is_unique_constraint as 唯一约束,<br />
+  is_disabled as 禁用<br />
+from<br />
+  sys.objects o <br />
+inner join<br />
+  sys.indexes i<br />
+on<br />
+  i.object_id=o.object_id<br />
+inner join <br />
+  sys.index_columns ic<br />
+on<br />
+  ic.index_id=i.index_id and ic.object_id=i.object_id<br />
+inner join<br />
+  sys.columns c<br />
+on<br />
+  ic.column_id=c.column_id and ic.object_id=c.object_id<br />
+go<br />
+<br />
+<br />
+<br />
+--查询索引的键和列信息<br />
+select <br />
+  o.name as 表名,<br />
+  i.name as 索引名,<br />
+  c.name as 字段编号,<br />
+from<br />
+  sysindexes i inner join sysobjects o <br />
+on<br />
+  i.id=o.id<br />
+inner join<br />
+  sysindexkeys k <br />
+on<br />
+  o.id=k.id and i.indid=k.indid<br />
+inner join<br />
+  syscolumns c <br />
+on<br />
+  c.id=i.id and k.colid=c.colid<br />
+where<br />
+  o.name='表名'<br />
+<br />
+<br />
+<br />
+<br />
+--查询数据库db中表tb的所有索引的碎片情况<br />
+use db<br />
+go<br />
+select <br />
+  a.index_id,---索引编号<br />
+  b.name,---索引名称<br />
+  avg_fragmentation_in_percent---索引的逻辑碎片<br />
+from<br />
+  sys.dm_db_indx_physical_stats(db_id(),object_id(N'create.consume'),null,null,null) as a<br />
+join<br />
+  sys.indexes as b<br />
+on<br />
+  a.object_id=b.object_id <br />
+and<br />
+  a.index_id=b.index_id<br />
+go<br />
+<br />
+---解释下sys.dm_db_indx_physical_stats的参数<br />
+datebase_id: 数据库编号，可以使用db_id()函数获取指定数据库名对应的编号。<br />
+object_id: 该索引所属表或试图的编号<br />
+index_id: 该索引的编号<br />
+partition_number:对象中分区的编号<br />
+mode:模式名称,用于指定获取统计信息的扫描级别。<br />
+<br />
+<br />
+有关sys.dm_db_indx_physical_stats的结果集中的字段名去查下联机丛书。<br />
+<br />
+---索引视图<br />
+<br />
+索引视图是具体化的视图<br />
+<br />
+--创建索引视图<br />
+create view 视图名 with schemabinding <br />
+as<br />
+select 语句<br />
+go<br />
+<br />
+---创建索引视图需要注意的几点<br />
+1. 创建索引视图的时候需要指定表所属的架构<br />
+--错误写法<br />
+create view v_f with schemabinding <br />
+as<br />
+select<br />
+   a.a,a.b,b.a,b.b<br />
+from<br />
+   a join b <br />
+on<br />
+   a.id=b.id<br />
+go<br />
+<br />
+---正确写法：<br />
+create view v_f with schemabinding <br />
+as<br />
+select<br />
+   a.a,a.b,b.a,b.b<br />
+from<br />
+   dbo.a join dbo.b <br />
+on<br />
+   a.id=b.id<br />
+go<br />
+<br />
+<br />
+2.在创建索引视图的select语句时，不使用*,必须指定具体的列名<br />
+--错误写法<br />
+create view v_f with schemabinding <br />
+as<br />
+select<br />
+   *<br />
+from<br />
+   dbo.a join dbo.b <br />
+on<br />
+   a.id=b.id<br />
+go<br />
+<br />
+---正确写法<br />
+create view v_f with schemabinding <br />
+as<br />
+select<br />
+   a.a,a.b,b.a,b.b<br />
+from<br />
+   dbo.a join dbo.b <br />
+on<br />
+   a.id=b.id<br />
+go<br />
+<br />
+3.在创建索引视图的select 语句中，不能存在重复的列名，这个不举例了<br />
+<br />
+4. 只能为索引视图创建唯一聚集索引<br />
+--正确的写法<br />
+create unique clustered index ix_uniquetb on v_tb<br />
+go<br />
+<br />
+--错误的写法 <br />
+create clustered index ix_uniquetb on v_tb<br />
+go<br />
+<br />
+---使用索引优化数据库查询效率<br />
+1.不宜创建索引的情形<br />
+(1)经常插入，修改和删除的表<br />
+(2)数据量比较小的表，因为查询优化器在搜索索引时所花费的时间可能会大于遍历全表的数据所需要的时间<br />
+<br />
+2.适合创建索引的情形<br />
+(1)为where子句中出现的列创建索引<br />
+(2)创建组合索引<br />
+(3)为group by 子句中出现的列创建索引<br />
+<br />
+3.聚集索引的设计原则<br />
+(1)该列的数值是唯一的或者很少有重复的记录<br />
+(2)经常使用between ...and..按顺序查询的列<br />
+(3)定义identity的唯一列.<br />
+(4)经常用于对数据进行排序的列.<br />
+<br />
+---无法使用索引的select语句<br />
+1.对索引列使用了函数,如：<br />
+select * from tb where max(id)=100<br />
+<br />
+2.对索引列使用了'%xx'，如：<br />
+select * from tb where id like '%1'<br />
+需要注意的不是所有使用like关键字的select 语句都无法使用索引,比如<br />
+select * from tb where id like '1%'就可以使用索引<br />
+<br />
+3.在where子句中对列进行类型转换(其实也是使用到了函数)<br />
+<br />
+4.在组合索引的第1列不是使用最多的列,如在下面3个查询语句中建立组合索引,按顺序包含col2,col1,id列；<br />
+select * from tb where id='1' and col1='aa'<br />
+select id,sum(col1) from tb group by id<br />
+select * from tb where id='2' and col2='bb'<br />
+则第一句和第二句无法使用到索引 所以需要注意组合索引的顺序<br />
+<br />
+5.在where 子句中使用in关键字的某些句子<br />
+当在in关键字后面使用嵌套的select语句，将无法使用在该列上定义的索引<br />
+如：<br />
+select <br />
+ *<br />
+from<br />
+ ta <br />
+where<br />
+ id <br />
+in<br />
+ (select id from tb where ....)<br />
+<br />
+--这样可以用到索引<br />
+select * from tb where id in('1','2')<br />
+<br />
+<br />
+<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:11

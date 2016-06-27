@@ -1,0 +1,123 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--返回汉字首字母 <br />
+<br />
+create  function [dbo].[chinese_firstletter] <br />
+( <br />
+  @str nvarchar(1) <br />
+) <br />
+returns nvarchar(1) <br />
+as <br />
+begin <br />
+  declare @word nchar(1),@PY nvarchar(4000) <br />
+  set @PY='' <br />
+<br />
+    set @word=left(@str,1) <br />
+    --如果非汉字字符，返回原字符 <br />
+    set @PY=@PY+(case when unicode(@word) between 19968 and 19968+20901 <br />
+                    then (  <br />
+                    select top 1 PY  <br />
+                    from  <br />
+                    (  <br />
+                    select 'A' as PY,N'驁' as word <br />
+                    union all select 'B',N'簿' <br />
+                    union all select 'C',N'錯' <br />
+                    union all select 'D',N'鵽' <br />
+                    union all select 'E',N'樲' <br />
+                    union all select 'F',N'鰒' <br />
+                    union all select 'G',N'腂' <br />
+                    union all select 'H',N'夻' <br />
+                    union all select 'J',N'攈' <br />
+                    union all select 'K',N'穒' <br />
+                    union all select 'L',N'鱳' <br />
+                    union all select 'M',N'旀' <br />
+                    union all select 'N',N'桛' <br />
+                    union all select 'O',N'漚' <br />
+                    union all select 'P',N'曝' <br />
+                    union all select 'Q',N'囕' <br />
+                    union all select 'R',N'鶸' <br />
+                    union all select 'S',N'蜶' <br />
+                    union all select 'T',N'籜' <br />
+                    union all select 'W',N'鶩' <br />
+                    union all select 'X',N'鑂' <br />
+                    union all select 'Y',N'韻' <br />
+                    union all select 'Z',N'咗' <br />
+                    ) T  <br />
+                    where word>=@word collate Chinese_PRC_CS_AS_KS_WS  <br />
+                    order by PY ASC <br />
+                          )  <br />
+                    else @word  <br />
+                end) <br />
+    set @str=right(@str,len(@str)-1) <br />
+<br />
+  return @PY <br />
+end <br />
+<br />
+go<br />
+<br />
+Select dbo.chinese_firstletter('福田区第五医院')<br />
+<br />
+drop function chinese_firstletter<br />
+<br />
+/*<br />
+<br />
+     <br />
+---- <br />
+F<br />
+<br />
+（所影响的行数为 1 行）<br />
+*/<br />
+<br />
+<br />
+]--获取拼音首字母函数<br />
+create function f_GetPy(@str nvarchar(4000))<br />
+returns nvarchar(4000)<br />
+as<br />
+begin<br />
+declare @strlen int,@re nvarchar(4000)<br />
+declare @t table(chr nchar(1) collate Chinese_PRC_CI_AS,letter nchar(1))<br />
+insert into @t(chr,letter)<br />
+  select '吖','A' union all select '八','B' union all<br />
+  select '嚓','C' union all select '咑','D' union all<br />
+  select '妸','E' union all select '发','F' union all<br />
+  select '旮','G' union all select '铪','H' union all<br />
+  select '丌','J' union all select '咔','K' union all<br />
+  select '垃','L' union all select '嘸','M' union all<br />
+  select '拏','N' union all select '噢','O' union all<br />
+  select '妑','P' union all select '七','Q' union all<br />
+  select '呥','R' union all select '仨','S' union all<br />
+  select '他','T' union all select '屲','W' union all<br />
+  select '夕','X' union all select '丫','Y' union all<br />
+  select '帀','Z'<br />
+  select @strlen=len(@str),@re=''<br />
+  while @strlen>0<br />
+  begin<br />
+    select top 1 @re=letter+@re,@strlen=@strlen-1<br />
+      from @t a where chr<=substring(@str,@strlen,1)<br />
+      order by chr desc<br />
+    if @@rowcount=0<br />
+      select @re=substring(@str,@strlen,1)+@re,@strlen=@strlen-1<br />
+  end<br />
+  return(@re)<br />
+end<br />
+go<br />
+--调用<br />
+create table tb(col varchar(10))<br />
+insert into tb values('潇洒老乌龟')<br />
+insert into tb values('孤星')<br />
+<br />
+go<br />
+select 按拼音首字母 = dbo.f_GetPy(col) from tb<br />
+<br />
+drop table tb<br />
+drop function f_GetPy<br />
+<br />
+/*<br />
+按拼音首字母<br />
+------------<br />
+XSLWG<br />
+GX<br />
+<br />
+(2 行受影响)<br />
+*/<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:12

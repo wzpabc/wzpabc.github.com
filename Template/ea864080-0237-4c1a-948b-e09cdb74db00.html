@@ -1,0 +1,282 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>/*<br />
+标题：SQL SERVER 2000中查询指定节点及其所有父节点的函数(字符串形式显示)<br />
+作者：爱新觉罗·毓华(十八年风雨,守得冰山雪莲花开)  <br />
+时间：2010-02-02<br />
+地点：新疆乌鲁木齐<br />
+*/<br />
+<br />
+create table tb(id varchar(3) , pid varchar(3) , name varchar(10))<br />
+insert into tb values('001' , null  , '广东省')<br />
+insert into tb values('002' , '001' , '广州市')<br />
+insert into tb values('003' , '001' , '深圳市')<br />
+insert into tb values('004' , '002' , '天河区')<br />
+insert into tb values('005' , '003' , '罗湖区')<br />
+insert into tb values('006' , '003' , '福田区')<br />
+insert into tb values('007' , '003' , '宝安区')<br />
+insert into tb values('008' , '007' , '西乡镇')<br />
+insert into tb values('009' , '007' , '龙华镇')<br />
+insert into tb values('010' , '007' , '松岗镇')<br />
+go<br />
+<br />
+--查询各节点的父路径函数(从父到子)<br />
+create function f_pid1(@id varchar(3)) returns varchar(100)<br />
+as<br />
+begin<br />
+  declare @re_str as varchar(100)<br />
+  set @re_str = ''<br />
+  select @re_str = name from tb where id = @id<br />
+  while exists (select 1 from tb where id = @id and pid is not null)<br />
+    begin<br />
+      select @id = b.id , @re_str = b.name + ',' + @re_str from tb a , tb b where a.id = @id and a.pid = b.id<br />
+    end<br />
+  return @re_str<br />
+end<br />
+go<br />
+--查询各节点的父路径函数(从子到父)<br />
+create function f_pid2(@id varchar(3)) returns varchar(100)<br />
+as<br />
+begin<br />
+  declare @re_str as varchar(100)<br />
+  set @re_str = ''<br />
+  select @re_str = name from tb where id = @id<br />
+  while exists (select 1 from tb where id = @id and pid is not null)<br />
+    begin<br />
+      select @id = b.id , @re_str = @re_str + ',' + b.name from tb a , tb b where a.id = @id and a.pid = b.id<br />
+    end<br />
+  return @re_str<br />
+end<br />
+go<br />
+<br />
+select * , <br />
+       dbo.f_pid1(id) [路径(从父到子)] ,<br />
+       dbo.f_pid2(id) [路径(从子到父)]<br />
+from tb order by id<br />
+<br />
+drop function f_pid1 , f_pid2<br />
+drop table tb<br />
+<br />
+/*<br />
+id   pid  name    路径(从父到子)               路径(从子到父)              <br />
+---- ---- ------  ---------------------------  ----------------------------<br />
+001  NULL 广东省  广东省                       广东省<br />
+002  001  广州市  广东省,广州市                广州市,广东省<br />
+003  001  深圳市  广东省,深圳市                深圳市,广东省<br />
+004  002  天河区  广东省,广州市,天河区         天河区,广州市,广东省<br />
+005  003  罗湖区  广东省,深圳市,罗湖区         罗湖区,深圳市,广东省<br />
+006  003  福田区  广东省,深圳市,福田区         福田区,深圳市,广东省<br />
+007  003  宝安区  广东省,深圳市,宝安区         宝安区,深圳市,广东省<br />
+008  007  西乡镇  广东省,深圳市,宝安区,西乡镇  西乡镇,宝安区,深圳市,广东省<br />
+009  007  龙华镇  广东省,深圳市,宝安区,龙华镇  龙华镇,宝安区,深圳市,广东省<br />
+010  007  松岗镇  广东省,深圳市,宝安区,松岗镇  松岗镇,宝安区,深圳市,广东省<br />
+<br />
+（所影响的行数为 10 行）<br />
+*/<br />
+<br />
+<br />
+<br />
+SQL code<br />
+/*<br />
+标题：SQL SERVER 2005中查询指定节点及其所有父节点的方法(字符串形式显示)<br />
+作者：爱新觉罗·毓华(十八年风雨,守得冰山雪莲花开) <br />
+时间：2010-02-02<br />
+地点：新疆乌鲁木齐<br />
+*/<br />
+<br />
+create table tb(id varchar(3) , pid varchar(3) , name nvarchar(10))<br />
+insert into tb values('001' , null  , N'广东省')<br />
+insert into tb values('002' , '001' , N'广州市')<br />
+insert into tb values('003' , '001' , N'深圳市')<br />
+insert into tb values('004' , '002' , N'天河区')<br />
+insert into tb values('005' , '003' , N'罗湖区')<br />
+insert into tb values('006' , '003' , N'福田区')<br />
+insert into tb values('007' , '003' , N'宝安区')<br />
+insert into tb values('008' , '007' , N'西乡镇')<br />
+insert into tb values('009' , '007' , N'龙华镇')<br />
+insert into tb values('010' , '007' , N'松岗镇')<br />
+go<br />
+<br />
+;with t as<br />
+(<br />
+    select id , pid = id from tb <br />
+    union all<br />
+    select t.id , pid = tb.pid from t inner join tb on t.pid = tb.id<br />
+) <br />
+select id , <br />
+       [路径(从父到子)] = STUFF((SELECT ',' + pid FROM t WHERE id = tb.id order by t.id , t.pid FOR XML PATH('')) , 1 , 1 , ''),<br />
+       [路径(从子到父)] = STUFF((SELECT ',' + pid FROM t WHERE id = tb.id FOR XML PATH('')) , 1 , 1 , '')<br />
+from tb<br />
+group by id<br />
+order by id<br />
+/*<br />
+id   路径(从父到子)   路径(从子到父)<br />
+---- ---------------  ---------------<br />
+001  001              001<br />
+002  001,002          002,001<br />
+003  001,003          003,001<br />
+004  001,002,004      004,002,001<br />
+005  001,003,005      005,003,001<br />
+006  001,003,006      006,003,001<br />
+007  001,003,007      007,003,001<br />
+008  001,003,007,008  008,007,003,001<br />
+009  001,003,007,009  009,007,003,001<br />
+010  001,003,007,010  010,007,003,001<br />
+<br />
+(10 行受影响)<br />
+*/<br />
+<br />
+<br />
+;with t as<br />
+(<br />
+    select id , name , pid = id , path = cast(name as nvarchar(100)) from tb <br />
+    union all<br />
+    select t.id , t.name , pid = tb.pid , path = cast(tb.name as nvarchar(100)) from t join tb on tb.id = t.pid <br />
+)<br />
+select id , <br />
+       name ,<br />
+       [路径(从父到子)_1] = pid1, <br />
+       [路径(从父到子)_2] = reverse(substring(reverse(path1) , charindex(',' , reverse(path1)) + 1 , len(path1))) ,<br />
+       [路径(从子到父)_1] = pid2,<br />
+       [路径(从子到父)_2] = substring(path2 , charindex(',' , path2) + 1 , len(path2)) from<br />
+(<br />
+select id , name ,<br />
+       pid1 = STUFF((SELECT ',' + pid FROM t WHERE id = tb.id order by t.id , t.pid FOR XML PATH('')) , 1 , 1 , ''),<br />
+       pid2 = STUFF((SELECT ',' + pid FROM t WHERE id = tb.id FOR XML PATH('')) , 1 , 1 , ''),<br />
+       path1 = STUFF((SELECT ',' + path FROM t WHERE id = tb.id order by t.id , t.pid FOR XML PATH('')) , 1 , 1 , ''),<br />
+       path2 = STUFF((SELECT ',' + path FROM t WHERE id = tb.id FOR XML PATH('')) , 1 , 1 , '')<br />
+from tb<br />
+group by id , name<br />
+) m<br />
+order by id<br />
+/*<br />
+id   name    路径(从父到子)_1  路径(从父到子)_2             路径(从子到父)_1  路径(从子到父)_2<br />
+---- ------  ----------------  ---------------------------  ----------------  ---------------------------<br />
+001  广东省  001               广东省                       001               广东省<br />
+002  广州市  001,002           广东省,广州市                002,001           广州市,广东省<br />
+003  深圳市  001,003           广东省,深圳市                003,001           深圳市,广东省<br />
+004  天河区  001,002,004       广东省,广州市,天河区         004,002,001       天河区,广州市,广东省<br />
+005  罗湖区  001,003,005       广东省,深圳市,罗湖区         005,003,001       罗湖区,深圳市,广东省<br />
+006  福田区  001,003,006       广东省,深圳市,福田区         006,003,001       福田区,深圳市,广东省<br />
+007  宝安区  001,003,007       广东省,深圳市,宝安区         007,003,001       宝安区,深圳市,广东省<br />
+008  西乡镇  001,003,007,008   广东省,深圳市,宝安区,西乡镇  008,007,003,001   西乡镇,宝安区,深圳市,广东省<br />
+009  龙华镇  001,003,007,009   广东省,深圳市,宝安区,龙华镇  009,007,003,001   龙华镇,宝安区,深圳市,广东省<br />
+010  松岗镇  001,003,007,010   广东省,深圳市,宝安区,松岗镇  010,007,003,001   松岗镇,宝安区,深圳市,广东省<br />
+<br />
+(10 行受影响)<br />
+*/<br />
+<br />
+drop table tb<br />
+<br />
+--参考一下实例<br />
+--> 生成测试数据表:tb<br />
+IF NOT OBJECT_ID('[tb]') IS NULL<br />
+ DROP TABLE [tb]<br />
+GO<br />
+CREATE TABLE [tb](GUID INT IDENTITY,[col1] NVARCHAR(10),[col2] NVARCHAR(20))<br />
+INSERT [tb]<br />
+SELECT N'A','01' UNION ALL<br />
+SELECT N'B','01.01' UNION ALL<br />
+SELECT N'C','01.01.01' UNION ALL<br />
+SELECT N'F','01.01.01.01' UNION ALL<br />
+SELECT N'E','01.01.01.02' UNION ALL<br />
+SELECT N'D','01.01.01.03' UNION ALL<br />
+SELECT N'O','02' UNION ALL<br />
+SELECT N'P','02.01' UNION ALL<br />
+SELECT N'Q','02.01.01' <br />
+GO<br />
+--SELECT * FROM [tb]<br />
+<br />
+-->SQL查询如下:<br />
+<br />
+---另一种方法<br />
+;WITH T AS<br />
+(<br />
+   SELECT *,PATH=CAST([COL1] AS VARCHAR(1000)) FROM TB A<br />
+       WHERE NOT EXISTS(<br />
+        SELECT 1 FROM TB <br />
+     WHERE A.COL2 LIKE COL2+'%' <br />
+   AND LEN(A.COL2)>LEN(COL2))<br />
+   UNION ALL<br />
+   SELECT A.*,CAST(PATH+'-->'+A.COL1 AS VARCHAR(1000))<br />
+   FROM TB A <br />
+   JOIN T B <br />
+        ON A.COL2 LIKE B.COL2+'%' <br />
+<br />
+           AND LEN(A.COL2)-3=LEN(B.COL2)<br />
+)<br />
+<br />
+SELECT * FROM T ORDER BY LEFT(COL2,2)<br />
+<br />
+/*<br />
+<br />
+GUID        COL1        COL2                  PATH<br />
+<br />
+----------- ---------- -------------------- --------------------<br />
+<br />
+1           A          01                   A<br />
+<br />
+2           B          01.01                A-->B<br />
+<br />
+3           C          01.01.01             A-->B-->C<br />
+<br />
+4           F          01.01.01.01          A-->B-->C-->F<br />
+<br />
+5           E          01.01.01.02          A-->B-->C-->E<br />
+<br />
+6           D          01.01.01.03          A-->B-->C-->D<br />
+<br />
+7           O          02                   O<br />
+<br />
+8           P          02.01                O-->P<br />
+<br />
+9           Q          02.01.01             O-->P-->Q<br />
+(9 行受影响)<br />
+<br />
+*/<br />
+<br />
+<br />
+;WITH T AS<br />
+<br />
+(<br />
+    SELECT *,CAST(COL1  AS VARCHAR(1000)) AS PATH<br />
+    FROM  TB <br />
+    WHERE COL2 NOT LIKE '%.%'<br />
+    UNION ALL<br />
+    SELECT A.*,CAST(B.PATH+'-->'+A.COL1 AS VARCHAR(1000))<br />
+    FROM TB A,T B<br />
+    WHERE A.COL2 LIKE B.COL2+'.[01-99][01-99]'<br />
+)<br />
+<br />
+SELECT * FROM T <br />
+ORDER BY LEFT(COL2,2)<br />
+<br />
+/*<br />
+<br />
+GUID        COL1        COL2                  PATH<br />
+<br />
+----------- ---------- -------------------- --------------------<br />
+<br />
+1           A          01                   A<br />
+<br />
+2           B          01.01                A-->B<br />
+<br />
+3           C          01.01.01             A-->B-->C<br />
+<br />
+4           F          01.01.01.01          A-->B-->C-->F<br />
+<br />
+5           E          01.01.01.02          A-->B-->C-->E<br />
+<br />
+6           D          01.01.01.03          A-->B-->C-->D<br />
+<br />
+7           O          02                   O<br />
+<br />
+8           P          02.01                O-->P<br />
+<br />
+9           Q          02.01.01             O-->P-->Q<br />
+<br />
+ (9 行受影响)<br />
+<br />
+*/<br />
+<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:28:31

@@ -1,0 +1,70 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>---SQL Server对大容量内存的支持<br />
+32位操作系统有个很大的缺陷，应用程序无法访问大于4G的进程地址空间，因为32位的指针无法保存大于4G的地址空间<br />
+如果大于4G，则需要使用地址窗口化扩展插件(AWE)，具体操作如下：<br />
+1，启动物理地址扩展<br />
+(1)找到C:\boot.ini,并删除其只读属性.<br />
+(2)编辑boot.ini，在ARC路径中添加/PAE参数.例如：<br />
+在windows Server 2003 Enterprise Edition 中，编辑后的ARC路径如下：<br />
+muti(0)disk(0)partition(1)windows="windows Server 2003 Enterprise,Edition"/fastdetect/PAE<br />
+保存后将其恢复为只读模式，然后重新启动计算机。<br />
+<br />
+如果计算机上的可用物理内存超过16G，应确保boot.ini文件中没有/3gb参数<br />
+<br />
+---如何启动AWE选项<br />
+sp_configure'show advanced options',1<br />
+reconfigure<br />
+go<br />
+sp_configue 'awe enabled',1<br />
+reconfigure<br />
+go<br />
+<br />
+<br />
+---手动配置内存选项<br />
+sp_configure'show advanced options',1<br />
+go<br />
+reconfigure<br />
+go<br />
+sp_configure 'min server memory' --服务器最小内存<br />
+sp_configure 'max server memory' --服务器最大内存<br />
+sp_configure 'index create memory'--创建索引占用的内存<br />
+sp_configure 'min  memory per query'--每次查询占用的最小内存<br />
+<br />
+--获取磁盘读写情况<br />
+select<br />
+  @@total_read as '读取磁盘的次数',<br />
+  @@total_write as '写入磁盘的次数',<br />
+  @@total_error as '磁盘写入错误数',<br />
+  getdate() as '当前时间'<br />
+<br />
+--获取数据库文件的I/O统计信息<br />
+select * from fn_virtualfilestats(null,null)<br />
+--两个参数<br />
+database_id--指定数据库编号，如果为null,则为所有数据库实例返回I/O统计信息<br />
+file_id --文件的编号,如果为null,则为所有文件返回信息<br />
+<br />
+--获取I/O工作情况<br />
+select <br />
+  @@id_busy，--SQL自上次启动以来的用于执行输入和输出操作的时间<br />
+  @@timeticks, --每个时钟周期对应的微秒数<br />
+  @@id_busy*@@timeticks as 'I/O 操作毫秒数',<br />
+  getdate() as '当前时间'<br />
+<br />
+--查看SQL SEVER CPU活动,工作情况<br />
+select<br />
+  @@cpu_busy,--自上次启动以来的工作时间<br />
+  @@timeticks, --每个时钟周期对应的微秒数 <br />
+  @@cpu_busy*cast(@@timeticks as float)/1000 as 'cpu工作时间(秒)',<br />
+  @@idie*cast(@@timeticks as float)/1000 as 'CPU空闲时间(秒)'<br />
+  getdate() as '当前时间'<br />
+<br />
+<br />
+--获取网络数据包统计信息<br />
+select<br />
+  getdate() as '当前时间',<br />
+  @@pack_received as'输入数据包数量',<br />
+  @@pack_sent as '输出数据包数量',<br />
+  @@packet_error as '错误包数量'<br />
+<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:19:09
