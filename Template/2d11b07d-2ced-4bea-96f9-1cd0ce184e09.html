@@ -1,5 +1,5 @@
 ﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>批量删除表</h2><br /> 
-uploaded by Patrick. 06/27/2016 15:57:46<br />blog>><a  href="https://wzpabc.github.io?page=2d11b07d-2ced-4bea-96f9-1cd0ce184e09" >wzpabc.github.io?page=2d11b07d-2ced-4bea-96f9-1cd0ce184e09</a><p>--删除外键约束<br />
+uploaded by Patrick. 05/01/2016 12:11:03<br />blog>><a  href="https://wzpabc.github.io?page=2d11b07d-2ced-4bea-96f9-1cd0ce184e09" >wzpabc.github.io?page=2d11b07d-2ced-4bea-96f9-1cd0ce184e09</a><p>--删除外键约束<br />
 DECLARE c1 cursor for <br />
     select 'alter table ['+ object_name(parent_obj) + '] drop constraint ['+name+']; '<br />
     from sysobjects <br />

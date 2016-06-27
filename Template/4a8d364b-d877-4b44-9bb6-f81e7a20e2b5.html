@@ -1,5 +1,5 @@
 ﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>单个语句快于存储过程的原因分析</h2><br /> 
-uploaded by Patrick. 06/27/2016 15:57:49<br />blog>><a  href="https://wzpabc.github.io?page=4a8d364b-d877-4b44-9bb6-f81e7a20e2b5" >wzpabc.github.io?page=4a8d364b-d877-4b44-9bb6-f81e7a20e2b5</a><p>SQL Server中存储过程比直接运行SQL语句慢的原因 <br />
+uploaded by Patrick. 05/07/2016 00:18:28<br />blog>><a  href="https://wzpabc.github.io?page=4a8d364b-d877-4b44-9bb6-f81e7a20e2b5" >wzpabc.github.io?page=4a8d364b-d877-4b44-9bb6-f81e7a20e2b5</a><p>SQL Server中存储过程比直接运行SQL语句慢的原因 <br />
  在很多的资料中都描述说SQLSERVER的存储过程较普通的SQL语句有以下优点： <br />
 1.       存储过程只在创造时进行编译即可，以后每次执行存储过程都不需再重新编译，而我们通常使用的SQL语句每执行一次就编译一次,所以使用存储过程可提高数据库执行速度。 <br />
 2.       经常会遇到复杂的业务逻辑和对数据库的操作，这个时候就会用SP来封装数据库操作。当对数据库进行复杂操作时(如对多个表进行 Update,Insert,Query,Delete时），可将此复杂操作用存储过程封装起来与数据库提供的事务处理结合一起使用。可以极大的提高数据 库的使用效率，减少程序的执行时间，这一点在较大数据量的数据库的操作中是非常重要的。在代码上看，SQL语句和程序代码语句的分离，可以提高程序代码的 可读性。<br />

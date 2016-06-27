@@ -72,11 +72,12 @@ Param(
 [Parameter(ValueFromPipeline=$true)]
     $txt, 
     $link='',
-    $title=''
+    $title='',
+    $datetime=''
 )
 begin{$str='<meta http-equiv="Content-Type" content="text/html; charset=utf-8">'
 if ($title -ne ''){$str=$str+"<h2>$title</h2><br />"}
-$str="$str `nuploaded by Patrick. $(Get-Date)<br />"
+$str="$str `nuploaded by Patrick. $datetime<br />"
 if($link -ne ''){$str=$str+"blog>><a  href=`"https://wzpabc.github.io?page=$link`" >wzpabc.github.io?page=$link</a>“}
 
     $str=$str+"<p>"
@@ -178,7 +179,7 @@ function init-menu{
 param( [ValidateSet(  'Java','BigData','Rlang','txt')]
 [System.String]$menu)
 begin{
-    $sql="SELECT m.menuname,p.id,p.pagename,p.source FROM menu AS m INNER JOIN pages AS p ON p.mid = m.id WHERE p.mid NOT IN ('E0DBED43-24F1-45D1-BB6A-7DFFFC9688D9',  '73AF1B8F-7BEB-407E-81E9-F467351B2E5E',  '7C53387A-EEBF-467A-8010-0F97B2D5B1E3',  '6CD8CD82-B8E2-4B80-BAED-27D3B9E7907C',  '1830E27A-EAE1-4C9E-B1F9-E8690F709C36',  '7F97E5A1-D59B-4C28-8C5F-4A62EEDC3148') and m.menuname='$menu' ORDER BY m.menuname  "
+    $sql="SELECT m.menuname,p.id,p.pagename,p.source,p.createdate FROM menu AS m INNER JOIN pages AS p ON p.mid = m.id WHERE p.mid NOT IN ('E0DBED43-24F1-45D1-BB6A-7DFFFC9688D9',  '73AF1B8F-7BEB-407E-81E9-F467351B2E5E',  '7C53387A-EEBF-467A-8010-0F97B2D5B1E3',  '6CD8CD82-B8E2-4B80-BAED-27D3B9E7907C',  '1830E27A-EAE1-4C9E-B1F9-E8690F709C36',  '7F97E5A1-D59B-4C28-8C5F-4A62EEDC3148') and m.menuname='$menu' ORDER BY p.createdate desc "
     $des="$menu.html"
     '<meta http-equiv="Content-Type" content="text/html; charset=utf-8">'|Out-File $des -Encoding utf8
 }
@@ -187,8 +188,8 @@ process{
     foreach($row in $rowset){
         "<H2><a id=`"$($row.id).html`" href=`"#`" onclick=`"return MenuChange(this);`">$($row.pagename)</a></H2>"|Out-File $des -Encoding utf8 -Append
         IF(Test-Path $row.source){
-            cat $row.source|SELECT -First 3|tohtml  |Out-File $des -Encoding utf8 -Append
-            cat $row.source|tohtml -link $($row.id) -title $($row.pagename)|Out-File "$($row.id).html" -Encoding utf8  
+            cat $row.source|SELECT -First 3|tohtml  -datetime $row.createdate|Out-File $des -Encoding utf8 -Append
+            cat $row.source|tohtml -link $($row.id) -title $($row.pagename) -datetime $row.createdate|Out-File "$($row.id).html" -Encoding utf8  
         }
     }
     
@@ -202,7 +203,7 @@ param([Parameter(Position=2)]
         [ValidateSet('Mysql','Basketball','SQL SERVER','RLang','Java','SSPS','Oracle','Hadoop','Linux(Centos)','BigData')]
         [System.String]$category)
 begin{
-    $sql="	SELECT p.id,c.[desc],p.category,p.pagename,P.SOURCE 	FROM category AS c INNER JOIN pages AS p ON p.category =	c.id 	AND c.[desc] = '$category'	WHERE p.mid NOT IN ('E0DBED43-24F1-45D1-BB6A-7DFFFC9688D9', 	'73AF1B8F-7BEB-407E-81E9-F467351B2E5E', 	'7C53387A-EEBF-467A-8010-0F97B2D5B1E3', 	'6CD8CD82-B8E2-4B80-BAED-27D3B9E7907C', 	'1830E27A-EAE1-4C9E-B1F9-E8690F709C36', 	'7F97E5A1-D59B-4C28-8C5F-4A62EEDC3148')  "
+    $sql="	SELECT p.id,c.[desc],p.category,p.pagename,P.SOURCE ,p.createdate	FROM category AS c INNER JOIN pages AS p ON p.category =	c.id 	AND c.[desc] = '$category'	WHERE p.mid NOT IN ('E0DBED43-24F1-45D1-BB6A-7DFFFC9688D9', 	'73AF1B8F-7BEB-407E-81E9-F467351B2E5E', 	'7C53387A-EEBF-467A-8010-0F97B2D5B1E3', 	'6CD8CD82-B8E2-4B80-BAED-27D3B9E7907C', 	'1830E27A-EAE1-4C9E-B1F9-E8690F709C36', 	'7F97E5A1-D59B-4C28-8C5F-4A62EEDC3148') ORDER BY p.createdate   desc "
     if($category -eq 'Mysql'){$categoryid='030301E0-1B5F-4370-9B80-1E8F582568E5'}
         elseif($category -eq 'Basketball'){$categoryid='94DB23A4-F7F5-4C4D-9FA4-30B9283C35B6'}
         elseif($category -eq 'SQL SERVER'){$categoryid='360936B7-A092-426A-8C70-35CC375709F8'}
@@ -221,8 +222,8 @@ process{
     foreach($row in $rowset){
         "<H2><a id=`"$($row.id).html`" href=`"#`" onclick=`"return MenuChange(this);`">$($row.pagename)</a></H2>"|Out-File $des -Encoding utf8 -Append
         IF(Test-Path $row.source){
-            cat $row.source|SELECT -First 3|tohtml  |Out-File $des -Encoding utf8 -Append
-            cat $row.source|tohtml -link $($row.id) -title $($row.pagename)|Out-File "$($row.id).html" -Encoding utf8  
+            cat $row.source|SELECT -First 3|tohtml  -datetime $row.createdate|Out-File $des -Encoding utf8 -Append
+            cat $row.source|tohtml -link $($row.id) -title $($row.pagename) -datetime $row.createdate|Out-File "$($row.id).html" -Encoding utf8  
         }
     }
     

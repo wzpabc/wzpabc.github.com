@@ -1,5 +1,5 @@
 ﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>清理过大的日志文件</h2><br /> 
-uploaded by Patrick. 06/27/2016 15:57:47<br />blog>><a  href="https://wzpabc.github.io?page=7a644cd0-9aba-4324-8879-96dffa942e49" >wzpabc.github.io?page=7a644cd0-9aba-4324-8879-96dffa942e49</a><p>方法1、--在查询分析器，选中所要清理日志的数据库，<br />
+uploaded by Patrick. 04/28/2016 18:09:40<br />blog>><a  href="https://wzpabc.github.io?page=7a644cd0-9aba-4324-8879-96dffa942e49" >wzpabc.github.io?page=7a644cd0-9aba-4324-8879-96dffa942e49</a><p>方法1、--在查询分析器，选中所要清理日志的数据库，<br />
 执行如下SQLbackup log 数据库名 with no_logDBCC SHRINKFILE ( 日志文件名或日志文件ID,要缩小的目标大小)        <br />
 --在当前数据库下select fileid,groupid,name from sysfiles where groupid=0<br />
 /*----------------------------------------<br />
