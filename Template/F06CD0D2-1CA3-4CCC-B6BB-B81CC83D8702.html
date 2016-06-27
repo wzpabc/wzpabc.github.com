@@ -1,2 +1,634 @@
 ﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-SSPS
+<H2><a id="202f3d4e-ec1e-4253-b2c2-037bf3511981.html" href="#" onclick="return MenuChange(this);">深度排序</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--测试数据   深度排序     <br />
+  DECLARE   @t   TABLE(ID   char(3),PID   char(3),Name   nvarchar(10))   <br />
+  INSERT   @t   SELECT   '001',NULL   ,'山东省'   <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:43
+<H2><a id="b76c778d-32c1-4b92-a059-07f12bdbf6bc.html" href="#" onclick="return MenuChange(this);">笔记七</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--空间数据的一些操作<br />
+<br />
+1.在创建表时定义geometry类型的列<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:43
+<H2><a id="f7e30a42-7740-4615-87d5-0c9e92b8c701.html" href="#" onclick="return MenuChange(this);">查找无用的索引</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p><br />
+SELECT  ind.index_id ,<br />
+        obj.name AS TableName ,<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:43
+<H2><a id="76e5739e-b093-4502-aae9-0cca53a5fbcf.html" href="#" onclick="return MenuChange(this);">字符串的拆分 (2)</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>　　use tempdb<br />
+　　go<br />
+　　--测试数据<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:43
+<H2><a id="5750d746-7558-4fbf-a345-0ce7c7482159.html" href="#" onclick="return MenuChange(this);">检查给定串是否存在于由区间及点集的给合内</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>------------------------------------<br />
+<br />
+-- Author: happyflystone   <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:43
+<H2><a id="31772079-939f-4a0c-b506-10877ca4fb85.html" href="#" onclick="return MenuChange(this);">行转列</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>表a <br />
+name    num <br />
+aa      1 <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:43
+<H2><a id="92081e28-8fe6-414e-b5e5-13839dbbf980.html" href="#" onclick="return MenuChange(this);">索引DMV</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--查找缺失索引<br />
+<br />
+SELECT  MID.statement AS ObjectName ,<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:43
+<H2><a id="963aab76-ec43-4067-ae82-1452d524794d.html" href="#" onclick="return MenuChange(this);">锁概念以及例程说明</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>http://blog.csdn.net/arrow_gx/archive/2009/03/19/4004938.aspx <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:43
+<H2><a id="07088bfa-4280-474e-b5c7-194cc012ea61.html" href="#" onclick="return MenuChange(this);">笔记六</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--SQL 2008使用空间数据<br />
+<br />
+SQL SERVER 2008支持两种空间数据类型，geometry和geography.其中geometry数据类型支持平面或平面球数据,geography可用于存储GPS经度和纬度坐标等椭球体数据。<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:43
+<H2><a id="a22de7c0-c85f-42a2-9cf7-1c2c1a596e7e.html" href="#" onclick="return MenuChange(this);">时间格式转换问题 </a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p> 时间格式转换问题 <br />
+因为新开发的软件需要用一些旧软件生成的一些数据，在时间格式上不统一，只能手工转换，研究了一下午写了三条语句，以前没怎么用过convert函数和case语句，还有"+"操作符在不同上下文环境也会起到不同的作用，把我搞晕了要，不过现在看来是差不多弄好了。 <br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:43
+<H2><a id="2d11b07d-2ced-4bea-96f9-1cd0ce184e09.html" href="#" onclick="return MenuChange(this);">批量删除表</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--删除外键约束<br />
+DECLARE c1 cursor for <br />
+    select 'alter table ['+ object_name(parent_obj) + '] drop constraint ['+name+']; '<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:43
+<H2><a id="f1794ffe-7e96-44c6-acf0-1d0ce9c50794.html" href="#" onclick="return MenuChange(this);">数据汇总</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>首先创建测试表、添加数据。 <br />
+create table #t(a int,b int,c int,d int,e int) <br />
+insert into #t values(1,2,3,4,5) <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:43
+<H2><a id="c0a01bcb-f377-49c1-9f15-1e16b39c14b4.html" href="#" onclick="return MenuChange(this);">存储过程调用存储过程</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>第一种方法: 使用output参数<br />
+<br />
+USE AdventureWorks;<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:43
+<H2><a id="7f90f74a-6518-4a1f-bef3-20ac5fed343e.html" href="#" onclick="return MenuChange(this);">如何向一个自增字段插值？</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--1、create table tablename(id int identity(1,1))go<br />
+insert into tablename default values<br />
+go<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:43
+<H2><a id="752dadc6-9494-45d8-a86f-21b1a12b706b.html" href="#" onclick="return MenuChange(this);">系统表说明</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>syscolumns<br />
+每个表和视图中的每列在表中占一行，存储过程中的每个参数在表中也占一行。该表位于每个数据库中。<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:43
+<H2><a id="0bdf8d09-84e4-44d8-9a86-22aff658ab42.html" href="#" onclick="return MenuChange(this);">查看指定spid的脚本当前运行情况和状态</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>USE Master<br />
+GO<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:43
+<H2><a id="64fe57ee-9da1-4217-8169-2d76b7a19645.html" href="#" onclick="return MenuChange(this);">查每个分组前N条记录</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>---------------------------------<br />
+--  Author: liangCK 小梁<br />
+--  Title : 查每个分组前N条记录<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:43
+<H2><a id="8ff648a2-f3fb-4179-8151-2e2299cec9e3.html" href="#" onclick="return MenuChange(this);">数据库笔记2</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>1、说明：复制表(只复制结构,源表名：a 新表名：b) (Access可用) <br />
+法一：select * into b from a where 1 <>1 <br />
+法二：select top 0 * into b from a <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:43
+<H2><a id="72f39cf5-80e3-4710-9041-30b8a9524eee.html" href="#" onclick="return MenuChange(this);">计算年龄</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>SELECT 年龄=case when  datediff(day,dateadd(year,datediff(year,'1982-07-18',getdate()),'1982-07-18'),getdate())>=0<br />
+            then datediff(year,'1982-07-18',getdate())else datediff(YY,'1982-07-18',getdate())-1 end<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:43
+<H2><a id="58c7de25-4a6f-46df-8df2-35085ea3e1d5.html" href="#" onclick="return MenuChange(this);">小写转大写金额</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>Create Function F_LowerToUpper(@LowerMoney Decimal(38,4)) <br />
+Returns Varchar(200)    --返回的大写金额的字符 <br />
+As <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:43
+<H2><a id="b5b15e8e-b229-4918-9a12-360cdccea0f8.html" href="#" onclick="return MenuChange(this);">将表数据生成SQL脚本的存储过程</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--将表数据生成SQL脚本的存储过程 <br />
+<br />
+CREATE PROCEDURE dbo.UspOutputData <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:43
+<H2><a id="075b0095-a103-4989-b26c-3be550b7bf7d.html" href="#" onclick="return MenuChange(this);">如何用SQL语句在两个数据库间复制存储过程</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--1.在目标服务器上建立如下对象(被同步的服务器)   <br />
+    <br />
+  if   exists   (select   *   from   dbo.sysobjects   where   id   =   object_id(N'[sys_syscomments_bak]')   and   OBJECTPROPERTY(id,   N'IsUserTable')   =   1)   <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:43
+<H2><a id="2cd2205d-4bb7-46c5-87d8-3c47968ad5b4.html" href="#" onclick="return MenuChange(this);">拆分、合并、切换分区</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>USE master<br />
+GO<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:43
+<H2><a id="99f0466e-6cff-49f7-9afc-3df5b82dc999.html" href="#" onclick="return MenuChange(this);">笔记一</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>---用户定义数据类型<br />
+create type postcode<br />
+from varchar(6) null  --创建用户定义数据类型<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:43
+<H2><a id="da9c4269-6f94-41ed-9678-4029bc6c7b41.html" href="#" onclick="return MenuChange(this);">行列互换</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--行列互转<br />
+/******************************************************************************************************************************************************<br />
+以学生成绩为例子，比较形象易懂<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:43
+<H2><a id="fb82bc79-e3dd-4d07-be0a-40b9453a4338.html" href="#" onclick="return MenuChange(this);">新建 文本文档</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>---测试数据---<br />
+if object_id('[tb]') is not null drop table [tb]<br />
+go<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:43
+<H2><a id="d357c8f1-19d2-4bd7-9985-43acf87156ef.html" href="#" onclick="return MenuChange(this);">将表查询存储为标准的XML文件</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>/*--存为XML<br />
+ 将表/查询存储为标准的XML文件<br />
+--邹建 2003.12(引用请保留此信息)--*/<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:43
+<H2><a id="70176e8a-1d60-4729-ac49-4a74884b1d8d.html" href="#" onclick="return MenuChange(this);">系统数据库中查询表的所有字段以及描述（2008，2000区分）以及查询表的外键</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>/**************************<br />
+系统数据库中查询表的所有字段以及描述（2008，2000区分）以及查询表的外键<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:43
+<H2><a id="d8b0e118-eecc-48e4-bc10-4db5a8022536.html" href="#" onclick="return MenuChange(this);">日志处理</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>1、用BACKUP LOG database WITH NO_LOG清除日志 <br />
+<br />
+把数据库属性中的故障还原模型改为“简单”可以大大减慢日志增长的速度。 <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:43
+<H2><a id="9a9547ce-d0d8-49e7-b160-50c01f20c4e1.html" href="#" onclick="return MenuChange(this);">表结构信息查询</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--sql server 2000<br />
+SELECT <br />
+    表名       = case when a.colorder=1 then d.name else '' end,<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:43
+<H2><a id="49fabf8d-6730-4433-851a-52c8c295072c.html" href="#" onclick="return MenuChange(this);">拼音处理</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>/*-1.-获得汉字字符串的首字母<br />
+<br />
+   根据大力的贴子改成.将大力的两个函数合并成了一个函数.<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:43
+<H2><a id="c677f08e-9545-4f27-80fd-5414ce5b0f79.html" href="#" onclick="return MenuChange(this);">批量删除多个表的多个字段</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>declare @tablename varchar(30)<br />
+DECLARE cur_temp Cursor For <br />
+select b.name from dbo.syscolumns a,dbo.sysobjects b<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:43
+<H2><a id="930b59d7-fc22-4b31-ac5c-54633f215b9a.html" href="#" onclick="return MenuChange(this);">构造使用IN子句的动态Transact-SQL方法进行编号查询</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>构造使用IN子句的动态Transact-SQL方法进行编号查询<br />
+<br />
+--1. 构造使用IN子句的动态Transact-SQL方法进行编号查询<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:43
+<H2><a id="63f115d5-7d15-4265-b182-55ed6768a308.html" href="#" onclick="return MenuChange(this);">查找指定節點下的子結點和父节点</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>-->Title:Generating test data<br />
+-->Author:wufeng4552<br />
+-->Date :2009-09-30 08:52:38<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:43
+<H2><a id="fd87a636-5ea0-4871-bcbc-5d7ec07be04e.html" href="#" onclick="return MenuChange(this);">数据库笔记4</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>*<br />
+标题：普通行列转换(version 2.0)<br />
+作者：爱新觉罗.毓华(十八年风雨,守得冰山雪莲花开)<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:43
+<H2><a id="b29873df-93b9-4483-8ed3-5ddd81062275.html" href="#" onclick="return MenuChange(this);">提取中文、英文、汉字</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--提取数字<br />
+IF OBJECT_ID('DBO.GET_NUMBER2') IS NOT NULL<br />
+DROP FUNCTION DBO.GET_NUMBER2<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:43
+<H2><a id="4f8cdaf8-892c-4093-8fa5-652ad584fc44.html" href="#" onclick="return MenuChange(this);">阳历转阴历</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>先建一表，放初始化资料<br />
+因为农历的日期，是由天文学家推算出来的，到现在只有到2049年的，以后的有了还可以加入！<br />
+CREATE TABLE SolarData<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:43
+<H2><a id="8375d3e8-78b9-41e2-9b66-695dc26f7b89.html" href="#" onclick="return MenuChange(this);">库存先进先出</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--库存先进先出简单例子：<br />
+<br />
+create table t(<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:43
+<H2><a id="60642c1f-1a4a-4d43-b650-7016fd0e70bb.html" href="#" onclick="return MenuChange(this);">查看存储过程依赖的表</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>DECLARE @procname NVARCHAR(100) = 'dbo.avnewmanubranchsplit_trend'<br />
+ SELECT DISTINCT @procname        procname,SCHEMA_NAME(t.[schema_id]) + '.' <br />
+        + OBJECT_NAME(referenced_major_id) <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="a5e32ede-ca58-40b9-a811-707cd429e5e7.html" href="#" onclick="return MenuChange(this);">字母排序</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--1. 按拼音排序<br />
+DECLARE @t TABLE(col varchar(2))<br />
+INSERT @t SELECT '中'<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="46f6bd6b-a204-4c29-bb35-70db96dc1175.html" href="#" onclick="return MenuChange(this);">随机插入汉字</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>declare @t table(col nvarchar(4))<br />
+insert @t select nchar(cast(19968+rand()*20902 as int))<br />
+select * from @t<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="e85dc8e0-d770-4f62-b9ce-71e97ddd21e0.html" href="#" onclick="return MenuChange(this);">新建 文本文档 (5)</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>http://id.91cool.net/sign/?name=%CE%DE%D3%C7&say=%B2%C5%B8%DF%C6%DF%B0%CB%B6%B7,%D1%A7%B8%BB%CE%E5%C1%F9%B3%B5,%B8%C4%D0%D0%C8%FD%CB%C4%B4%CE,%D4%C2%C8%EB%D2%BB%B6%FE%C7%A7! <br />
+<br />
+显示IP<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="834f2fd2-21d7-4410-b597-7304579cb260.html" href="#" onclick="return MenuChange(this);">服务器登录的一些脚本</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>select loginame, * from master.dbo.sysprocesses<br />
+where spid>50<br />
+order by 1 <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="96e90a2a-332a-466c-a8a8-7da38b492269.html" href="#" onclick="return MenuChange(this);">笔记四</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>---SQL Server对大容量内存的支持<br />
+32位操作系统有个很大的缺陷，应用程序无法访问大于4G的进程地址空间，因为32位的指针无法保存大于4G的地址空间<br />
+如果大于4G，则需要使用地址窗口化扩展插件(AWE)，具体操作如下：<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="b297ebcb-c931-44e4-92e6-847430a3773f.html" href="#" onclick="return MenuChange(this);">自动备份数据库</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>有A数据库服务器，B本机； <br />
+<br />
+我现在想通过在B机器上通过代码调用SQL来执行A数据库的备份到B机器上 <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="2638e7ce-f081-4578-b07b-84f1f7ec5688.html" href="#" onclick="return MenuChange(this);">数据库减肥</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--最好备份日志，以后可通过日志恢复数据。。。<br />
+以下为日志处理方法<br />
+一般不建议做第4,6两步<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="7ef1f296-c0a4-4e81-bed2-85f489d68eb0.html" href="#" onclick="return MenuChange(this);">导出表视图中的数据为html 文件</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>IF OBJECT_ID(N'dbo.p_ExportHtml') IS NOT NULL<br />
+<br />
+    DROP PROC dbo.p_ExportHtml;<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="ad2ec0eb-edd2-44fa-9f3f-92988c6f85dd.html" href="#" onclick="return MenuChange(this);">给TEMP减肥</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>SQL Server会自动创建一个名为tempdb的数据库作为工作空间使用，当您在存储过程中创建一个临时表格时，比如(CREATE TABLE #MyTemp)，无论您正在使用哪个数据库，SQL数据库引擎都会将这个表格创建在tempdb数据库中。<br />
+<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="0d8ad8d1-5d24-4236-a70c-950f56228087.html" href="#" onclick="return MenuChange(this);">数字转换成EXCEL列名</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>alter function col_rev(<br />
+ @i_version int, -- Excel 版本号 <br />
+ @i_col int          -- 字段号(数值表示)<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="7a644cd0-9aba-4324-8879-96dffa942e49.html" href="#" onclick="return MenuChange(this);">清理过大的日志文件</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>方法1、--在查询分析器，选中所要清理日志的数据库，<br />
+执行如下SQLbackup log 数据库名 with no_logDBCC SHRINKFILE ( 日志文件名或日志文件ID,要缩小的目标大小)        <br />
+--在当前数据库下select fileid,groupid,name from sysfiles where groupid=0<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="6d43ae98-7a44-4f70-82f5-9cd5e064e43b.html" href="#" onclick="return MenuChange(this);">经典代码</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>if object_id('[tb]') is not null drop table [tb] <br />
+go <br />
+create table [tb]([value1] int,[value2] int) <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="b6463bc3-550c-45da-a048-9cd63165abc8.html" href="#" onclick="return MenuChange(this);">小小总结</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>1:replace 函数<br />
+第一个参数你的字符串，第二个参数你想替换的部分，第三个参数你要替换成什么<br />
+select replace('lihan','a','b')<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="b87f0a0e-5582-44b5-aa37-9dc8558eac2a.html" href="#" onclick="return MenuChange(this);">新建 文本文档 (6)</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--1. 错误14114<br />
+--使用下面的代码重新添加当前SQL Server实例的信息，处理完成后，应该重新启动MSSQLSERVER服务使修改生效。<br />
+DECLARE @srvname sysname<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="b28f19dd-bcce-46f2-bf68-9e51929c0fea.html" href="#" onclick="return MenuChange(this);">新建 文本文档 (7)</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>declare @rarcmd varchar(8000),@rarfile varchar(200),@bakfile varchar(200)<br />
+set @rarfile='d:\aaa.txt'<br />
+set @bakfile='d:\aaa.rar'<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="8fec8598-01e2-45ae-9065-a6f38009402d.html" href="#" onclick="return MenuChange(this);">新建 文本文档 (2)</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>设置默认值alter table <表名> add <列名> <默认值类型>  default '<默认值>'<br />
+设置主键alter table <表名> add constraint <主键名> primary key(<列名>)<br />
+设置联合主键alter table <表名> add constraint <主键名> primary key(<列名1>，<列名2>，...,<列名N>)<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="fe5cc22e-e86c-43ca-8a32-a824e1b4a8b0.html" href="#" onclick="return MenuChange(this);">字符串的拆分</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p><br />
+--> 测试数据: #T<br />
+if object_id('tempdb.dbo.#T') is not null drop table #T<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="481b3724-db6f-4062-a40d-a84d82eeec2d.html" href="#" onclick="return MenuChange(this);">显示索引消耗的磁盘情况</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--显示索引消耗的磁盘情况<br />
+SELECT  CASE InnerTable.index_id<br />
+          WHEN 0 THEN 'HEAP'<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="7c482af4-ffb4-47a1-9cc9-a9765adfece9.html" href="#" onclick="return MenuChange(this);">排名</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--示例数据<br />
+CREATE TABLE tb(Name varchar(10),Score decimal(10,2))<br />
+INSERT tb SELECT 'aa',99<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="12aae7da-7a1f-4820-b9a4-a9bf3d444a80.html" href="#" onclick="return MenuChange(this);">新建 文本文档 (3)</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>----------------------------------------------------------------<br />
+-- Author :fredrickhu(小F 向高手学习)<br />
+-- Date   :2009-07-27 10:41:24<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="189dc10e-b2c1-4ebc-95ac-aa7dc3861014.html" href="#" onclick="return MenuChange(this);">获取拼音字母</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>Create  function fun_getPY <br />
+ ( <br />
+    @str nvarchar(4000) <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="a7f51b15-0c4f-4c07-8e8c-ab4515bdf6b1.html" href="#" onclick="return MenuChange(this);">通过脚本创建JOB</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>通过脚本创建JOB：   <br />
+if   exists   (select   *   from   dbo.sysobjects   where   id   =   object_id(N[dbo].[p_createjob])   and   OBJECTPROPERTY(id,   NIsProcedure)   =   1)   <br />
+  drop   procedure   [dbo].[p_createjob]   <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="677af428-b7fc-4d52-a0d3-ac1a79049d00.html" href="#" onclick="return MenuChange(this);">新建 文本文档 (4)</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p><br />
+declare @name nvarchar(100)<br />
+declare cur cursor for select name from sysobjects where type = 'U'<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="c4dd4600-5e63-4f69-848c-ae384c4ab451.html" href="#" onclick="return MenuChange(this);">排序问题</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>排序问题 <br />
+<br />
+CREATE TABLE [t] ( <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="09f71cbc-6897-4861-b1e1-ae4bf052b178.html" href="#" onclick="return MenuChange(this);">查询各节点的父路径函数</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>*<br />
+标题：查询各节点的父路径函数<br />
+作者：爱新觉罗·毓华(十八年风雨,守得冰山雪莲花开)  <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="7c199d6a-f7ea-42de-bec8-af144e02db76.html" href="#" onclick="return MenuChange(this);">小计合计的用法</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>create table #t(a int,b int,c int,d int,e int) <br />
+insert into #t values(1,2,3,4,5) <br />
+insert into #t values(1,2,3,4,6) <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="3e35d11b-c212-4b25-9c04-b2257a9609bc.html" href="#" onclick="return MenuChange(this);">日期函数</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>通常，你需要获得当前日期和计算一些其他的日期，例如，你的程序可能需要判断一个月的第一天或者最后一天。你们大部分人大概都知道怎样把日期进行分割（年、月、日等），然后仅仅用分割出来的年、月、日等放在几个函数中计算出自己所需要的日期！在这篇文章里，我将告诉你如何使用DATEADD和DATEDIFF函数来计算出在你的程序中可能你要用到的一些不同日期。  <br />
+        在使用本文中的例子之前，你必须注意以下的问题。大部分可能不是所有例子在不同的机器上执行的结果可能不一样，这完全由哪一天是一个星期的第一天这个设置决定。第一天（DATEFIRST）设定决定了你的系统使用哪一天作为一周的第一天。所有以下的例子都是以星期天作为一周的第一天来建立，也就是第一天设置为7。假如你的第一天设置不一样，你可能需要调整这些例子，使它和不同的第一天设置相符合。你可以通过@@DATEFIRST函数来检查第一天设置。  <br />
+        为了理解这些例子，我们先复习一下DATEDIFF和DATEADD函数。DATEDIFF函数计算两个日期之间的小时、天、周、月、年等时间间隔总数。DATEADD函数计算一个日期通过给时间间隔加减来获得一个新的日期。要了解更多的DATEDIFF和DATEADD函数以及时间间隔可以阅读微软联机帮助。  <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="ee4646af-374a-43e9-9815-b241d9abe695.html" href="#" onclick="return MenuChange(this);">数据结构比较和表结构比较</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>*--数据结构比较 <br />
+<br />
+比较两个数据库中的视图/存储过程的结构(结构比较,不是功能比较) <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="16833211-0076-445a-aa30-b46609e0985c.html" href="#" onclick="return MenuChange(this);">自动生成存储过程格式</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>SET QUOTED_IDENTIFIER ON<br />
+SET ANSI_NULLS ON<br />
+GO<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="5afbad19-8046-408e-b98a-b5f6fa9959e2.html" href="#" onclick="return MenuChange(this);">将表数据旋转90度</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>/*<br />
+将表数据旋转90度(2007-11-19于海南三亚)<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="6e5ac8e0-3be9-4634-9e02-b6955bce18c5.html" href="#" onclick="return MenuChange(this);">重建重组索引的方法</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p> --使用联机方式重建索引idx_refno <br />
+ALTER INDEX [idx_refno] ON [ordDemo] REBUILD WITH (FILLFACTOR=80,ONLINE =ON)<br />
+GO<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="50d97020-a856-4bbc-9192-bb663d022eaf.html" href="#" onclick="return MenuChange(this);">获取所有的存储过程脚本</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>declare @proc_text varchar(max)  <br />
+DECLARE get_proc_text_cursor CURSOR FOR <br />
+SELECT<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="0fd076e8-f057-4ade-b315-be187e21f152.html" href="#" onclick="return MenuChange(this);">自增列的处理</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--创建测试表<br />
+CREATE TABLE t1(ID int IDENTITY,A int)<br />
+GO<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="7a28b24b-dfb2-4e7c-94dd-c117d5b63af2.html" href="#" onclick="return MenuChange(this);">找出在2个日期之间的日期</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>declare @sdate datetime <br />
+declare @edate datetime <br />
+set @sdate = '2009-8-30' <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="d510c7b2-cd89-4370-ae7f-c44238c84ecb.html" href="#" onclick="return MenuChange(this);">查找丢失的索引</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>SELECT<br />
+    avg_total_user_cost * avg_user_impact * ( user_scans + user_seeks ) AS PossibleImprovement ,<br />
+    last_user_seek ,<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="ae1ab924-6f94-4f7d-9acf-c49faaa44a27.html" href="#" onclick="return MenuChange(this);">流水号自增</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>在学习中遇到这个问题 <br />
+数据库里有编号字段 <br />
+BH00001 <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="5738b7aa-78c4-470c-93a2-c6273995a339.html" href="#" onclick="return MenuChange(this);">小写转大写</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>CREATE  FUNCTION [dbo].[f_num_chn] (@num numeric(14,5))   <br />
+RETURNS varchar(100) WITH ENCRYPTION   <br />
+AS   <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="e0258e9d-a6b4-48db-b69b-ca2893c3e98c.html" href="#" onclick="return MenuChange(this);">表信息查询</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--查询用户表对象信息<br />
+select  Tab.Name as [表名],Tab.create_date as [创建时间],Tab.modify_date  as [最后修改时间],<br />
+        Col.Name  as [列名] ,Type.name as [数据类型],Col.max_length as [字段长度],<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="1711cbda-ce1d-403b-9f73-cc1812da6042.html" href="#" onclick="return MenuChange(this);">笔记三</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--结合sys.indexes和sys.index_columns,sys.objects,sys.columns查询索引所属的表或视图的信息<br />
+select<br />
+  o.name as 表名,<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="6d13552d-55a3-4c5e-8bd3-cc5883820ed2.html" href="#" onclick="return MenuChange(this);">标识列的处理</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>引用邹建的：  <br />
+  --创建测试表  <br />
+  CREATE  TABLE  t1(ID  int  IDENTITY,A  int)  <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="a7347126-d835-424b-8a3f-cd1c167db88e.html" href="#" onclick="return MenuChange(this);">求排名</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--> 测试数据：[TB]<br />
+if object_id('[TB]') is not null drop table [TB]<br />
+create table [TB]([id] int,[point] int,[name] varchar(4))<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="dbb24211-87e1-4021-9e35-cd8796e677f8.html" href="#" onclick="return MenuChange(this);">生成三个SQL随机数的方法</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>declare   @maxNumber   int,   --随机数最大值 <br />
+   @minNumber   int,   --随机数最小值 <br />
+                  @rows   int               --要取得的行数   <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="ebefbeaa-d3de-44a2-ad05-cd9f21021c7f.html" href="#" onclick="return MenuChange(this);">新建 文本文档 (8)</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>SQL语句练习题参考答案 <br />
+1、 select Sname,Ssex,Class from Student;<br />
+2、 select distinct depart from teacher;<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="6b0c6cdf-bc48-47e7-a10a-ce1cb6b9c501.html" href="#" onclick="return MenuChange(this);">查看锁信息</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>create   table   #t(req_spid   int,obj_name   sysname)   <br />
+<br />
+    <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="eba9db85-3d8c-43bd-acd9-d0607b0fce3a.html" href="#" onclick="return MenuChange(this);">读写逻辑读执行计划</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>SELECT  DB_NAME(R.database_id) AS DatabaseName ,<br />
+        S.original_login_name AS LoginName ,<br />
+        S.host_name AS ClientMachine ,<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="7914bdd9-53b2-47cb-b95f-d11ec29f9190.html" href="#" onclick="return MenuChange(this);">循环数据库压缩日志文件</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--循环数据库压缩日志文件(假设日志文件fileid=2)<br />
+create table #db(id int identity(1,1),name varchar(80),dbsize int,mdfsize int,ldfsize int)<br />
+insert into #db<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="d914e4db-5f61-4844-bcd9-d6e81ec86dad.html" href="#" onclick="return MenuChange(this);">生成流水号</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--下面的代码生成长度为8的编号，编号以BH开头，其余6位为流水号。<br />
+--得到新编号的函数<br />
+CREATE FUNCTION f_NextBH()<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="b0395f2e-60de-461b-ab0c-d792ce1fd4e5.html" href="#" onclick="return MenuChange(this);">获取汉字首字母</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--返回汉字首字母 <br />
+<br />
+create  function [dbo].[chinese_firstletter] <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="ccb9677d-bbb1-437c-9624-d84d7b514c90.html" href="#" onclick="return MenuChange(this);">自动生成测试代码(小楼）</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>-------------------------------------------------------------------------------   <br />
+-- 自动生成测试数据共享加强版   <br />
+--   <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="3076503b-a8c6-47f6-b0f7-d8a8d989585b.html" href="#" onclick="return MenuChange(this);">构造使用IN子句的动态Transact-SQL方法</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--1. 构造使用IN子句的动态Transact-SQL方法进行编号查询<br />
+<br />
+--a. 要查询的字段类型是数字型<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="716b00ec-64ef-418d-9317-dacf355f9bb4.html" href="#" onclick="return MenuChange(this);">配置SQL内存</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--设置min server memory配置项<br />
+EXEC SP_configure N'min server memory(MB)',0<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="5f0905cf-e953-4071-a733-dcdcdd4e82c2.html" href="#" onclick="return MenuChange(this);">笔记五</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>服务器配置选项<br />
+--启动AWE<br />
+sp_configure 'show advanced options',1<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:44
+<H2><a id="88e9c3d8-08a7-42bb-8ca6-e095832dafc1.html" href="#" onclick="return MenuChange(this);">已知表名查数据库名</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>declare @Table table(DB sysname,TabName sysname)<br />
+insert @Table<br />
+exec sp_msforeachdb 'select ''?'' as DB,Name as 表名 from [?]..sysobjects where type=''U'' and Name =''表名'''--輸入表名<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:45
+<H2><a id="75c5f4d3-cf30-4262-921d-e3baa8cd4835.html" href="#" onclick="return MenuChange(this);">数据库学习笔记</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>固定列数的行列转换 <br />
+如 <br />
+student subject grade <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:45
+<H2><a id="d5026357-c76a-4fc9-b3aa-e46154f1e46f.html" href="#" onclick="return MenuChange(this);">索引碎片</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--收集特定表上所有索引、堆的信息<br />
+<br />
+SELECT  sysIn.name AS IndexName ,<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:45
+<H2><a id="46851b42-bdf4-4a0c-aaef-e56a2240c41b.html" href="#" onclick="return MenuChange(this);">异机备份</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>有A数据库服务器，B本机； <br />
+<br />
+我现在想通过在B机器上通过代码调用SQL来执行A数据库的备份到B机器上 <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:45
+<H2><a id="5ac8becd-81eb-43e5-97b1-e5d04a725744.html" href="#" onclick="return MenuChange(this);">查询指定节点及其所有子节点</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>create table tb(id varchar(3) , pid varchar(3) , name varchar(10)) <br />
+insert into tb values('001' , null  , '广东省') <br />
+insert into tb values('002' , '001' , '广州市') <br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:45
+<H2><a id="05ea5007-3001-4bb4-8c9c-e84f197aeaef.html" href="#" onclick="return MenuChange(this);">日期算法2</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>SQL Server 日期算法<br />
+<br />
+一周的第一天<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:45
+<H2><a id="f2c20d39-79a1-4b77-963b-f0ce4b4aab48.html" href="#" onclick="return MenuChange(this);">将一列中所有的值一行显示</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>----------------------------------------------------<br />
+/*如何将一列中所有的值一行显示<br />
+数据源<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:45
+<H2><a id="ed70f8ba-d2e1-49c3-bd80-f1eb2e6e8399.html" href="#" onclick="return MenuChange(this);">搜索指定数据在那个对象中存在</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>CREATE PROC sp_ValueSearch<br />
+@value sql_variant,  --要搜索的数据<br />
+@precision bit=1     --1=仅根据sql_variant中的数据类型查找对应类型的数据列.<>1,查询兼容的所有列,字符数据使用like匹配<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:45
+<H2><a id="fd7f2077-fd72-4871-9289-f7d8e986353c.html" href="#" onclick="return MenuChange(this);">数据库笔记3</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>/*<br />
+功能：2000当中绘画日历 <br />
+*/<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:45
+<H2><a id="2c604e1a-1f18-4bc5-942b-f84af8baacb7.html" href="#" onclick="return MenuChange(this);">笔记二</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>---查询索引操作的信息<br />
+select * from sys.dm_db_index_usage_stats<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:45
+<H2><a id="08ac02f6-29b0-4c1a-907d-f9585b9af8e8.html" href="#" onclick="return MenuChange(this);">字符串分拆</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>if object_id('f_split')is not null drop function  f_split<br />
+go<br />
+create function f_split<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:45
+<H2><a id="8493bf94-d47d-40d6-9161-faba9c6da7d1.html" href="#" onclick="return MenuChange(this);">日期</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>DECLARE @dt datetime<br />
+SET @dt=GETDATE()<br />
+<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:45
+<H2><a id="453d102d-9336-436a-9973-fafdc71cd57e.html" href="#" onclick="return MenuChange(this);">自动生成测试代码(石头）</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>set nocount on<br />
+go<br />
+--处理当前串中的空格，对时分秒的处理<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:45
+<H2><a id="f175553f-d67f-4699-9e2a-fc0fc9721ffd.html" href="#" onclick="return MenuChange(this);">如何给MS SQL数据库减肥</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--最好备份日志，以后可通过日志恢复数据。。。<br />
+以下为日志处理方法<br />
+一般不建议做第4,6两步<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:45
+<H2><a id="24506d47-b697-4844-bd6c-feb236020f2d.html" href="#" onclick="return MenuChange(this);">断号查询</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--测试数据<br />
+CREATE TABLE tb(col1 varchar(10),col2 int)<br />
+INSERT tb SELECT 'a',2<br />
+</p> 
+uploaded by Patrick. 06/27/2016 14:32:45

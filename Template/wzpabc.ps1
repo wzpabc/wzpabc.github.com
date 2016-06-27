@@ -233,6 +233,7 @@ init-CATETORY -category Hadoop
 init-CATETORY -category 'Linux(Centos)'
 init-CATETORY -category Mysql
 init-CATETORY -category Oracle
+init-CATETORY -category SSPS
 init-CATETORY -category RLang
 init-CATETORY -category 'SQL SERVER'
  
