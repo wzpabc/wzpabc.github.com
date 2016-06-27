@@ -1,4 +1,5 @@
-﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>SQL Server：收缩 SQL Server Tempdb 大小 <br />
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>减少TEMP库</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:17:40<br /><p>SQL Server：收缩 SQL Server Tempdb 大小 <br />
 系统管理员报告说，SQL Server Tempdb 数据库文件占用了大量的磁盘空间。让解决下。 <br />
 <br />
 查看 MS-SQL Tempdb 所占空间大小。 <br />
@@ -21,5 +22,5 @@ dbcc shrinkfile(templog, 512) <br />
 很顺利就把 Tempdb 日志文件大小（逻辑文件名为 tempdev）缩小到 512M 左右。 <br />
 <br />
 如果条件允许的话，你也可以重启 SQL Server，这样 Tempdb 就恢复到创建数据库时的初始大小了。<br />
-</p> 
-uploaded by Patrick. 06/27/2016 14:28:32
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/772232e9-1cdd-4888-80f8-9e3a357770e8.html" >https://wzpabc.github.io/Template/772232e9-1cdd-4888-80f8-9e3a357770e8.html</a>

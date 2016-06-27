@@ -1,4 +1,5 @@
-﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>declare   @maxNumber   int,   --随机数最大值 <br />
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>生成三个SQL随机数的方法</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:17:42<br /><p>declare   @maxNumber   int,   --随机数最大值 <br />
    @minNumber   int,   --随机数最小值 <br />
                   @rows   int               --要取得的行数   <br />
 select   @maxNumber=10000, @minNumber=10000, <br />
@@ -26,5 +27,5 @@ SELECT @r1=RAND( (DATEPART(mm, GETDATE()) * 100000 )<br />
            + (DATEPART(ss, GETDATE()) * 1000 )<br />
            + DATEPART(ms, GETDATE()) )*10000<br />
 print @r1<br />
-</p> 
-uploaded by Patrick. 06/27/2016 14:32:44
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/dbb24211-87e1-4021-9e35-cd8796e677f8.html" >https://wzpabc.github.io/Template/dbb24211-87e1-4021-9e35-cd8796e677f8.html</a>

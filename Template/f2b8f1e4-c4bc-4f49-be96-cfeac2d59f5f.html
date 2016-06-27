@@ -1,4 +1,5 @@
-﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>/*不同服务器数据库之间的数据操作*/<br />
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>不同服务器不同服务器数据库之间的数据操作</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:17:42<br /><p>/*不同服务器数据库之间的数据操作*/<br />
 <br />
 --创建链接服务器 <br />
 exec sp_addlinkedserver   'ITSV ', ' ', 'SQLOLEDB ', '远程服务器名或ip地址 ' <br />
@@ -52,5 +53,5 @@ inner join 本地表 b on a.列A=b.列A <br />
 SELECT   * <br />
 FROM   opendatasource( 'SQLOLEDB ',  'Data Source=ip/ServerName;User ID=登陆名;Password=密码 ' ).test.dbo.roy_ta <br />
 --把本地表导入远程表 <br />
-</p> 
-uploaded by Patrick. 06/27/2016 14:36:49
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/f2b8f1e4-c4bc-4f49-be96-cfeac2d59f5f.html" >https://wzpabc.github.io/Template/f2b8f1e4-c4bc-4f49-be96-cfeac2d59f5f.html</a>

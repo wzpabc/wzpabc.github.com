@@ -1,4 +1,5 @@
-﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--监控SQLServer实例上的日志文件和数据文件<br />
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>IO</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:10:35<br /><p>--监控SQLServer实例上的日志文件和数据文件<br />
 SELECT  DB_NAME(VFS.database_id) AS DatabaseName ,<br />
         MF.name AS LogicalFileName ,<br />
         MF.physical_name AS PhysicalFileName ,<br />
@@ -62,5 +63,5 @@ FROM    sys.dm_io_pending_io_requests AS PIOR<br />
                                              AND VFS.file_id = MF.file_id'<br />
 EXEC(@SQL)<br />
 GO<br />
-</p> 
-uploaded by Patrick. 06/27/2016 14:36:49
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/ea609ae8-2107-4392-812b-3ddc2fae4697.html" >https://wzpabc.github.io/Template/ea609ae8-2107-4392-812b-3ddc2fae4697.html</a>

@@ -1,4 +1,5 @@
-﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>declare @proc_text varchar(max)  <br />
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>获取所有的存储过程脚本</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:17:42<br /><p>declare @proc_text varchar(max)  <br />
 DECLARE get_proc_text_cursor CURSOR FOR <br />
 SELECT<br />
   'if object_id(N'''+ [name] +''') is not null drop proc ' + [name] +  CHAR(10) +  CHAR(13)  +  '  GO '  +  CHAR(10) +  CHAR(13) + definition + CHAR(10)  + CHAR(13) +' GO'   <br />
@@ -25,5 +26,5 @@ END <br />
 CLOSE get_proc_text_cursor  <br />
 <br />
 DEALLOCATE get_proc_text_cursor <br />
-</p> 
-uploaded by Patrick. 06/27/2016 14:32:44
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/50d97020-a856-4bbc-9192-bb663d022eaf.html" >https://wzpabc.github.io/Template/50d97020-a856-4bbc-9192-bb663d022eaf.html</a>

@@ -1,4 +1,5 @@
-﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>首先创建测试表、添加数据。 <br />
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>数据汇总</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:17:41<br /><p>首先创建测试表、添加数据。 <br />
 create table #t(a int,b int,c int,d int,e int) <br />
 insert into #t values(1,2,3,4,5) <br />
 insert into #t values(1,2,3,4,6) <br />
@@ -55,5 +56,5 @@ select case when grouping(a)=1 then '合计' else cast(a as varchar) end a, <br 
 sum(d),sum(e) from #t <br />
 group by a,b,c with rollup <br />
 having grouping(a)=1 or grouping(b)=1 or grouping(c)=1<br />
-</p> 
-uploaded by Patrick. 06/27/2016 14:32:43
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/f1794ffe-7e96-44c6-acf0-1d0ce9c50794.html" >https://wzpabc.github.io/Template/f1794ffe-7e96-44c6-acf0-1d0ce9c50794.html</a>

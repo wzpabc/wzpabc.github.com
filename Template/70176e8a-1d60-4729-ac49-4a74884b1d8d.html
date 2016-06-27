@@ -1,4 +1,5 @@
-﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>/**************************<br />
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>系统数据库中查询表的所有字段以及描述（2008，2000区分）以及查询表的外键</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:17:41<br /><p>/**************************<br />
 系统数据库中查询表的所有字段以及描述（2008，2000区分）以及查询表的外键<br />
 <br />
 ***************************/<br />
@@ -219,5 +220,5 @@ SELECT <br />
        objname<br />
     ,CAST(value AS nvarchar(200)) as fieldDescription<br />
     FROM fn_listextendedproperty ('MS_Description', 'user', 'dbo', 'table', @TableName , 'column', default) AS E<br />
-</p> 
-uploaded by Patrick. 06/27/2016 14:32:43
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/70176e8a-1d60-4729-ac49-4a74884b1d8d.html" >https://wzpabc.github.io/Template/70176e8a-1d60-4729-ac49-4a74884b1d8d.html</a>

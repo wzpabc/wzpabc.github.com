@@ -1,4 +1,5 @@
-﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>USE master<br />
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>拆分、合并、切换分区</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:17:41<br /><p>USE master<br />
 GO<br />
 <br />
 IF DB_ID('Sample_DB') IS NOT NULL <br />
@@ -185,5 +186,5 @@ SELECT  partition_number ,<br />
 FROM    sys.partitions<br />
 WHERE   object_id = OBJECT_ID('tbl_MyData')<br />
 ORDER BY partition_number<br />
-</p> 
-uploaded by Patrick. 06/27/2016 14:32:43
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/2cd2205d-4bb7-46c5-87d8-3c47968ad5b4.html" >https://wzpabc.github.io/Template/2cd2205d-4bb7-46c5-87d8-3c47968ad5b4.html</a>

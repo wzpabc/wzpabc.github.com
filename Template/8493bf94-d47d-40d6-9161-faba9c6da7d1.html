@@ -1,4 +1,5 @@
-﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>DECLARE @dt datetime<br />
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>日期</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:17:42<br /><p>DECLARE @dt datetime<br />
 SET @dt=GETDATE()<br />
 <br />
 DECLARE @number int<br />
@@ -61,5 +62,5 @@ SELECT DATEADD(Day,@number-(DATEPART(Weekday,@dt)+@@DATEFIRST-1)%7,@dt)<br />
 <br />
 --B.  星期一做为一周的第1天<br />
 SELECT DATEADD(Day,@number-(DATEPART(Weekday,@dt)+@@DATEFIRST-2)%7-1,@dt)<br />
-</p> 
-uploaded by Patrick. 06/27/2016 14:32:45
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/8493bf94-d47d-40d6-9161-faba9c6da7d1.html" >https://wzpabc.github.io/Template/8493bf94-d47d-40d6-9161-faba9c6da7d1.html</a>

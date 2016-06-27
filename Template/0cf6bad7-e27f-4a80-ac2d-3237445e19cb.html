@@ -1,4 +1,5 @@
-﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>SQL Server 并没有内置邮件服务器（Mail Server），它跟我们发送邮件一样，需要用户名和密码通过 SMTP（Simple Message Transfer Protocol）去连接邮件服务器。我们想让 SQL Server 来发送邮件，首先要告诉它用户名称，密码，服务器地址，网络传送协议，邮件服务器的端口。。。等信息。<br />
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>SQL邮件操作</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:17:40<br /><p>SQL Server 并没有内置邮件服务器（Mail Server），它跟我们发送邮件一样，需要用户名和密码通过 SMTP（Simple Message Transfer Protocol）去连接邮件服务器。我们想让 SQL Server 来发送邮件，首先要告诉它用户名称，密码，服务器地址，网络传送协议，邮件服务器的端口。。。等信息。<br />
 　　以下脚本实现了数据库邮件的配置：<br />
 --下面是具体的配置邮件步骤 <br />
 --在 sa 系统帐户下运行。 <br />
@@ -81,5 +82,5 @@ select * from sysmail_event_log<br />
 --                                     ,@is_default     = 1<br />
 --<br />
 --从上面的参数 @is_default=1 可以看出，一个数据库用户可以在多个 mail profile 拥有发送权限。<br />
-</p> 
-uploaded by Patrick. 06/27/2016 14:28:32
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/0cf6bad7-e27f-4a80-ac2d-3237445e19cb.html" >https://wzpabc.github.io/Template/0cf6bad7-e27f-4a80-ac2d-3237445e19cb.html</a>

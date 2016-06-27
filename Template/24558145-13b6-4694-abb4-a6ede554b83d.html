@@ -1,4 +1,5 @@
-﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>create   table   testIndex <br />
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>全文索引1</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:17:40<br /><p>create   table   testIndex <br />
 ( <br />
           id   int   identity(1,1)   primary   key, <br />
           nm   varchar(100)   unique   not   null, <br />
@@ -195,5 +196,5 @@ EXEC sp_fulltext_catalog 'gf_ft', 'drop' <br />
 <br />
       假设已有一个表music,已为字段memo创建全文索引,那么要查询含有周杰伦或者jay的所有记录的语句为: <br />
       SELECT * FROM music WHERE CONTAINS（memo,'"周杰伦" or "jay"'） <br />
-</p> 
-uploaded by Patrick. 06/27/2016 14:28:33
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/24558145-13b6-4694-abb4-a6ede554b83d.html" >https://wzpabc.github.io/Template/24558145-13b6-4694-abb4-a6ede554b83d.html</a>

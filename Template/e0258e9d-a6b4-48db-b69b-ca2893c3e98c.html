@@ -1,4 +1,5 @@
-﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--查询用户表对象信息<br />
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>表信息查询</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:17:42<br /><p>--查询用户表对象信息<br />
 select  Tab.Name as [表名],Tab.create_date as [创建时间],Tab.modify_date  as [最后修改时间],<br />
         Col.Name  as [列名] ,Type.name as [数据类型],Col.max_length as [字段长度],<br />
         CASE WHEN pk.is_primary_key= 1 THEN 'Y' ELSE 'N' end as [是否主键],<br />
@@ -132,5 +133,5 @@ select    indexs.Tab_Name  as [表名],indexs.Index_Name as [索引名] ,indexs.
 ) indexs inner join sys.indexes  Ind_Attribute on indexs.Index_Name = Ind_Attribute.name<br />
 order by indexs.Tab_Name<br />
 <br />
-</p> 
-uploaded by Patrick. 06/27/2016 14:32:44
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/e0258e9d-a6b4-48db-b69b-ca2893c3e98c.html" >https://wzpabc.github.io/Template/e0258e9d-a6b4-48db-b69b-ca2893c3e98c.html</a>

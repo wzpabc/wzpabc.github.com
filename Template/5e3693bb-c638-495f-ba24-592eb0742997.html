@@ -1,4 +1,5 @@
-﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>近期因工作需要，希望比较全面的总结下SQL SERVER数据库性能优化相关的注意事项，在网上搜索了一下,发现很多文章,有的都列出了上百条,但是仔细看发现，有很多似是而非或者过时(可能对SQL SERVER6.5以前的版本或者ORACLE是适用的)的信息，只好自己根据以前的经验和测试结果进行总结了。<br />
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>SQL 性能调优综述</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:10:35<br /><p>近期因工作需要，希望比较全面的总结下SQL SERVER数据库性能优化相关的注意事项，在网上搜索了一下,发现很多文章,有的都列出了上百条,但是仔细看发现，有很多似是而非或者过时(可能对SQL SERVER6.5以前的版本或者ORACLE是适用的)的信息，只好自己根据以前的经验和测试结果进行总结了。<br />
 <br />
 我始终认为，一个系统的性能的提高，不单单是试运行或者维护阶段的性能调优的任务，也不单单是开发阶段的事情，而是在整个软件生命周期都需要注意，进行有效工作才能达到的。所以我希望按照软件生命周期的不同阶段来总结数据库性能优化相关的注意事项。<br />
 <br />
@@ -567,5 +568,5 @@ SELECT ID FROM T WITH(INDEX(索引名)) WHERE NUM=@NUM”<br />
 <br />
 7、 关于连接表的顺序或者条件的顺序的说法，经过测试，在SQL SERVER，这些顺序都是不影响性能的，这些说法可能是对ORACLE有效。<br />
 <br />
-</p> 
-uploaded by Patrick. 06/27/2016 14:36:49
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/5e3693bb-c638-495f-ba24-592eb0742997.html" >https://wzpabc.github.io/Template/5e3693bb-c638-495f-ba24-592eb0742997.html</a>

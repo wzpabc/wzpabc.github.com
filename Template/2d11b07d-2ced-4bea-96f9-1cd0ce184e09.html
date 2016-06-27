@@ -1,4 +1,5 @@
-﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--删除外键约束<br />
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>批量删除表</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:17:41<br /><p>--删除外键约束<br />
 DECLARE c1 cursor for <br />
     select 'alter table ['+ object_name(parent_obj) + '] drop constraint ['+name+']; '<br />
     from sysobjects <br />
@@ -35,5 +36,5 @@ exec sp_msforeachtable @command1="truncate table ? ;",<br />
                        @whereand='and schema_id = (select schema_id from sys.schemas where [name] not in(''khda'',''khzh'',''khzmx''))'<br />
 <br />
 <br />
-</p> 
-uploaded by Patrick. 06/27/2016 14:32:43
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/2d11b07d-2ced-4bea-96f9-1cd0ce184e09.html" >https://wzpabc.github.io/Template/2d11b07d-2ced-4bea-96f9-1cd0ce184e09.html</a>

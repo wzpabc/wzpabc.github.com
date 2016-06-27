@@ -1,4 +1,5 @@
-﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>MSSQL中如何用SQL清除所有表的数据？这个需求分三种类型： <br />
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>MSSQL中如何用SQL清除所有表的数据</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:17:40<br /><p>MSSQL中如何用SQL清除所有表的数据？这个需求分三种类型： <br />
 第一：只要数据库中表是空的； <br />
 第二：表是空的，并且自增长列可以从１开始增长。 <br />
 第三：表是空的，并且自增长列可以从１开始增长，而且存在表间的约束。 <br />
@@ -405,5 +406,5 @@ set @sql = ''<br />
 select @sql = @sql +'truncate table '+[name]+';'  from sysobjects where xtype='u'<br />
 print  @sql<br />
 exec(@sql)<br />
-</p> 
-uploaded by Patrick. 06/27/2016 14:28:32
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/64b6798c-5ce0-4d03-aabd-fbbace8e022d.html" >https://wzpabc.github.io/Template/64b6798c-5ce0-4d03-aabd-fbbace8e022d.html</a>

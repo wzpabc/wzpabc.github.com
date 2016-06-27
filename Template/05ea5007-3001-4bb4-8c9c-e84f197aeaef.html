@@ -1,4 +1,5 @@
-﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>SQL Server 日期算法<br />
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>日期算法2</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:17:42<br /><p>SQL Server 日期算法<br />
 <br />
 一周的第一天<br />
 select @@DATEFIRST<br />
@@ -45,5 +46,5 @@ select  @m=case  when  @m  between  1  and  3  then  1  <br />
                        else  10  end  <br />
 select  @time=datename(year,getdate())+'-'+convert(varchar(10),@m)+'-01'  <br />
 select  datediff(day,@time,dateadd(mm,3,@time)) <br />
-</p> 
-uploaded by Patrick. 06/27/2016 14:32:45
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/05ea5007-3001-4bb4-8c9c-e84f197aeaef.html" >https://wzpabc.github.io/Template/05ea5007-3001-4bb4-8c9c-e84f197aeaef.html</a>

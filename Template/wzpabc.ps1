@@ -70,16 +70,29 @@
 function tohtml{
 Param(
 [Parameter(ValueFromPipeline=$true)]
-    $txt
+    $txt, 
+    $link='',
+    $title=''
 )
-begin{$str='<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>'}
+begin{$str='<meta http-equiv="Content-Type" content="text/html; charset=utf-8">'
+if ($title -ne ''){$str=$str+"<h2>$title</h2><br />"}
+$str="$str `nuploaded by Patrick. $(Get-Date)<br />"
+#if($link -ne ''){$str=$str+”<br />`n<a  href=`"https://wzpabc.github.io/Template/$link`" >https://wzpabc.github.io/Template/$link</a>“}
+
+    $str=$str+"<p>"
+}
 Process
 {
      FOREACH ($R IN $txt){
         $str=$str+"$R<br />`n"
      }
 }
-end{$str=$str+'</p>';"$str `nuploaded by Patrick. $(Get-Date)"}
+end{
+$str=$str+'</p>';
+
+if($link -ne ''){$str=$str+”<br />`nsource>><a  href=`"https://wzpabc.github.io/Template/$link`" >https://wzpabc.github.io/Template/$link</a>“}
+$str
+}
 } 
 
 
@@ -172,8 +185,8 @@ process{
     foreach($row in $rowset){
         "<H2><a id=`"$($row.id).html`" href=`"#`" onclick=`"return MenuChange(this);`">$($row.pagename)</a></H2>"|Out-File $des -Encoding utf8 -Append
         IF(Test-Path $row.source){
-            cat $row.source|SELECT -First 3|tohtml |Out-File $des -Encoding utf8 -Append
-            cat $row.source|tohtml|Out-File "$($row.id).html" -Encoding utf8  
+            cat $row.source|SELECT -First 3|tohtml  |Out-File $des -Encoding utf8 -Append
+            cat $row.source|tohtml -link "$($row.id).html" -title $($row.pagename)|Out-File "$($row.id).html" -Encoding utf8  
         }
     }
     
@@ -206,8 +219,8 @@ process{
     foreach($row in $rowset){
         "<H2><a id=`"$($row.id).html`" href=`"#`" onclick=`"return MenuChange(this);`">$($row.pagename)</a></H2>"|Out-File $des -Encoding utf8 -Append
         IF(Test-Path $row.source){
-            cat $row.source|SELECT -First 3|tohtml |Out-File $des -Encoding utf8 -Append
-            cat $row.source|tohtml|Out-File "$($row.id).html" -Encoding utf8  
+            cat $row.source|SELECT -First 3|tohtml  |Out-File $des -Encoding utf8 -Append
+            cat $row.source|tohtml -link "$($row.id).html" -title $($row.pagename)|Out-File "$($row.id).html" -Encoding utf8  
         }
     }
     
@@ -216,17 +229,19 @@ process{
 }
 
 cd e:\temp
+init-home
 cls
 ls *.sql -Recurse |%{insert-doc -category $_.Directory.Name -pagename $_.BaseName -source $_.FullName -menu BigData}
 ls *.sql -Recurse |SELECT -First 3|%{insert-doc -category $_.Directory.Name -pagename $_.BaseName -source $_.FullName -menu Java}
 ls *.sql -Recurse |SELECT -First 3|%{insert-doc -category $_.Directory.Name -pagename $_.BaseName -source $_.FullName -menu Rlang}
 cls 
 cd "C:\Users\Patrick\git\wzpabc.github.com\Template"
+init-home
 init-menu -menu Java
 init-menu -menu Rlang
-init-menu -menu BigData
+init-menu -menu BigData;
 
-init-CATETORY -category Java
+
 init-CATETORY -category Basketball
 init-CATETORY -category BigData
 init-CATETORY -category Hadoop
@@ -236,6 +251,6 @@ init-CATETORY -category Oracle
 init-CATETORY -category SSPS
 init-CATETORY -category RLang
 init-CATETORY -category 'SQL SERVER'
- 
+init-CATETORY -category Java;
 
  

@@ -1,4 +1,5 @@
-﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--1、create table tablename(id int identity(1,1))go<br />
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>如何向一个自增字段插值？</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:17:41<br /><p>--1、create table tablename(id int identity(1,1))go<br />
 insert into tablename default values<br />
 go<br />
 select * from tablenamegodrop table tablename<br />
@@ -6,5 +7,5 @@ go--<br />
 2、--还用上个表。set identity_insert   tablename on<br />
 insert tablename(id) select 2<br />
 set identity_insert   tablename  off<br />
-</p> 
-uploaded by Patrick. 06/27/2016 14:32:43
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/7f90f74a-6518-4a1f-bef3-20ac5fed343e.html" >https://wzpabc.github.io/Template/7f90f74a-6518-4a1f-bef3-20ac5fed343e.html</a>

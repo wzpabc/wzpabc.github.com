@@ -1,7 +1,8 @@
-﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>declare @Table table(DB sysname,TabName sysname)<br />
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>已知表名查数据库名</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:17:42<br /><p>declare @Table table(DB sysname,TabName sysname)<br />
 insert @Table<br />
 exec sp_msforeachdb 'select ''?'' as DB,Name as 表名 from [?]..sysobjects where type=''U'' and Name =''表名'''--輸入表名<br />
 <br />
 select * from @Table<br />
-</p> 
-uploaded by Patrick. 06/27/2016 14:32:45
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/88e9c3d8-08a7-42bb-8ca6-e095832dafc1.html" >https://wzpabc.github.io/Template/88e9c3d8-08a7-42bb-8ca6-e095832dafc1.html</a>

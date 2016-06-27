@@ -1,4 +1,5 @@
-﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--显示索引消耗的磁盘情况<br />
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>显示索引消耗的磁盘情况</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:17:42<br /><p>--显示索引消耗的磁盘情况<br />
 SELECT  CASE InnerTable.index_id<br />
           WHEN 0 THEN 'HEAP'<br />
           WHEN 1 THEN 'Clustered Index'<br />
@@ -28,5 +29,5 @@ GROUP BY CASE InnerTable.index_id<br />
            ELSE 'Non-Clustered Index'<br />
          END <br />
 GO<br />
-</p> 
-uploaded by Patrick. 06/27/2016 14:32:44
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/481b3724-db6f-4062-a40d-a84d82eeec2d.html" >https://wzpabc.github.io/Template/481b3724-db6f-4062-a40d-a84d82eeec2d.html</a>

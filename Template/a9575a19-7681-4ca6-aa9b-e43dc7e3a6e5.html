@@ -1,4 +1,5 @@
-﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>/*<br />
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>sql xml 入门</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:17:43<br /><p>/*<br />
 sql xml 入门:<br />
     --by jinjazz<br />
     --http://blog.csdn.net/jinjazz<br />
@@ -115,5 +116,5 @@ select<br />
  T.C.value('author[3]','varchar(max)') as author3,<br />
  T.C.value('author[4]','varchar(max)') as author4<br />
 from @data.nodes('//book[./title[@lang!="jp"] and price>35 ]') as T(C)<br />
-</p> 
-uploaded by Patrick. 06/27/2016 14:36:49
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/a9575a19-7681-4ca6-aa9b-e43dc7e3a6e5.html" >https://wzpabc.github.io/Template/a9575a19-7681-4ca6-aa9b-e43dc7e3a6e5.html</a>

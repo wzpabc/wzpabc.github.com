@@ -1,4 +1,5 @@
-﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>-- 如何删除 SQL2005 过期的数据库备份文件呢？ <br />
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>如何删除 SQL2005 过期的数据库备份文件</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:17:42<br /><p>-- 如何删除 SQL2005 过期的数据库备份文件呢？ <br />
 <br />
 在 SQL2005 数据库中，不可以自动删除过期的备份文件，所以借用第三方插件完成此功能。 <br />
 -- 方式一：通过 Forfiles 删除指定目录下过期的备份文件 <br />
@@ -27,5 +28,5 @@ C: \> FORFILES / P i: \sqldataup / M *. bak / C "cmd /C del /Q @path" / d - 5 <b
 方式二：如果在 SQL2008 中因为默认安装 Powershell 1.0 程序，故可以用 Powershell 编写脚本来完成定时删除过期文件。 <br />
 <br />
 太多内容，请看文章http://blog.csdn.net/claro/archive/2009/08/18/4458417.aspx。<br />
-</p> 
-uploaded by Patrick. 06/27/2016 14:28:33
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/0b2e0a11-dc58-46a5-b704-cc2ba0091a88.html" >https://wzpabc.github.io/Template/0b2e0a11-dc58-46a5-b704-cc2ba0091a88.html</a>

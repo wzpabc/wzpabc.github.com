@@ -1,4 +1,5 @@
-﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--1.在目标服务器上建立如下对象(被同步的服务器)   <br />
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>如何用SQL语句在两个数据库间复制存储过程</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:17:41<br /><p>--1.在目标服务器上建立如下对象(被同步的服务器)   <br />
     <br />
   if   exists   (select   *   from   dbo.sysobjects   where   id   =   object_id(N'[sys_syscomments_bak]')   and   OBJECTPROPERTY(id,   N'IsUserTable')   =   1)   <br />
   drop   table   [sys_syscomments_bak]   <br />
@@ -139,5 +140,5 @@ Top<br />
   /G   —   使用指定的服务器名称作为所生成的输出文件的前缀（   <br />
   中的划线）。   <br />
   /Y   —   为“扩展属性”生成脚本（仅对   8.x   服务器有效）。<br />
-</p> 
-uploaded by Patrick. 06/27/2016 14:32:43
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/075b0095-a103-4989-b26c-3be550b7bf7d.html" >https://wzpabc.github.io/Template/075b0095-a103-4989-b26c-3be550b7bf7d.html</a>

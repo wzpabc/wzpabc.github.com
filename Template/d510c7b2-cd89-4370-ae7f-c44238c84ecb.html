@@ -1,4 +1,5 @@
-﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>SELECT<br />
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>查找丢失的索引</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:17:42<br /><p>SELECT<br />
     avg_total_user_cost * avg_user_impact * ( user_scans + user_seeks ) AS PossibleImprovement ,<br />
     last_user_seek ,<br />
     last_user_scan ,<br />
@@ -12,5 +13,5 @@ INNER JOIN sys.dm_db_missing_index_group_stats AS GS ON G.index_group_handle = G
 INNER JOIN sys.dm_db_missing_index_details AS D ON G.index_handle = D.index_handle<br />
 ORDER BY<br />
     PossibleImprovement DESC<br />
-</p> 
-uploaded by Patrick. 06/27/2016 14:32:44
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/d510c7b2-cd89-4370-ae7f-c44238c84ecb.html" >https://wzpabc.github.io/Template/d510c7b2-cd89-4370-ae7f-c44238c84ecb.html</a>

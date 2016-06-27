@@ -1,4 +1,5 @@
-﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--常规SQL SERVER数据库置疑后恢复步骤   <br />
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>SQL SERVER数据库置疑后恢复步骤</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:17:42<br /><p>--常规SQL SERVER数据库置疑后恢复步骤   <br />
 --1． 恢复步骤：   <br />
 --a.将smlog_log.ldf文件备份到其它目录下；   <br />
 --b.将源目录下的smlog_log.ldf文件改名为smlog_log_bak.ldf；   <br />
@@ -58,5 +59,5 @@ reconfigure with override   <br />
 Go     <br />
 sp_dboption '置疑的数据库名', 'single user','false'   <br />
 Go   <br />
-</p> 
-uploaded by Patrick. 06/27/2016 14:36:49
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/0b27bca5-7668-4474-8c4f-b94f9251163e.html" >https://wzpabc.github.io/Template/0b27bca5-7668-4474-8c4f-b94f9251163e.html</a>

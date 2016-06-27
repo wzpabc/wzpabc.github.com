@@ -1,4 +1,5 @@
-﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--1. 错误14114<br />
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>新建 文本文档 (6)</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:17:42<br /><p>--1. 错误14114<br />
 --使用下面的代码重新添加当前SQL Server实例的信息，处理完成后，应该重新启动MSSQLSERVER服务使修改生效。<br />
 DECLARE @srvname sysname<br />
 SET @srvname=CAST(SERVERPROPERTY('ServerName') as sysname)<br />
@@ -16,5 +17,5 @@ BEGIN<br />
     SET @srvname=CAST(SERVERPROPERTY('ServerName') as sysname)<br />
     EXEC sp_addserver @server = @srvname , @local = 'LOCAL'<br />
 END<br />
-</p> 
-uploaded by Patrick. 06/27/2016 14:32:44
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/b87f0a0e-5582-44b5-aa37-9dc8558eac2a.html" >https://wzpabc.github.io/Template/b87f0a0e-5582-44b5-aa37-9dc8558eac2a.html</a>

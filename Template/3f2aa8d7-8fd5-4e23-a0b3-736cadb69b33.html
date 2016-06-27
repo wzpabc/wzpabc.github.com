@@ -1,4 +1,5 @@
-﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>--功能概述:删除重复记录<br />
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>删除重复记录</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:17:40<br /><p>--功能概述:删除重复记录<br />
 <br />
 在几千条记录里,存在着些相同的记录,如何能用SQL语句,删除掉重复的呢?谢谢! <br />
 1、查找表中多余的重复记录，重复记录是根据单个字段（peopleId）来判断 <br />
@@ -30,5 +31,5 @@ Select Name,Count(*) From A Group By Name Having Count(*) > 1 <br />
 <br />
 如果还查性别也相同大则如下: <br />
 Select Name,sex,Count(*) From A Group By Name,sex Having Count(*) > 1<br />
-</p> 
-uploaded by Patrick. 06/27/2016 14:28:32
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/3f2aa8d7-8fd5-4e23-a0b3-736cadb69b33.html" >https://wzpabc.github.io/Template/3f2aa8d7-8fd5-4e23-a0b3-736cadb69b33.html</a>

@@ -1,4 +1,5 @@
-﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>/******* 导出到excel */<br />
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>bcp1</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:17:39<br /><p>/******* 导出到excel */<br />
 EXEC master..xp_cmdshell 'bcp SettleDB.dbo.shanghu out c:\temp1.xls -c -q -S"GNETDATA/GNETDATA" -U"sa" -P""' <br />
 <br />
 /*********** 导入Excel */<br />
@@ -27,5 +28,5 @@ insert OPENDATASOURCE( <br />
 SELECT 列名1,列名2 <br />
 FROM OpenDataSource( 'Microsoft.Jet.OLEDB.4.0', <br />
 'Data Source="c:\test.xls";User ID=Admin;Password=;Extended properties=Excel 5.0')...xactions <br />
-</p> 
-uploaded by Patrick. 06/27/2016 14:28:31
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/e8314b7e-603b-4db9-bae7-7005ea90cb29.html" >https://wzpabc.github.io/Template/e8314b7e-603b-4db9-bae7-7005ea90cb29.html</a>

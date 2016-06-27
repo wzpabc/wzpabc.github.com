@@ -1,4 +1,5 @@
-﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>1、说明：复制表(只复制结构,源表名：a 新表名：b) (Access可用) <br />
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>数据库笔记2</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:17:41<br /><p>1、说明：复制表(只复制结构,源表名：a 新表名：b) (Access可用) <br />
 法一：select * into b from a where 1 <>1 <br />
 法二：select top 0 * into b from a <br />
 <br />
@@ -242,5 +243,5 @@ on c.system_type_id=t.system_type_id<br />
     LEFT JOIN sys.default_constraints D ON D.[object_id] =C.default_object_id <br />
         AND D.parent_object_id = C.[object_id] AND D.parent_column_id = C.column_id <br />
     WHERE C.[object_id] = OBJECT_ID('你的表名');<br />
-</p> 
-uploaded by Patrick. 06/27/2016 14:32:43
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/8ff648a2-f3fb-4179-8151-2e2299cec9e3.html" >https://wzpabc.github.io/Template/8ff648a2-f3fb-4179-8151-2e2299cec9e3.html</a>

@@ -1,4 +1,5 @@
-﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>/*******************完整备份作业*******************/<br />
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>备份作业</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:17:42<br /><p>/*******************完整备份作业*******************/<br />
 --完整备份,每周一次<br />
 USE Master<br />
 GO<br />
@@ -65,5 +66,5 @@ exec xp_cmdshell @str<br />
 set @filename=left(replace(replace(replace(convert(varchar,getdate()-8,20),'-',''),' ',''),':',''),8)<br />
 set @str=@dir+'logbak'+@filename+'*.trn'<br />
 exec xp_cmdshell @str<br />
-</p> 
-uploaded by Patrick. 06/27/2016 14:28:33
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/bb83b647-37f2-41a8-9fa6-d1dae5f310a5.html" >https://wzpabc.github.io/Template/bb83b647-37f2-41a8-9fa6-d1dae5f310a5.html</a>

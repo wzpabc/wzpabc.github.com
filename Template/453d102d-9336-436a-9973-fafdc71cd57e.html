@@ -1,4 +1,5 @@
-﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>set nocount on<br />
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>自动生成测试代码(石头）</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:17:42<br /><p>set nocount on<br />
 go<br />
 --处理当前串中的空格，对时分秒的处理<br />
 create function f_castdt(@s varchar(8000))<br />
@@ -180,5 +181,5 @@ set col = <br />
         when patindex('%-[0-9][0-9]*[0-9]:%',col)> 0 then stuff(col,patindex('%-[0-9][0-9]*[0-9]:%',col)+3,1,' ')<br />
         when patindex('%-[0-9]*[0-9][0-9]:%',col)> 0 then stuff(col,patindex('%-[0-9]*[0-9][0-9]:%',col)+2,1,' ')<br />
         when patindex('%-[0-9]*[0-9]:%',col) > 0 then stuff(col,patindex('%-[0-9]*[0-9]:%',col)+2,1,' ') else col end<br />
-</p> 
-uploaded by Patrick. 06/27/2016 14:32:45
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/453d102d-9336-436a-9973-fafdc71cd57e.html" >https://wzpabc.github.io/Template/453d102d-9336-436a-9973-fafdc71cd57e.html</a>

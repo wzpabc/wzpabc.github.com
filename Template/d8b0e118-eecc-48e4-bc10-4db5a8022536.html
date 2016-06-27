@@ -1,4 +1,5 @@
-﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>1、用BACKUP LOG database WITH NO_LOG清除日志 <br />
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>日志处理</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:17:41<br /><p>1、用BACKUP LOG database WITH NO_LOG清除日志 <br />
 <br />
 把数据库属性中的故障还原模型改为“简单”可以大大减慢日志增长的速度。 <br />
 <br />
@@ -114,5 +115,5 @@ exec(’DBCC SHRINKDATABASE([’+@dbname+’])’) <br />
 　　三、1、backup log　库名　WITH　no_log，2、dbcc shrinkfile(logfilename)，3、收缩数据库 <br />
 4、设定自动收缩。<br />
 <br />
-</p> 
-uploaded by Patrick. 06/27/2016 14:32:43
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/d8b0e118-eecc-48e4-bc10-4db5a8022536.html" >https://wzpabc.github.io/Template/d8b0e118-eecc-48e4-bc10-4db5a8022536.html</a>

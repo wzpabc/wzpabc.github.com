@@ -1,4 +1,5 @@
-﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><p>MSSQL为我们提供了两种动态执行SQL语句的命令，分别是EXEC和sp_executesql;通常,sp_executesql则更具有优势，它 提供了输入输出接口，而EXEC没有。还有一个最大的好处就是利用sp_executesql，能够重用执行计划，这就大大提供了执行性能(对于这个我在 后面的例子中会详加说明)，还可以编写更安全的代码。EXEC在某些情况下会更灵活。除非您有令人信服的理由使用EXEC，否侧尽量使用 sp_executesql.<br />
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>EXEC和sp_executesql的区别</h2><br /> 
+uploaded by Patrick. 06/27/2016 15:10:36<br /><p>MSSQL为我们提供了两种动态执行SQL语句的命令，分别是EXEC和sp_executesql;通常,sp_executesql则更具有优势，它 提供了输入输出接口，而EXEC没有。还有一个最大的好处就是利用sp_executesql，能够重用执行计划，这就大大提供了执行性能(对于这个我在 后面的例子中会详加说明)，还可以编写更安全的代码。EXEC在某些情况下会更灵活。除非您有令人信服的理由使用EXEC，否侧尽量使用 sp_executesql.<br />
 <br />
 1,EXEC的使用<br />
 <br />
@@ -107,5 +108,5 @@ DECLARE @sql AS NVARCHAR(12),@i AS INT;<br />
 SET @sql = N' <br />
 SET @p = 10'; <br />
 EXEC sp_executesql @stmt = @sql, @params = N'@p AS INT OUTPUT', @p = @i OUTPUTSELECT @i该代码返回输出10<br />
-</p> 
-uploaded by Patrick. 06/27/2016 14:36:49
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/25e4ef2e-fa0b-4874-b355-91a4525eb2fd.html" >https://wzpabc.github.io/Template/25e4ef2e-fa0b-4874-b355-91a4525eb2fd.html</a>
