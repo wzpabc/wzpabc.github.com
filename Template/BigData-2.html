@@ -1,0 +1,123 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<a id="BigData-1.html" href="#" onclick="return MenuChange(this);">Page1>></a>|<a id="BigData-2.html" href="#" onclick="return MenuChange(this);">Page2>></a>|<a id="BigData-3.html" href="#" onclick="return MenuChange(this);">Page3>></a>|<a id="BigData-4.html" href="#" onclick="return MenuChange(this);">Page4>></a>|<a id="BigData-5.html" href="#" onclick="return MenuChange(this);">Page5>></a>|<a id="BigData-6.html" href="#" onclick="return MenuChange(this);">Page6>></a>|<a id="BigData-7.html" href="#" onclick="return MenuChange(this);">Page7>></a>|<a id="BigData-8.html" href="#" onclick="return MenuChange(this);">Page8>></a>|<a id="BigData-9.html" href="#" onclick="return MenuChange(this);">Page9>></a>|<a id="BigData-10.html" href="#" onclick="return MenuChange(this);">Page10>></a>
+<H2><a id="bdcdc8b8-3b9b-42b4-86fa-77729e85d709.html" href="#" onclick="return MenuChange(this);">分区视图和树型的实现</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/28/2015 15:21:45<br /><p>分区视图 <br />
+分区视图是提高查询性能的一个很好的办法 <br />
+<br />
+</p>
+<H2><a id="2cd2205d-4bb7-46c5-87d8-3c47968ad5b4.html" href="#" onclick="return MenuChange(this);">拆分、合并、切换分区</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/10/2015 15:29:23<br /><p>USE master<br />
+GO<br />
+<br />
+</p>
+<H2><a id="12aae7da-7a1f-4820-b9a4-a9bf3d444a80.html" href="#" onclick="return MenuChange(this);">新建 文本文档 (3)</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 03/17/2015 15:16:54<br /><p>----------------------------------------------------------------<br />
+-- Author :fredrickhu(小F 向高手学习)<br />
+-- Date   :2009-07-27 10:41:24<br />
+</p>
+<H2><a id="8493bf94-d47d-40d6-9161-faba9c6da7d1.html" href="#" onclick="return MenuChange(this);">日期</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 03/15/2015 15:27:01<br /><p>DECLARE @dt datetime<br />
+SET @dt=GETDATE()<br />
+<br />
+</p>
+<H2><a id="08ac02f6-29b0-4c1a-907d-f9585b9af8e8.html" href="#" onclick="return MenuChange(this);">字符串分拆</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 03/10/2015 15:20:39<br /><p>if object_id('f_split')is not null drop function  f_split<br />
+go<br />
+create function f_split<br />
+</p>
+<H2><a id="1711cbda-ce1d-403b-9f73-cc1812da6042.html" href="#" onclick="return MenuChange(this);">笔记三</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 03/07/2015 15:18:21<br /><p>--结合sys.indexes和sys.index_columns,sys.objects,sys.columns查询索引所属的表或视图的信息<br />
+select<br />
+  o.name as 表名,<br />
+</p>
+<H2><a id="2d11b07d-2ced-4bea-96f9-1cd0ce184e09.html" href="#" onclick="return MenuChange(this);">批量删除表</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 02/28/2015 15:09:11<br /><p>--删除外键约束<br />
+DECLARE c1 cursor for <br />
+    select 'alter table ['+ object_name(parent_obj) + '] drop constraint ['+name+']; '<br />
+</p>
+<H2><a id="a5e32ede-ca58-40b9-a811-707cd429e5e7.html" href="#" onclick="return MenuChange(this);">字母排序</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 02/12/2015 15:34:20<br /><p>--1. 按拼音排序<br />
+DECLARE @t TABLE(col varchar(2))<br />
+INSERT @t SELECT '中'<br />
+</p>
+<H2><a id="e60e0f4f-ac69-4405-ac27-71f79fd9ef76.html" href="#" onclick="return MenuChange(this);">处理表重复记录</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 01/23/2015 15:16:05<br /><p>--处理表重复记录(查询和删除)<br />
+/******************************************************************************************************************************************************<br />
+1、Num、Name相同的重复值记录,没有大小关系只保留一条<br />
+</p>
+<H2><a id="fc07116c-d65b-43d2-be2f-2473b9605155.html" href="#" onclick="return MenuChange(this);">BCP</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 01/19/2015 15:25:30<br /><p>1) 使用BCP导出整个表或视图。 <br />
+<br />
+BCP AdventureWorks.sales.currency out c:\currency1.txt -c -U"sa" -P"password" --使用密码连接 <br />
+</p>
+<H2><a id="92fd26f8-88d2-4b07-a115-e3e449d4f10f.html" href="#" onclick="return MenuChange(this);">SQL 2000和2005分页存储过程</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 12/11/2014 15:19:42<br /><p>set ANSI_NULLS ON<br />
+set QUOTED_IDENTIFIER ON<br />
+go<br />
+</p>
+<H2><a id="0d8ad8d1-5d24-4236-a70c-950f56228087.html" href="#" onclick="return MenuChange(this);">数字转换成EXCEL列名</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 12/05/2014 15:10:44<br /><p>alter function col_rev(<br />
+ @i_version int, -- Excel 版本号 <br />
+ @i_col int          -- 字段号(数值表示)<br />
+</p>
+<H2><a id="0cf6bad7-e27f-4a80-ac2d-3237445e19cb.html" href="#" onclick="return MenuChange(this);">SQL邮件操作</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 11/22/2014 15:20:02<br /><p>SQL Server 并没有内置邮件服务器（Mail Server），它跟我们发送邮件一样，需要用户名和密码通过 SMTP（Simple Message Transfer Protocol）去连接邮件服务器。我们想让 SQL Server 来发送邮件，首先要告诉它用户名称，密码，服务器地址，网络传送协议，邮件服务器的端口。。。等信息。<br />
+　　以下脚本实现了数据库邮件的配置：<br />
+--下面是具体的配置邮件步骤 <br />
+</p>
+<H2><a id="7a28b24b-dfb2-4e7c-94dd-c117d5b63af2.html" href="#" onclick="return MenuChange(this);">找出在2个日期之间的日期</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 11/10/2014 15:20:26<br /><p>declare @sdate datetime <br />
+declare @edate datetime <br />
+set @sdate = '2009-8-30' <br />
+</p>
+<H2><a id="e9daa50d-a7bd-4766-b7f0-0cd1c86103eb.html" href="#" onclick="return MenuChange(this);">SQL求中位数</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 11/02/2014 15:25:45<br /><p>中位数（Median）统计学名词<br />
+<br />
+ 1、定义：一组数据按从小到大（或从大到小）的顺序依次排列，处在中间位置的一个数（或最中间两个数据的平均数，注意：和众数不同，中位数不一定在这组数据中）。　 　　<br />
+</p>
+<H2><a id="6b0c6cdf-bc48-47e7-a10a-ce1cb6b9c501.html" href="#" onclick="return MenuChange(this);">查看锁信息</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 10/30/2014 15:26:00<br /><p>create   table   #t(req_spid   int,obj_name   sysname)   <br />
+<br />
+    <br />
+</p>
+<H2><a id="930b59d7-fc22-4b31-ac5c-54633f215b9a.html" href="#" onclick="return MenuChange(this);">构造使用IN子句的动态Transact-SQL方法进行编号查询</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 10/27/2014 15:10:15<br /><p>构造使用IN子句的动态Transact-SQL方法进行编号查询<br />
+<br />
+--1. 构造使用IN子句的动态Transact-SQL方法进行编号查询<br />
+</p>
+<H2><a id="46303521-90b2-4d96-97b0-4b24921b59d5.html" href="#" onclick="return MenuChange(this);">16进制转10进制</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 10/24/2014 15:18:09<br /><p>CREATE FUNCTION dbo.f_hex_dec(@s varchar(16))<br />
+RETURNS bigint<br />
+AS<br />
+</p>
+<H2><a id="507d1e07-dfba-4917-9c8f-2b55e7030c48.html" href="#" onclick="return MenuChange(this);">BOM1</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 10/21/2014 15:18:54<br /><p>--bom结构，查找节点下所有子节点：<br />
+<br />
+create table os(id int,parentid int,desn varchar(10))<br />
+</p>
+<H2><a id="e42c35fb-efcb-47b1-8d37-c883ff9dd7ce.html" href="#" onclick="return MenuChange(this);">动态查询</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 10/20/2014 15:31:16<br /><p>--1. 构造使用IN子句的动态Transact-SQL方法进行编号查询<br />
+<br />
+--a. 要查询的字段类型是数字型<br />
+</p>
+<a id="BigData-1.html" href="#" onclick="return MenuChange(this);">Page1>></a>|<a id="BigData-2.html" href="#" onclick="return MenuChange(this);">Page2>></a>|<a id="BigData-3.html" href="#" onclick="return MenuChange(this);">Page3>></a>|<a id="BigData-4.html" href="#" onclick="return MenuChange(this);">Page4>></a>|<a id="BigData-5.html" href="#" onclick="return MenuChange(this);">Page5>></a>|<a id="BigData-6.html" href="#" onclick="return MenuChange(this);">Page6>></a>|<a id="BigData-7.html" href="#" onclick="return MenuChange(this);">Page7>></a>|<a id="BigData-8.html" href="#" onclick="return MenuChange(this);">Page8>></a>|<a id="BigData-9.html" href="#" onclick="return MenuChange(this);">Page9>></a>|<a id="BigData-10.html" href="#" onclick="return MenuChange(this);">Page10>></a>

@@ -1,0 +1,123 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<a id="2016.05-1.html" href="#" onclick="return MenuChange(this);">Page1>></a>|<a id="2016.05-2.html" href="#" onclick="return MenuChange(this);">Page2>></a>|<a id="2016.05-3.html" href="#" onclick="return MenuChange(this);">Page3>></a>|<a id="2016.05-4.html" href="#" onclick="return MenuChange(this);">Page4>></a>|<a id="2016.05-5.html" href="#" onclick="return MenuChange(this);">Page5>></a>|<a id="2016.05-6.html" href="#" onclick="return MenuChange(this);">Page6>></a>
+<H2><a id="4f8cdaf8-892c-4093-8fa5-652ad584fc44.html" href="#" onclick="return MenuChange(this);">阳历转阴历</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/08/2016 17:36:30<br /><p>先建一表，放初始化资料<br />
+因为农历的日期，是由天文学家推算出来的，到现在只有到2049年的，以后的有了还可以加入！<br />
+CREATE TABLE SolarData<br />
+</p>
+<H2><a id="96756e30-8633-4b5c-8736-d3bdfe5a25ad.html" href="#" onclick="return MenuChange(this);">查询独立的日期</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/08/2016 09:37:31<br /><p>GO<br />
+IF OBJECT_ID('A')IS NOT NULL<br />
+DROP TABLE  A<br />
+</p>
+<H2><a id="b1e8e448-0097-48f5-a8b3-c0adbc812039.html" href="#" onclick="return MenuChange(this);">查看存储过程依赖的表</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/08/2016 06:59:36<br /><p>DECLARE @procname NVARCHAR(100) = 'dbo.avnewmanubranchsplit_trend'<br />
+ SELECT DISTINCT @procname        procname,SCHEMA_NAME(t.[schema_id]) + '.' <br />
+        + OBJECT_NAME(referenced_major_id) <br />
+</p>
+<H2><a id="fd87a636-5ea0-4871-bcbc-5d7ec07be04e.html" href="#" onclick="return MenuChange(this);">数据库笔记4</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/08/2016 01:50:04<br /><p>*<br />
+标题：普通行列转换(version 2.0)<br />
+作者：爱新觉罗.毓华(十八年风雨,守得冰山雪莲花开)<br />
+</p>
+<H2><a id="46303521-90b2-4d96-97b0-4b24921b59d5.html" href="#" onclick="return MenuChange(this);">16进制转10进制</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/07/2016 20:23:35<br /><p>CREATE FUNCTION dbo.f_hex_dec(@s varchar(16))<br />
+RETURNS bigint<br />
+AS<br />
+</p>
+<H2><a id="1807ca51-d277-4004-a708-feff9d2df68f.html" href="#" onclick="return MenuChange(this);">字符串拆分合并</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/07/2016 11:38:37<br /><p>表a <br />
+name    num <br />
+aa      1 <br />
+</p>
+<H2><a id="bfe8db4d-970d-4c79-bb98-84a5b433ebfe.html" href="#" onclick="return MenuChange(this);">sp_MSforeachtable和sp_MSforeachdb用法</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/07/2016 11:30:48<br /><p>1.简介:<br />
+有时经常会碰到要求遍历所有表,改变表的属性时,这时可以用到这两个存储过程;<br />
+<br />
+</p>
+<H2><a id="9a9547ce-d0d8-49e7-b160-50c01f20c4e1.html" href="#" onclick="return MenuChange(this);">表结构信息查询</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/07/2016 07:06:21<br /><p>--sql server 2000<br />
+SELECT <br />
+    表名       = case when a.colorder=1 then d.name else '' end,<br />
+</p>
+<H2><a id="0bdf8d09-84e4-44d8-9a86-22aff658ab42.html" href="#" onclick="return MenuChange(this);">查看指定spid的脚本当前运行情况和状态</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/07/2016 05:47:10<br /><p>USE Master<br />
+GO<br />
+<br />
+</p>
+<H2><a id="4a8d364b-d877-4b44-9bb6-f81e7a20e2b5.html" href="#" onclick="return MenuChange(this);">单个语句快于存储过程的原因分析</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/07/2016 00:18:28<br /><p>SQL Server中存储过程比直接运行SQL语句慢的原因 <br />
+ 在很多的资料中都描述说SQLSERVER的存储过程较普通的SQL语句有以下优点： <br />
+1.       存储过程只在创造时进行编译即可，以后每次执行存储过程都不需再重新编译，而我们通常使用的SQL语句每执行一次就编译一次,所以使用存储过程可提高数据库执行速度。 <br />
+</p>
+<H2><a id="2d3d51ac-06ac-4422-b968-d46b39e3bc3a.html" href="#" onclick="return MenuChange(this);">化解字符串不能超过8000的方法</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/06/2016 18:20:22<br /><p>/*--化解字符串不能超过8000的方法 <br />
+<br />
+经常有人提到,用动态生成SQL语句的方法处理数据时,处理语句超长,无法处理的问题 <br />
+</p>
+<H2><a id="64b6798c-5ce0-4d03-aabd-fbbace8e022d.html" href="#" onclick="return MenuChange(this);">MSSQL中如何用SQL清除所有表的数据</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/06/2016 13:58:26<br /><p>MSSQL中如何用SQL清除所有表的数据？这个需求分三种类型： <br />
+第一：只要数据库中表是空的； <br />
+第二：表是空的，并且自增长列可以从１开始增长。 <br />
+</p>
+<H2><a id="e067a051-d10f-4ad0-938c-c359d00b565e.html" href="#" onclick="return MenuChange(this);">高难度行列互换</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/06/2016 01:07:58<br /><p>create table pds<br />
+(姓名 varchar(8), <br />
+ 内容 varchar(5), <br />
+</p>
+<H2><a id="716b00ec-64ef-418d-9317-dacf355f9bb4.html" href="#" onclick="return MenuChange(this);">配置SQL内存</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/05/2016 20:34:31<br /><p>--设置min server memory配置项<br />
+EXEC SP_configure N'min server memory(MB)',0<br />
+<br />
+</p>
+<H2><a id="2cd2205d-4bb7-46c5-87d8-3c47968ad5b4.html" href="#" onclick="return MenuChange(this);">拆分、合并、切换分区</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/05/2016 06:11:55<br /><p>USE master<br />
+GO<br />
+<br />
+</p>
+<H2><a id="47b72355-c892-4536-a1b6-77c9e9f6a452.html" href="#" onclick="return MenuChange(this);">全角半角转换</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/04/2016 23:43:51<br /><p>if   exists   (select   *   from   dbo.sysobjects   where   id   =   object_id(N'[dbo].[f_convert]')   and   xtype   in   (N'FN',   N'IF',   N'TF'))   <br />
+  drop   function   [dbo].[f_convert]   <br />
+  GO   <br />
+</p>
+<H2><a id="96e90a2a-332a-466c-a8a8-7da38b492269.html" href="#" onclick="return MenuChange(this);">笔记四</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/04/2016 21:37:21<br /><p>---SQL Server对大容量内存的支持<br />
+32位操作系统有个很大的缺陷，应用程序无法访问大于4G的进程地址空间，因为32位的指针无法保存大于4G的地址空间<br />
+如果大于4G，则需要使用地址窗口化扩展插件(AWE)，具体操作如下：<br />
+</p>
+<H2><a id="e53c5652-b64d-4f3a-8470-0ba21e7c9744.html" href="#" onclick="return MenuChange(this);">如何使用case when 进行排序</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/04/2016 18:20:51<br /><p>-->生成测试数据:<br />
+GO<br />
+IF OBJECT_ID('TBL')IS NOT NULL<br />
+</p>
+<H2><a id="e85dc8e0-d770-4f62-b9ce-71e97ddd21e0.html" href="#" onclick="return MenuChange(this);">新建 文本文档 (5)</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/04/2016 10:55:08<br /><p>http://id.91cool.net/sign/?name=%CE%DE%D3%C7&say=%B2%C5%B8%DF%C6%DF%B0%CB%B6%B7,%D1%A7%B8%BB%CE%E5%C1%F9%B3%B5,%B8%C4%D0%D0%C8%FD%CB%C4%B4%CE,%D4%C2%C8%EB%D2%BB%B6%FE%C7%A7! <br />
+<br />
+显示IP<br />
+</p>
+<H2><a id="7850d0ab-af5b-4632-b200-4f27ff1edee7.html" href="#" onclick="return MenuChange(this);">SQL 2005,2008删除过期备份</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/04/2016 02:41:02<br /><p>create proc sp_backupdatabase<br />
+ @bak_path nvarchar(4000)=''       --备份路径;<br />
+,@baktype int = null               --备份类型为全备,1为差异备,2为日志备份<br />
+</p>
+<a id="2016.05-1.html" href="#" onclick="return MenuChange(this);">Page1>></a>|<a id="2016.05-2.html" href="#" onclick="return MenuChange(this);">Page2>></a>|<a id="2016.05-3.html" href="#" onclick="return MenuChange(this);">Page3>></a>|<a id="2016.05-4.html" href="#" onclick="return MenuChange(this);">Page4>></a>|<a id="2016.05-5.html" href="#" onclick="return MenuChange(this);">Page5>></a>|<a id="2016.05-6.html" href="#" onclick="return MenuChange(this);">Page6>></a>

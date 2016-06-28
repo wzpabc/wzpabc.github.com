@@ -1,0 +1,65 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>Profile</h2><br /> 
+uploaded by Patrick. 03/28/2013 15:30:15<br />blog>><a  href="https://wzpabc.github.io?page=cce6b4db-4564-4079-95ee-9810bfe62c16" >wzpabc.github.io?page=cce6b4db-4564-4079-95ee-9810bfe62c16</a><p>-->Title:Generating test data<br />
+-->Author:wufeng4552<br />
+-->Date :2009-09-30 08:52:38<br />
+set nocount on<br />
+if object_id('tb','U')is not null drop table tb<br />
+go<br />
+create table tb(ID int, ParentID int)<br />
+insert into tb select 1,0  <br />
+insert into tb select 2,1  <br />
+insert into tb select 3,1  <br />
+insert into tb select 4,2  <br />
+insert into tb select 5,3  <br />
+insert into tb select 6,5  <br />
+insert into tb select 7,6<br />
+-->Title:查找指定節點下的子結點<br />
+if object_id('Uf_GetChildID')is not null drop function Uf_GetChildID<br />
+go<br />
+create function Uf_GetChildID(@ParentID int)<br />
+returns @t table(ID int)<br />
+as<br />
+begin<br />
+   insert @t select ID from tb where ParentID=@ParentID<br />
+   while @@rowcount<>0<br />
+   begin<br />
+      insert @t select a.ID from tb a inner join @t b<br />
+      on a.ParentID=b.id and <br />
+      not exists(select 1 from @t where id=a.id)<br />
+   end <br />
+return<br />
+end<br />
+go<br />
+select * from dbo.Uf_GetChildID(5)<br />
+/*<br />
+ID<br />
+-----------<br />
+6<br />
+7<br />
+*/<br />
+-->Title:查找指定節點的所有父結點<br />
+if object_id('Uf_GetParentID')is not null drop function Uf_GetParentID<br />
+go<br />
+create function Uf_GetParentID(@ID int)<br />
+returns @t table(ParentID int)<br />
+as<br />
+begin<br />
+   insert @t select ParentID from tb where ID=@ID<br />
+   while @@rowcount!=0<br />
+   begin<br />
+     insert @t select a.ParentID from tb a inner join @t b<br />
+       on a.id=b.ParentID and <br />
+       not exists(select 1 from @t where ParentID=a.ParentID)<br />
+   end<br />
+  return<br />
+end<br />
+go<br />
+select * from dbo.Uf_GetParentID(2)<br />
+/*<br />
+ParentID<br />
+-----------<br />
+1<br />
+0<br />
+*/<br />
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/cce6b4db-4564-4079-95ee-9810bfe62c16.html" >https://wzpabc.github.io/Template/cce6b4db-4564-4079-95ee-9810bfe62c16.html</a>

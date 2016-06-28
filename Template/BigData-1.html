@@ -1,0 +1,117 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<a id="BigData-1.html" href="#" onclick="return MenuChange(this);">Page1>></a>|<a id="BigData-2.html" href="#" onclick="return MenuChange(this);">Page2>></a>|<a id="BigData-3.html" href="#" onclick="return MenuChange(this);">Page3>></a>|<a id="BigData-4.html" href="#" onclick="return MenuChange(this);">Page4>></a>|<a id="BigData-5.html" href="#" onclick="return MenuChange(this);">Page5>></a>|<a id="BigData-6.html" href="#" onclick="return MenuChange(this);">Page6>></a>|<a id="BigData-7.html" href="#" onclick="return MenuChange(this);">Page7>></a>|<a id="BigData-8.html" href="#" onclick="return MenuChange(this);">Page8>></a>|<a id="BigData-9.html" href="#" onclick="return MenuChange(this);">Page9>></a>|<a id="BigData-10.html" href="#" onclick="return MenuChange(this);">Page10>></a>
+<H2><a id="f1794ffe-7e96-44c6-acf0-1d0ce9c50794.html" href="#" onclick="return MenuChange(this);">数据汇总</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/09/2016 15:16:09<br /><p>首先创建测试表、添加数据。 <br />
+create table #t(a int,b int,c int,d int,e int) <br />
+insert into #t values(1,2,3,4,5) <br />
+</p>
+<H2><a id="05ea5007-3001-4bb4-8c9c-e84f197aeaef.html" href="#" onclick="return MenuChange(this);">日期算法2</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/24/2016 15:22:51<br /><p>SQL Server 日期算法<br />
+<br />
+一周的第一天<br />
+</p>
+<H2><a id="0bdf8d09-84e4-44d8-9a86-22aff658ab42.html" href="#" onclick="return MenuChange(this);">查看指定spid的脚本当前运行情况和状态</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 02/23/2016 15:11:59<br /><p>USE Master<br />
+GO<br />
+<br />
+</p>
+<H2><a id="eabb7c4f-730b-45c1-8399-eba813155cfd.html" href="#" onclick="return MenuChange(this);">SQL Server连接中的四个最常见错误</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 02/23/2016 15:05:49<br /><p>SQL Server连接中的四个最常见错误:<br />
+一."SQL Server 不存在或访问被拒绝"<br />
+这个是最复杂的,错误发生的原因比较多,需要检查的方面也比较多.<br />
+</p>
+<H2><a id="99f0466e-6cff-49f7-9afc-3df5b82dc999.html" href="#" onclick="return MenuChange(this);">笔记一</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 02/02/2016 15:13:14<br /><p>---用户定义数据类型<br />
+create type postcode<br />
+from varchar(6) null  --创建用户定义数据类型<br />
+</p>
+<H2><a id="c677f08e-9545-4f27-80fd-5414ce5b0f79.html" href="#" onclick="return MenuChange(this);">批量删除多个表的多个字段</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 01/18/2016 15:25:02<br /><p>declare @tablename varchar(30)<br />
+DECLARE cur_temp Cursor For <br />
+select b.name from dbo.syscolumns a,dbo.sysobjects b<br />
+</p>
+<H2><a id="d7b26551-adbf-4708-890d-d55a84c3bd30.html" href="#" onclick="return MenuChange(this);">SQL事务日志还原</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 01/18/2016 15:23:48<br /><p>SQL事务日志还原实例 收藏 <br />
+USE master<br />
+GO<br />
+</p>
+<H2><a id="b297ebcb-c931-44e4-92e6-847430a3773f.html" href="#" onclick="return MenuChange(this);">自动备份数据库</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 01/16/2016 15:24:10<br /><p>有A数据库服务器，B本机； <br />
+<br />
+我现在想通过在B机器上通过代码调用SQL来执行A数据库的备份到B机器上 <br />
+</p>
+<H2><a id="834f2fd2-21d7-4410-b597-7304579cb260.html" href="#" onclick="return MenuChange(this);">服务器登录的一些脚本</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 11/13/2015 15:18:40<br /><p>select loginame, * from master.dbo.sysprocesses<br />
+where spid>50<br />
+order by 1 <br />
+</p>
+<H2><a id="202f3d4e-ec1e-4253-b2c2-037bf3511981.html" href="#" onclick="return MenuChange(this);">深度排序</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 10/08/2015 15:26:33<br /><p>--测试数据   深度排序     <br />
+  DECLARE   @t   TABLE(ID   char(3),PID   char(3),Name   nvarchar(10))   <br />
+  INSERT   @t   SELECT   '001',NULL   ,'山东省'   <br />
+</p>
+<H2><a id="5d26e930-3d03-4357-bd93-f127fd660d35.html" href="#" onclick="return MenuChange(this);">只有mdf文件的恢复技术</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 08/07/2015 15:26:12<br /><p>只有mdf文件的恢复技术 <br />
+<br />
+　　由于种种原因，我们如果当时仅仅备份了mdf文件，那么恢复起来就是一件很麻烦的事情了。 <br />
+</p>
+<H2><a id="46851b42-bdf4-4a0c-aaef-e56a2240c41b.html" href="#" onclick="return MenuChange(this);">异机备份</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 07/28/2015 15:25:29<br /><p>有A数据库服务器，B本机； <br />
+<br />
+我现在想通过在B机器上通过代码调用SQL来执行A数据库的备份到B机器上 <br />
+</p>
+<H2><a id="ee4646af-374a-43e9-9815-b241d9abe695.html" href="#" onclick="return MenuChange(this);">数据结构比较和表结构比较</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 07/03/2015 15:25:16<br /><p>*--数据结构比较 <br />
+<br />
+比较两个数据库中的视图/存储过程的结构(结构比较,不是功能比较) <br />
+</p>
+<H2><a id="bfe8db4d-970d-4c79-bb98-84a5b433ebfe.html" href="#" onclick="return MenuChange(this);">sp_MSforeachtable和sp_MSforeachdb用法</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/29/2015 15:29:08<br /><p>1.简介:<br />
+有时经常会碰到要求遍历所有表,改变表的属性时,这时可以用到这两个存储过程;<br />
+<br />
+</p>
+<H2><a id="63f115d5-7d15-4265-b182-55ed6768a308.html" href="#" onclick="return MenuChange(this);">查找指定節點下的子結點和父节点</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/19/2015 15:16:02<br /><p>-->Title:Generating test data<br />
+-->Author:wufeng4552<br />
+-->Date :2009-09-30 08:52:38<br />
+</p>
+<H2><a id="c8305b69-b849-47af-be8b-b1442dbf70c6.html" href="#" onclick="return MenuChange(this);">SQL断电的处理方法</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/28/2015 15:23:16<br /><p>USE MASTER<br />
+GO<br />
+sp_dboption ‘databaseName’, ’single user’, ‘true’<br />
+</p>
+<H2><a id="b780f9ce-c42f-4ca1-82bf-d1c77d707541.html" href="#" onclick="return MenuChange(this);">SQL2005的安装问题汇总</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/18/2015 15:16:16<br /><p>SQL2005的安装问题汇总<br />
+SQL2005 分五个版本，如下所列，<br />
+　　1.Enterprise(企业版), <br />
+</p>
+<H2><a id="ca6c9efe-3a1b-458b-b985-33d7b08dfee4.html" href="#" onclick="return MenuChange(this);">2008转到2005</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/05/2015 15:14:55<br /><p>2008转到2000的步骤 <br />
+1. 生成for 2005版本的数据库脚本 <br />
+2008 的manger studio <br />
+</p>
+<H2><a id="189dc10e-b2c1-4ebc-95ac-aa7dc3861014.html" href="#" onclick="return MenuChange(this);">获取拼音字母</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/28/2015 15:24:11<br /><p>Create  function fun_getPY <br />
+ ( <br />
+    @str nvarchar(4000) <br />
+</p>
+<a id="BigData-1.html" href="#" onclick="return MenuChange(this);">Page1>></a>|<a id="BigData-2.html" href="#" onclick="return MenuChange(this);">Page2>></a>|<a id="BigData-3.html" href="#" onclick="return MenuChange(this);">Page3>></a>|<a id="BigData-4.html" href="#" onclick="return MenuChange(this);">Page4>></a>|<a id="BigData-5.html" href="#" onclick="return MenuChange(this);">Page5>></a>|<a id="BigData-6.html" href="#" onclick="return MenuChange(this);">Page6>></a>|<a id="BigData-7.html" href="#" onclick="return MenuChange(this);">Page7>></a>|<a id="BigData-8.html" href="#" onclick="return MenuChange(this);">Page8>></a>|<a id="BigData-9.html" href="#" onclick="return MenuChange(this);">Page9>></a>|<a id="BigData-10.html" href="#" onclick="return MenuChange(this);">Page10>></a>

@@ -1,0 +1,121 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-1.html" href="#" onclick="return MenuChange(this);">Page1>></a>|<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-2.html" href="#" onclick="return MenuChange(this);">Page2>></a>|<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-3.html" href="#" onclick="return MenuChange(this);">Page3>></a>|<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-4.html" href="#" onclick="return MenuChange(this);">Page4>></a>|<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-5.html" href="#" onclick="return MenuChange(this);">Page5>></a>|<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-6.html" href="#" onclick="return MenuChange(this);">Page6>></a>
+<H2><a id="6d13552d-55a3-4c5e-8bd3-cc5883820ed2.html" href="#" onclick="return MenuChange(this);">标识列的处理</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 12/27/2012 15:26:44<br /><p>引用邹建的：  <br />
+  --创建测试表  <br />
+  CREATE  TABLE  t1(ID  int  IDENTITY,A  int)  <br />
+</p>
+<H2><a id="64fe57ee-9da1-4217-8169-2d76b7a19645.html" href="#" onclick="return MenuChange(this);">查每个分组前N条记录</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 12/10/2012 15:13:00<br /><p>---------------------------------<br />
+--  Author: liangCK 小梁<br />
+--  Title : 查每个分组前N条记录<br />
+</p>
+<H2><a id="d914e4db-5f61-4844-bcd9-d6e81ec86dad.html" href="#" onclick="return MenuChange(this);">生成流水号</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 12/07/2012 15:14:52<br /><p>--下面的代码生成长度为8的编号，编号以BH开头，其余6位为流水号。<br />
+--得到新编号的函数<br />
+CREATE FUNCTION f_NextBH()<br />
+</p>
+<H2><a id="d8b0e118-eecc-48e4-bc10-4db5a8022536.html" href="#" onclick="return MenuChange(this);">日志处理</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 11/30/2012 15:16:01<br /><p>1、用BACKUP LOG database WITH NO_LOG清除日志 <br />
+<br />
+把数据库属性中的故障还原模型改为“简单”可以大大减慢日志增长的速度。 <br />
+</p>
+<H2><a id="fd87a636-5ea0-4871-bcbc-5d7ec07be04e.html" href="#" onclick="return MenuChange(this);">数据库笔记4</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 11/27/2012 15:22:32<br /><p>*<br />
+标题：普通行列转换(version 2.0)<br />
+作者：爱新觉罗.毓华(十八年风雨,守得冰山雪莲花开)<br />
+</p>
+<H2><a id="a7f51b15-0c4f-4c07-8e8c-ab4515bdf6b1.html" href="#" onclick="return MenuChange(this);">通过脚本创建JOB</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 11/24/2012 15:22:54<br /><p>通过脚本创建JOB：   <br />
+if   exists   (select   *   from   dbo.sysobjects   where   id   =   object_id(N[dbo].[p_createjob])   and   OBJECTPROPERTY(id,   NIsProcedure)   =   1)   <br />
+  drop   procedure   [dbo].[p_createjob]   <br />
+</p>
+<H2><a id="481b3724-db6f-4062-a40d-a84d82eeec2d.html" href="#" onclick="return MenuChange(this);">显示索引消耗的磁盘情况</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 10/20/2012 15:15:02<br /><p>--显示索引消耗的磁盘情况<br />
+SELECT  CASE InnerTable.index_id<br />
+          WHEN 0 THEN 'HEAP'<br />
+</p>
+<H2><a id="e0258e9d-a6b4-48db-b69b-ca2893c3e98c.html" href="#" onclick="return MenuChange(this);">表信息查询</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 09/20/2012 15:26:02<br /><p>--查询用户表对象信息<br />
+select  Tab.Name as [表名],Tab.create_date as [创建时间],Tab.modify_date  as [最后修改时间],<br />
+        Col.Name  as [列名] ,Type.name as [数据类型],Col.max_length as [字段长度],<br />
+</p>
+<H2><a id="9a9547ce-d0d8-49e7-b160-50c01f20c4e1.html" href="#" onclick="return MenuChange(this);">表结构信息查询</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 09/14/2012 15:15:43<br /><p>--sql server 2000<br />
+SELECT <br />
+    表名       = case when a.colorder=1 then d.name else '' end,<br />
+</p>
+<H2><a id="46f6bd6b-a204-4c29-bb35-70db96dc1175.html" href="#" onclick="return MenuChange(this);">随机插入汉字</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 09/09/2012 15:24:27<br /><p>declare @t table(col nvarchar(4))<br />
+insert @t select nchar(cast(19968+rand()*20902 as int))<br />
+select * from @t<br />
+</p>
+<H2><a id="752dadc6-9494-45d8-a86f-21b1a12b706b.html" href="#" onclick="return MenuChange(this);">系统表说明</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 08/13/2012 15:09:08<br /><p>syscolumns<br />
+每个表和视图中的每列在表中占一行，存储过程中的每个参数在表中也占一行。该表位于每个数据库中。<br />
+<br />
+</p>
+<H2><a id="963aab76-ec43-4067-ae82-1452d524794d.html" href="#" onclick="return MenuChange(this);">锁概念以及例程说明</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/01/2012 15:18:29<br /><p>http://blog.csdn.net/arrow_gx/archive/2009/03/19/4004938.aspx <br />
+</p>
+<H2><a id="5f0905cf-e953-4071-a733-dcdcdd4e82c2.html" href="#" onclick="return MenuChange(this);">笔记五</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/09/2012 15:30:35<br /><p>服务器配置选项<br />
+--启动AWE<br />
+sp_configure 'show advanced options',1<br />
+</p>
+<H2><a id="d510c7b2-cd89-4370-ae7f-c44238c84ecb.html" href="#" onclick="return MenuChange(this);">查找丢失的索引</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/19/2012 15:22:15<br /><p>SELECT<br />
+    avg_total_user_cost * avg_user_impact * ( user_scans + user_seeks ) AS PossibleImprovement ,<br />
+    last_user_seek ,<br />
+</p>
+<H2><a id="3076503b-a8c6-47f6-b0f7-d8a8d989585b.html" href="#" onclick="return MenuChange(this);">构造使用IN子句的动态Transact-SQL方法</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/11/2012 15:20:24<br /><p>--1. 构造使用IN子句的动态Transact-SQL方法进行编号查询<br />
+<br />
+--a. 要查询的字段类型是数字型<br />
+</p>
+<H2><a id="09f71cbc-6897-4861-b1e1-ae4bf052b178.html" href="#" onclick="return MenuChange(this);">查询各节点的父路径函数</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/04/2012 15:17:43<br /><p>*<br />
+标题：查询各节点的父路径函数<br />
+作者：爱新觉罗·毓华(十八年风雨,守得冰山雪莲花开)  <br />
+</p>
+<H2><a id="6e5ac8e0-3be9-4634-9e02-b6955bce18c5.html" href="#" onclick="return MenuChange(this);">重建重组索引的方法</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 03/25/2012 15:13:57<br /><p> --使用联机方式重建索引idx_refno <br />
+ALTER INDEX [idx_refno] ON [ordDemo] REBUILD WITH (FILLFACTOR=80,ONLINE =ON)<br />
+GO<br />
+</p>
+<H2><a id="b0395f2e-60de-461b-ab0c-d792ce1fd4e5.html" href="#" onclick="return MenuChange(this);">获取汉字首字母</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 03/17/2012 15:17:04<br /><p>--返回汉字首字母 <br />
+<br />
+create  function [dbo].[chinese_firstletter] <br />
+</p>
+<H2><a id="ccb9677d-bbb1-437c-9624-d84d7b514c90.html" href="#" onclick="return MenuChange(this);">自动生成测试代码(小楼）</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 03/13/2012 15:15:20<br /><p>-------------------------------------------------------------------------------   <br />
+-- 自动生成测试数据共享加强版   <br />
+--   <br />
+</p>
+<H2><a id="5738b7aa-78c4-470c-93a2-c6273995a339.html" href="#" onclick="return MenuChange(this);">小写转大写</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 02/20/2012 15:16:28<br /><p>CREATE  FUNCTION [dbo].[f_num_chn] (@num numeric(14,5))   <br />
+RETURNS varchar(100) WITH ENCRYPTION   <br />
+AS   <br />
+</p>
+<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-1.html" href="#" onclick="return MenuChange(this);">Page1>></a>|<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-2.html" href="#" onclick="return MenuChange(this);">Page2>></a>|<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-3.html" href="#" onclick="return MenuChange(this);">Page3>></a>|<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-4.html" href="#" onclick="return MenuChange(this);">Page4>></a>|<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-5.html" href="#" onclick="return MenuChange(this);">Page5>></a>|<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-6.html" href="#" onclick="return MenuChange(this);">Page6>></a>

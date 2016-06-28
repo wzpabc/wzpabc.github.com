@@ -1,0 +1,123 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<a id="2016.06-1.html" href="#" onclick="return MenuChange(this);">Page1>></a>|<a id="2016.06-2.html" href="#" onclick="return MenuChange(this);">Page2>></a>|<a id="2016.06-3.html" href="#" onclick="return MenuChange(this);">Page3>></a>|<a id="2016.06-4.html" href="#" onclick="return MenuChange(this);">Page4>></a>|<a id="2016.06-5.html" href="#" onclick="return MenuChange(this);">Page5>></a>|<a id="2016.06-6.html" href="#" onclick="return MenuChange(this);">Page6>></a>
+<H2><a id="9e007ddf-36f0-4201-ab01-dc9296ea59b2.html" href="#" onclick="return MenuChange(this);">如何批量替换ntext</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/12/2016 13:08:45<br /><p><br />
+update 表名 <br />
+set text类型字段名=replace(convert(varchar(8000),text类型字段名),'要替换的字符','替换成的值')<br />
+</p>
+<H2><a id="8493bf94-d47d-40d6-9161-faba9c6da7d1.html" href="#" onclick="return MenuChange(this);">日期</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/12/2016 13:08:43<br /><p>DECLARE @dt datetime<br />
+SET @dt=GETDATE()<br />
+<br />
+</p>
+<H2><a id="8375d3e8-78b9-41e2-9b66-695dc26f7b89.html" href="#" onclick="return MenuChange(this);">库存先进先出</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/12/2016 10:43:21<br /><p>--库存先进先出简单例子：<br />
+<br />
+create table t(<br />
+</p>
+<H2><a id="7c482af4-ffb4-47a1-9cc9-a9765adfece9.html" href="#" onclick="return MenuChange(this);">排名</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/12/2016 08:39:05<br /><p>--示例数据<br />
+CREATE TABLE tb(Name varchar(10),Score decimal(10,2))<br />
+INSERT tb SELECT 'aa',99<br />
+</p>
+<H2><a id="7ef1f296-c0a4-4e81-bed2-85f489d68eb0.html" href="#" onclick="return MenuChange(this);">导出表视图中的数据为html 文件</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/11/2016 13:28:57<br /><p>IF OBJECT_ID(N'dbo.p_ExportHtml') IS NOT NULL<br />
+<br />
+    DROP PROC dbo.p_ExportHtml;<br />
+</p>
+<H2><a id="e9c7838a-e517-4ff6-9904-596afab24cc7.html" href="#" onclick="return MenuChange(this);">如何使用“最小缺失数”实现日期的自动补全</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/11/2016 13:06:23<br /><p>--如何用"最小缺失数"实现日期的自动补全<br />
+-->生成测试数据:<br />
+GO<br />
+</p>
+<H2><a id="2638e7ce-f081-4578-b07b-84f1f7ec5688.html" href="#" onclick="return MenuChange(this);">数据库减肥</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/11/2016 07:40:56<br /><p>--最好备份日志，以后可通过日志恢复数据。。。<br />
+以下为日志处理方法<br />
+一般不建议做第4,6两步<br />
+</p>
+<H2><a id="32af00f7-f795-49ef-bbeb-ceea34a6081e.html" href="#" onclick="return MenuChange(this);">2005转2000</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/10/2016 22:23:35<br /><p>2005转到2000的步骤步骤 <br />
+1. 生成for 2000版本的数据库脚本 <br />
+2005 的manger studio <br />
+</p>
+<H2><a id="d914e4db-5f61-4844-bcd9-d6e81ec86dad.html" href="#" onclick="return MenuChange(this);">生成流水号</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/10/2016 21:15:33<br /><p>--下面的代码生成长度为8的编号，编号以BH开头，其余6位为流水号。<br />
+--得到新编号的函数<br />
+CREATE FUNCTION f_NextBH()<br />
+</p>
+<H2><a id="ccb9677d-bbb1-437c-9624-d84d7b514c90.html" href="#" onclick="return MenuChange(this);">自动生成测试代码(小楼）</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/10/2016 18:24:30<br /><p>-------------------------------------------------------------------------------   <br />
+-- 自动生成测试数据共享加强版   <br />
+--   <br />
+</p>
+<H2><a id="ea864080-0237-4c1a-948b-e09cdb74db00.html" href="#" onclick="return MenuChange(this);">BOM2</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/10/2016 13:27:08<br /><p>/*<br />
+标题：SQL SERVER 2000中查询指定节点及其所有父节点的函数(字符串形式显示)<br />
+作者：爱新觉罗·毓华(十八年风雨,守得冰山雪莲花开)  <br />
+</p>
+<H2><a id="16833211-0076-445a-aa30-b46609e0985c.html" href="#" onclick="return MenuChange(this);">自动生成存储过程格式</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/10/2016 03:00:36<br /><p>SET QUOTED_IDENTIFIER ON<br />
+SET ANSI_NULLS ON<br />
+GO<br />
+</p>
+<H2><a id="fe5cc22e-e86c-43ca-8a32-a824e1b4a8b0.html" href="#" onclick="return MenuChange(this);">字符串的拆分</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/10/2016 01:27:26<br /><p><br />
+--> 测试数据: #T<br />
+if object_id('tempdb.dbo.#T') is not null drop table #T<br />
+</p>
+<H2><a id="d54ea5bb-53f7-4783-a738-9f4ac6aa0208.html" href="#" onclick="return MenuChange(this);">全文索引Contains用法</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/09/2016 19:47:14<br /><p>mssql全文检索CONTAINS的用法.<br />
+2011-06-10 12:53<br />
+<br />
+</p>
+<H2><a id="677af428-b7fc-4d52-a0d3-ac1a79049d00.html" href="#" onclick="return MenuChange(this);">新建 文本文档 (4)</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/09/2016 16:24:12<br /><p><br />
+declare @name nvarchar(100)<br />
+declare cur cursor for select name from sysobjects where type = 'U'<br />
+</p>
+<H2><a id="b76c778d-32c1-4b92-a059-07f12bdbf6bc.html" href="#" onclick="return MenuChange(this);">笔记七</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/09/2016 11:10:24<br /><p>--空间数据的一些操作<br />
+<br />
+1.在创建表时定义geometry类型的列<br />
+</p>
+<H2><a id="cbb709d5-29fd-4ab2-9a84-b55715fa4e7e.html" href="#" onclick="return MenuChange(this);">如何截取无规则字符串中的数字</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/09/2016 08:55:57<br /><p>--如何截取无规律的字符串中的数字：<br />
+ <br />
+declare   @str   varchar(100),@str2   varchar(100) <br />
+</p>
+<H2><a id="c0a01bcb-f377-49c1-9f15-1e16b39c14b4.html" href="#" onclick="return MenuChange(this);">存储过程调用存储过程</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/09/2016 06:54:56<br /><p>第一种方法: 使用output参数<br />
+<br />
+USE AdventureWorks;<br />
+</p>
+<H2><a id="82c0d470-eaba-49b3-8f60-843c16fc033f.html" href="#" onclick="return MenuChange(this);">删除系统内所有用户表</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/09/2016 06:20:03<br /><p>--删除所有用户表：<br />
+--select * from sysobjects where xtype='U' and category=0<br />
+use master<br />
+</p>
+<H2><a id="24558145-13b6-4694-abb4-a6ede554b83d.html" href="#" onclick="return MenuChange(this);">全文索引1</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/08/2016 23:28:57<br /><p>create   table   testIndex <br />
+( <br />
+          id   int   identity(1,1)   primary   key, <br />
+</p>
+<a id="2016.06-1.html" href="#" onclick="return MenuChange(this);">Page1>></a>|<a id="2016.06-2.html" href="#" onclick="return MenuChange(this);">Page2>></a>|<a id="2016.06-3.html" href="#" onclick="return MenuChange(this);">Page3>></a>|<a id="2016.06-4.html" href="#" onclick="return MenuChange(this);">Page4>></a>|<a id="2016.06-5.html" href="#" onclick="return MenuChange(this);">Page5>></a>|<a id="2016.06-6.html" href="#" onclick="return MenuChange(this);">Page6>></a>

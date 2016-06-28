@@ -25,10 +25,12 @@
 				<ul class="lavaLampWithImage" id="lava_menu">
 					<li class="current"><a id="_home" href="#"
 						onclick="return LinkChange(this);">Home</a></li>
-					<li><a id="_Rlang" href="#" onclick="return LinkChange(this);">Rlang</a></li>
-					<li><a id="_Java" href="#" onclick="return LinkChange(this);">Java</a></li>
+					<li><a id="_Rlang" href="#"
+						onclick="return LinkChange_page(this);">Rlang</a></li>
+					<li><a id="_Java" href="#"
+						onclick="return LinkChange_page(this);">Java</a></li>
 					<li><a id="_BigData" href="#"
-						onclick="return LinkChange(this);">BigData</a></li>
+						onclick="return LinkChange_page(this);">BigData</a></li>
 					<li><a id="_contact" href="#"
 						onclick="return LinkChange(this);">contact</a></li>
 				</ul>
@@ -45,9 +47,14 @@
 					alt=" Enrich your life today,. yesterday is history.tomorrow is mystery. " /></li>
 			</ul>
 			<div id="sidebar_container">
-				<div class="sidebar" id="sidebartop"></div>
+				
 				<div class="sidebar">
-					<h3>Useful Links</h3>
+					<h2><a id="Category" href="#" onclick="return atoggle1(this);" >Category</a></h2>
+					<p>Both working and lift are important:</p>                        
+					<div style="overflow-y:auto; overflow-x:hide; width:400px; height:200px;"  id="sidebartop"></div>
+					<h2><br /><a id="Archive" href="#" onclick="return atoggle(this);" >Archive</a></h2>
+					<div style="overflow-y:auto; overflow-x:hide; width:400px; height:200px;" id="sidebartop1"></div>
+					<h2><br />Useful Links</h2>
 					<ul>
 						<li><a href="https://wzpabc.github.io/">Home</a></li>
 						<li><a href="http://www.sqlservercentral.com/">SQLServerCentral.com</a></li>
@@ -95,6 +102,10 @@
 					function(response, status, xhr) {
 						$('#sidebartop').html(response);
 					});
+			$("#sidebartop1").load("Template\\sidebartop1.html",
+					function(response, status, xhr) {
+						$('#sidebartop1').html(response);
+					});
 			$("footer").load("Template\\footer.html",
 					function(response, status, xhr) {
 						$('footer').html(response);
@@ -103,7 +114,9 @@
 			var s = "images/bg4.jpg";//row是table的当前行
 			$("body").css("background-image", "url(" + s + ")");
 			$("#site_content").css("background", "#F2F2F2");
+			$("#archive").css("height", "300px");
 			//$("#main").css("background", "#F2F2F2");
+			//$("#sidebartop1").hide();
 
 		});
 	</script>
@@ -119,7 +132,34 @@
 			});
 			return false
 		}
-
+		function atoggle(v) {
+			var _id = v.id;
+			var _text = v.innerText;
+			var _href = "Template\\" + _text + ".html";
+			//alert("ID is " + _href);
+			$("#sidebartop1").toggle(); 
+		 
+			return false
+		}
+		function atoggle1(v) {
+			var _id = v.id;
+			var _text = v.innerText;
+			var _href = "Template\\" + _text + ".html";
+			//alert("ID is " + _href);
+			$("#sidebartop").toggle(); 
+		 
+			return false
+		}
+		function LinkChange_page(v) {
+			var _id = v.id;
+			var _text = v.innerText;
+			var _href = "Template\\" + _text + "-1.html";
+			//alert("ID is " + _href);
+			$("#content").load(_href, function(response, status, xhr) {
+				$('#content').html(response);
+			});
+			return false
+		}
 		function MenuChange(v) {
 			var _id = v.id;
 			var _text = v.innerText;

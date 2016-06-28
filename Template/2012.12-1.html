@@ -1,0 +1,49 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<H2><a id="d357c8f1-19d2-4bd7-9985-43acf87156ef.html" href="#" onclick="return MenuChange(this);">将表查询存储为标准的XML文件</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 12/29/2012 15:25:52<br /><p>/*--存为XML<br />
+ 将表/查询存储为标准的XML文件<br />
+--邹建 2003.12(引用请保留此信息)--*/<br />
+</p>
+<H2><a id="5afbad19-8046-408e-b98a-b5f6fa9959e2.html" href="#" onclick="return MenuChange(this);">将表数据旋转90度</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 12/28/2012 15:19:15<br /><p>/*<br />
+将表数据旋转90度(2007-11-19于海南三亚)<br />
+<br />
+</p>
+<H2><a id="6d13552d-55a3-4c5e-8bd3-cc5883820ed2.html" href="#" onclick="return MenuChange(this);">标识列的处理</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 12/27/2012 15:26:44<br /><p>引用邹建的：  <br />
+  --创建测试表  <br />
+  CREATE  TABLE  t1(ID  int  IDENTITY,A  int)  <br />
+</p>
+<H2><a id="168923e0-0cc1-4e71-93e5-05dfd530c7fa.html" href="#" onclick="return MenuChange(this);">各种字符串分函数</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 12/22/2012 15:21:54<br /><p>--各种字符串分函数<br />
+<br />
+if exists (select * from dbo.sysobjects where id = object_id(N'[dbo].[f_splitSTR]') and xtype in (N'FN', N'IF', N'TF'))<br />
+</p>
+<H2><a id="402b73a5-0bba-4a10-858f-8d0d4208bc9d.html" href="#" onclick="return MenuChange(this);">复制表结构的通用存储过程</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 12/15/2012 15:18:49<br /><p>复制表结构的通用存储过程 <br />
+<br />
+-- Transfer对象的重要属性 <br />
+</p>
+<H2><a id="d860da2f-9b0e-4c0b-875c-b137e19e75a4.html" href="#" onclick="return MenuChange(this);">BOM循环</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 12/10/2012 15:22:25<br /><p>if object_id('[tb]') is not null drop table [tb]<br />
+create table [tb] (id int,name varchar(1),pid int)<br />
+insert into [tb]<br />
+</p>
+<H2><a id="64fe57ee-9da1-4217-8169-2d76b7a19645.html" href="#" onclick="return MenuChange(this);">查每个分组前N条记录</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 12/10/2012 15:13:00<br /><p>---------------------------------<br />
+--  Author: liangCK 小梁<br />
+--  Title : 查每个分组前N条记录<br />
+</p>
+<H2><a id="d914e4db-5f61-4844-bcd9-d6e81ec86dad.html" href="#" onclick="return MenuChange(this);">生成流水号</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 12/07/2012 15:14:52<br /><p>--下面的代码生成长度为8的编号，编号以BH开头，其余6位为流水号。<br />
+--得到新编号的函数<br />
+CREATE FUNCTION f_NextBH()<br />
+</p>

@@ -1,0 +1,49 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<H2><a id="93586a7e-51ee-44cd-856e-60b855c5666b.html" href="#" onclick="return MenuChange(this);">累计求差</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 10/23/2013 15:11:32<br /><p>create table #aa (id int,cp varchar(10),qty int,totalqty int)<br />
+insert into #aa values(1,'a',100,130)<br />
+insert into #aa values(2,'a',20,130)<br />
+</p>
+<H2><a id="07088bfa-4280-474e-b5c7-194cc012ea61.html" href="#" onclick="return MenuChange(this);">笔记六</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 10/21/2013 15:14:30<br /><p>--SQL 2008使用空间数据<br />
+<br />
+SQL SERVER 2008支持两种空间数据类型，geometry和geography.其中geometry数据类型支持平面或平面球数据,geography可用于存储GPS经度和纬度坐标等椭球体数据。<br />
+</p>
+<H2><a id="f175553f-d67f-4699-9e2a-fc0fc9721ffd.html" href="#" onclick="return MenuChange(this);">如何给MS SQL数据库减肥</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 10/20/2013 15:30:32<br /><p>--最好备份日志，以后可通过日志恢复数据。。。<br />
+以下为日志处理方法<br />
+一般不建议做第4,6两步<br />
+</p>
+<H2><a id="8ff648a2-f3fb-4179-8151-2e2299cec9e3.html" href="#" onclick="return MenuChange(this);">数据库笔记2</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 10/20/2013 15:15:05<br /><p>1、说明：复制表(只复制结构,源表名：a 新表名：b) (Access可用) <br />
+法一：select * into b from a where 1 <>1 <br />
+法二：select top 0 * into b from a <br />
+</p>
+<H2><a id="4b67481b-8c72-453b-bfb4-a15b9661d7c9.html" href="#" onclick="return MenuChange(this);">BOM循环</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 10/16/2013 15:20:41<br /><p>if object_id('[tb]') is not null drop table [tb]<br />
+create table [tb] (id int,name varchar(1),pid int)<br />
+insert into [tb]<br />
+</p>
+<H2><a id="0715f3ff-5263-4e1e-ad8b-5209c72097d8.html" href="#" onclick="return MenuChange(this);">先进先出的一个例子</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 10/16/2013 15:11:14<br /><p>create table djjx<br />
+(<br />
+djbh varchar(20), --单据编号 key<br />
+</p>
+<H2><a id="49fabf8d-6730-4433-851a-52c8c295072c.html" href="#" onclick="return MenuChange(this);">拼音处理</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 10/10/2013 15:16:51<br /><p>/*-1.-获得汉字字符串的首字母<br />
+<br />
+   根据大力的贴子改成.将大力的两个函数合并成了一个函数.<br />
+</p>
+<H2><a id="f8f86f67-02be-497c-8a05-10441cc81e3f.html" href="#" onclick="return MenuChange(this);">动态sql语句用法</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 10/05/2013 15:25:28<br /><p>--动态语句语法<br />
+/******************************************************************************************************************************************************<br />
+动态语句语法:exec\sp_executesql语法<br />
+</p>

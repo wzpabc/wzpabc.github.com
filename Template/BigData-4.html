@@ -1,0 +1,122 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<a id="BigData-1.html" href="#" onclick="return MenuChange(this);">Page1>></a>|<a id="BigData-2.html" href="#" onclick="return MenuChange(this);">Page2>></a>|<a id="BigData-3.html" href="#" onclick="return MenuChange(this);">Page3>></a>|<a id="BigData-4.html" href="#" onclick="return MenuChange(this);">Page4>></a>|<a id="BigData-5.html" href="#" onclick="return MenuChange(this);">Page5>></a>|<a id="BigData-6.html" href="#" onclick="return MenuChange(this);">Page6>></a>|<a id="BigData-7.html" href="#" onclick="return MenuChange(this);">Page7>></a>|<a id="BigData-8.html" href="#" onclick="return MenuChange(this);">Page8>></a>|<a id="BigData-9.html" href="#" onclick="return MenuChange(this);">Page9>></a>|<a id="BigData-10.html" href="#" onclick="return MenuChange(this);">Page10>></a>
+<H2><a id="7914bdd9-53b2-47cb-b95f-d11ec29f9190.html" href="#" onclick="return MenuChange(this);">循环数据库压缩日志文件</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/01/2014 15:06:51<br /><p>--循环数据库压缩日志文件(假设日志文件fileid=2)<br />
+create table #db(id int identity(1,1),name varchar(80),dbsize int,mdfsize int,ldfsize int)<br />
+insert into #db<br />
+</p>
+<H2><a id="ea864080-0237-4c1a-948b-e09cdb74db00.html" href="#" onclick="return MenuChange(this);">BOM2</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/26/2014 15:26:40<br /><p>/*<br />
+标题：SQL SERVER 2000中查询指定节点及其所有父节点的函数(字符串形式显示)<br />
+作者：爱新觉罗·毓华(十八年风雨,守得冰山雪莲花开)  <br />
+</p>
+<H2><a id="da313740-5543-400e-bf02-d05a3cf5ea71.html" href="#" onclick="return MenuChange(this);">SQL复制表结构的通用存储过程</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/21/2014 15:27:12<br /><p>SQL复制表结构的通用存储过程 <br />
+ <br />
+-- Transfer对象的重要属性<br />
+</p>
+<H2><a id="a22de7c0-c85f-42a2-9cf7-1c2c1a596e7e.html" href="#" onclick="return MenuChange(this);">时间格式转换问题 </a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/21/2014 15:14:05<br /><p> 时间格式转换问题 <br />
+因为新开发的软件需要用一些旧软件生成的一些数据，在时间格式上不统一，只能手工转换，研究了一下午写了三条语句，以前没怎么用过convert函数和case语句，还有"+"操作符在不同上下文环境也会起到不同的作用，把我搞晕了要，不过现在看来是差不多弄好了。 <br />
+<br />
+</p>
+<H2><a id="8fec8598-01e2-45ae-9065-a6f38009402d.html" href="#" onclick="return MenuChange(this);">新建 文本文档 (2)</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/19/2014 15:14:27<br /><p>设置默认值alter table <表名> add <列名> <默认值类型>  default '<默认值>'<br />
+设置主键alter table <表名> add constraint <主键名> primary key(<列名>)<br />
+设置联合主键alter table <表名> add constraint <主键名> primary key(<列名1>，<列名2>，...,<列名N>)<br />
+</p>
+<H2><a id="7ef1f296-c0a4-4e81-bed2-85f489d68eb0.html" href="#" onclick="return MenuChange(this);">导出表视图中的数据为html 文件</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/15/2014 15:27:36<br /><p>IF OBJECT_ID(N'dbo.p_ExportHtml') IS NOT NULL<br />
+<br />
+    DROP PROC dbo.p_ExportHtml;<br />
+</p>
+<H2><a id="f7e30a42-7740-4615-87d5-0c9e92b8c701.html" href="#" onclick="return MenuChange(this);">查找无用的索引</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/10/2014 15:19:53<br /><p><br />
+SELECT  ind.index_id ,<br />
+        obj.name AS TableName ,<br />
+</p>
+<H2><a id="716b00ec-64ef-418d-9317-dacf355f9bb4.html" href="#" onclick="return MenuChange(this);">配置SQL内存</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/29/2014 15:22:46<br /><p>--设置min server memory配置项<br />
+EXEC SP_configure N'min server memory(MB)',0<br />
+<br />
+</p>
+<H2><a id="772232e9-1cdd-4888-80f8-9e3a357770e8.html" href="#" onclick="return MenuChange(this);">减少TEMP库</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/29/2014 15:07:23<br /><p>SQL Server：收缩 SQL Server Tempdb 大小 <br />
+系统管理员报告说，SQL Server Tempdb 数据库文件占用了大量的磁盘空间。让解决下。 <br />
+<br />
+</p>
+<H2><a id="a7347126-d835-424b-8a3f-cd1c167db88e.html" href="#" onclick="return MenuChange(this);">求排名</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/28/2014 15:20:06<br /><p>--> 测试数据：[TB]<br />
+if object_id('[TB]') is not null drop table [TB]<br />
+create table [TB]([id] int,[point] int,[name] varchar(4))<br />
+</p>
+<H2><a id="fb82bc79-e3dd-4d07-be0a-40b9453a4338.html" href="#" onclick="return MenuChange(this);">新建 文本文档</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/20/2014 15:27:42<br /><p>---测试数据---<br />
+if object_id('[tb]') is not null drop table [tb]<br />
+go<br />
+</p>
+<H2><a id="b87f0a0e-5582-44b5-aa37-9dc8558eac2a.html" href="#" onclick="return MenuChange(this);">新建 文本文档 (6)</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/15/2014 15:31:42<br /><p>--1. 错误14114<br />
+--使用下面的代码重新添加当前SQL Server实例的信息，处理完成后，应该重新启动MSSQLSERVER服务使修改生效。<br />
+DECLARE @srvname sysname<br />
+</p>
+<H2><a id="f2b8f1e4-c4bc-4f49-be96-cfeac2d59f5f.html" href="#" onclick="return MenuChange(this);">不同服务器不同服务器数据库之间的数据操作</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/12/2014 15:21:16<br /><p>/*不同服务器数据库之间的数据操作*/<br />
+<br />
+--创建链接服务器 <br />
+</p>
+<H2><a id="ae1ab924-6f94-4f7d-9acf-c49faaa44a27.html" href="#" onclick="return MenuChange(this);">流水号自增</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/06/2014 15:09:37<br /><p>在学习中遇到这个问题 <br />
+数据库里有编号字段 <br />
+BH00001 <br />
+</p>
+<H2><a id="72f39cf5-80e3-4710-9041-30b8a9524eee.html" href="#" onclick="return MenuChange(this);">计算年龄</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/03/2014 15:14:56<br /><p>SELECT 年龄=case when  datediff(day,dateadd(year,datediff(year,'1982-07-18',getdate()),'1982-07-18'),getdate())>=0<br />
+            then datediff(year,'1982-07-18',getdate())else datediff(YY,'1982-07-18',getdate())-1 end<br />
+</p>
+<H2><a id="b6463bc3-550c-45da-a048-9cd63165abc8.html" href="#" onclick="return MenuChange(this);">小小总结</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/01/2014 15:19:47<br /><p>1:replace 函数<br />
+第一个参数你的字符串，第二个参数你想替换的部分，第三个参数你要替换成什么<br />
+select replace('lihan','a','b')<br />
+</p>
+<H2><a id="b3ec2d5c-0201-4eb2-8541-d03fc4db4054.html" href="#" onclick="return MenuChange(this);">查看锁信息</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 03/19/2014 15:18:43<br /><p>create   table   #t(req_spid   int,obj_name   sysname)   <br />
+<br />
+    <br />
+</p>
+<H2><a id="2638e7ce-f081-4578-b07b-84f1f7ec5688.html" href="#" onclick="return MenuChange(this);">数据库减肥</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 03/13/2014 15:35:57<br /><p>--最好备份日志，以后可通过日志恢复数据。。。<br />
+以下为日志处理方法<br />
+一般不建议做第4,6两步<br />
+</p>
+<H2><a id="f2c20d39-79a1-4b77-963b-f0ce4b4aab48.html" href="#" onclick="return MenuChange(this);">将一列中所有的值一行显示</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 03/13/2014 15:30:17<br /><p>----------------------------------------------------<br />
+/*如何将一列中所有的值一行显示<br />
+数据源<br />
+</p>
+<H2><a id="92081e28-8fe6-414e-b5e5-13839dbbf980.html" href="#" onclick="return MenuChange(this);">索引DMV</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 02/23/2014 15:12:18<br /><p>--查找缺失索引<br />
+<br />
+SELECT  MID.statement AS ObjectName ,<br />
+</p>
+<a id="BigData-1.html" href="#" onclick="return MenuChange(this);">Page1>></a>|<a id="BigData-2.html" href="#" onclick="return MenuChange(this);">Page2>></a>|<a id="BigData-3.html" href="#" onclick="return MenuChange(this);">Page3>></a>|<a id="BigData-4.html" href="#" onclick="return MenuChange(this);">Page4>></a>|<a id="BigData-5.html" href="#" onclick="return MenuChange(this);">Page5>></a>|<a id="BigData-6.html" href="#" onclick="return MenuChange(this);">Page6>></a>|<a id="BigData-7.html" href="#" onclick="return MenuChange(this);">Page7>></a>|<a id="BigData-8.html" href="#" onclick="return MenuChange(this);">Page8>></a>|<a id="BigData-9.html" href="#" onclick="return MenuChange(this);">Page9>></a>|<a id="BigData-10.html" href="#" onclick="return MenuChange(this);">Page10>></a>

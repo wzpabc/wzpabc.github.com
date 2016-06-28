@@ -1,0 +1,109 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<a id="360936B7-A092-426A-8C70-35CC375709F8-1.html" href="#" onclick="return MenuChange(this);">Page1>></a>|<a id="360936B7-A092-426A-8C70-35CC375709F8-2.html" href="#" onclick="return MenuChange(this);">Page2>></a>|<a id="360936B7-A092-426A-8C70-35CC375709F8-3.html" href="#" onclick="return MenuChange(this);">Page3>></a>|<a id="360936B7-A092-426A-8C70-35CC375709F8-4.html" href="#" onclick="return MenuChange(this);">Page4>></a>
+<H2><a id="b15ed6f3-72f5-41b1-ab8a-26f8d7344e35.html" href="#" onclick="return MenuChange(this);">删除系统内所有用户表</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/22/2016 15:30:49<br /><p>--删除所有用户表：<br />
+--select * from sysobjects where xtype='U' and category=0<br />
+use master<br />
+</p>
+<H2><a id="372f246f-3a19-47ea-a074-9929ec6bd350.html" href="#" onclick="return MenuChange(this);">SQL Server nested loop join 效率试验 </a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/26/2016 15:18:25<br /><p>从很多网页上都看到,SQL Server有三种Join的算法, <br />
+nested loop join, merge join, hash join. <br />
+其中最常用的就是nested loop join.<br />
+</p>
+<H2><a id="969fa5c1-1565-4226-9aa4-e964601690cd.html" href="#" onclick="return MenuChange(this);">如何批量替换ntext</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 03/11/2016 15:30:03<br /><p><br />
+update 表名 <br />
+set text类型字段名=replace(convert(varchar(8000),text类型字段名),'要替换的字符','替换成的值')<br />
+</p>
+<H2><a id="e67e54af-657d-4a3b-8160-26e00651fc16.html" href="#" onclick="return MenuChange(this);">字符串拆分合并</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 02/27/2016 15:25:25<br /><p>表a <br />
+name    num <br />
+aa      1 <br />
+</p>
+<H2><a id="370132d5-96b2-4881-9b99-67a8d50b492e.html" href="#" onclick="return MenuChange(this);">性能调优博客</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 10/05/2015 15:19:27<br /><p>http://www.cnblogs.com/Amaranthus/<br />
+</p>
+<H2><a id="44c22833-a557-44f4-ba40-f797235325d1.html" href="#" onclick="return MenuChange(this);">SQL性能调优</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 09/24/2015 15:11:05<br /><p>http://www.cnblogs.com/Amaranthus/<br />
+</p>
+<H2><a id="4a8d364b-d877-4b44-9bb6-f81e7a20e2b5.html" href="#" onclick="return MenuChange(this);">单个语句快于存储过程的原因分析</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 09/07/2015 15:16:36<br /><p>SQL Server中存储过程比直接运行SQL语句慢的原因 <br />
+ 在很多的资料中都描述说SQLSERVER的存储过程较普通的SQL语句有以下优点： <br />
+1.       存储过程只在创造时进行编译即可，以后每次执行存储过程都不需再重新编译，而我们通常使用的SQL语句每执行一次就编译一次,所以使用存储过程可提高数据库执行速度。 <br />
+</p>
+<H2><a id="50153fcb-1ad6-4196-8301-5dc3daa68d6b.html" href="#" onclick="return MenuChange(this);">经典递归问题</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 09/03/2015 15:22:29<br /><p>--> 测试数据：[tbl]<br />
+go<br />
+if object_id('[tbl]') is not null <br />
+</p>
+<H2><a id="13e3b37b-f0a7-49a1-8c33-d806601e586e.html" href="#" onclick="return MenuChange(this);">下一个生日还有多少天</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 08/10/2015 15:20:22<br /><p>/*<br />
+6、编写一个函数func_calcdays，计算下一个生日还有多少天，函数<br />
+   带两个输入参数（生日和当前日期），一个返回值（天数）。<br />
+</p>
+<H2><a id="09b0b998-19a2-44d9-a9c3-5fd1408f00c4.html" href="#" onclick="return MenuChange(this);">高难度行列互换</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 07/16/2015 15:33:59<br /><p>create table pds<br />
+(姓名 varchar(8), <br />
+ 内容 varchar(5), <br />
+</p>
+<H2><a id="cccae6fe-a79e-4854-a8d3-99a8f3ded70b.html" href="#" onclick="return MenuChange(this);">递归实现累计求和</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/26/2015 15:19:08<br /><p>--> 测试数据：[tbl]<br />
+go<br />
+if object_id('[tbl]') is not null <br />
+</p>
+<H2><a id="9e007ddf-36f0-4201-ab01-dc9296ea59b2.html" href="#" onclick="return MenuChange(this);">如何批量替换ntext</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/25/2015 15:24:00<br /><p><br />
+update 表名 <br />
+set text类型字段名=replace(convert(varchar(8000),text类型字段名),'要替换的字符','替换成的值')<br />
+</p>
+<H2><a id="96756e30-8633-4b5c-8736-d3bdfe5a25ad.html" href="#" onclick="return MenuChange(this);">查询独立的日期</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 02/13/2015 15:24:58<br /><p>GO<br />
+IF OBJECT_ID('A')IS NOT NULL<br />
+DROP TABLE  A<br />
+</p>
+<H2><a id="7773cf76-f443-44fe-a501-dded9d2a94c0.html" href="#" onclick="return MenuChange(this);">变态的行列转换</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 01/29/2015 15:31:56<br /><p>--> 测试数据：[tbl]<br />
+go<br />
+if object_id('[tbl]') is not null <br />
+</p>
+<H2><a id="e067a051-d10f-4ad0-938c-c359d00b565e.html" href="#" onclick="return MenuChange(this);">高难度行列互换</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 01/22/2015 15:16:05<br /><p>create table pds<br />
+(姓名 varchar(8), <br />
+ 内容 varchar(5), <br />
+</p>
+<H2><a id="15b846bf-645c-4b6a-959c-cdef60db4334.html" href="#" onclick="return MenuChange(this);">日期类型的优化</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 12/26/2014 15:10:27<br /><p>http://sd.csdn.net/a/20101130/282777.html<br />
+</p>
+<H2><a id="d191f87d-2993-4533-a7ca-acb109c4a0b7.html" href="#" onclick="return MenuChange(this);">日期类型的优化</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 12/20/2014 15:19:04<br /><p>http://sd.csdn.net/a/20101130/282777.html<br />
+</p>
+<H2><a id="98fd6d80-c62d-494b-b7c2-5d6bf9fb210a.html" href="#" onclick="return MenuChange(this);">查询独立的日期</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 11/01/2014 15:09:21<br /><p>GO<br />
+IF OBJECT_ID('A')IS NOT NULL<br />
+DROP TABLE  A<br />
+</p>
+<H2><a id="fd46d90d-b19c-47f5-85bd-6530eb797431.html" href="#" onclick="return MenuChange(this);">拆分表字段的值</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 10/23/2014 15:17:24<br /><p>--分拆列值<br />
+--原著：邹建<br />
+--改编：爱新觉罗.毓华(十八年风雨,守得冰山雪莲花开)  2007-12-16  广东深圳<br />
+</p>
+<a id="360936B7-A092-426A-8C70-35CC375709F8-1.html" href="#" onclick="return MenuChange(this);">Page1>></a>|<a id="360936B7-A092-426A-8C70-35CC375709F8-2.html" href="#" onclick="return MenuChange(this);">Page2>></a>|<a id="360936B7-A092-426A-8C70-35CC375709F8-3.html" href="#" onclick="return MenuChange(this);">Page3>></a>|<a id="360936B7-A092-426A-8C70-35CC375709F8-4.html" href="#" onclick="return MenuChange(this);">Page4>></a>

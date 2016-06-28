@@ -1,0 +1,122 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<a id="2016.06-1.html" href="#" onclick="return MenuChange(this);">Page1>></a>|<a id="2016.06-2.html" href="#" onclick="return MenuChange(this);">Page2>></a>|<a id="2016.06-3.html" href="#" onclick="return MenuChange(this);">Page3>></a>|<a id="2016.06-4.html" href="#" onclick="return MenuChange(this);">Page4>></a>|<a id="2016.06-5.html" href="#" onclick="return MenuChange(this);">Page5>></a>|<a id="2016.06-6.html" href="#" onclick="return MenuChange(this);">Page6>></a>
+<H2><a id="930b59d7-fc22-4b31-ac5c-54633f215b9a.html" href="#" onclick="return MenuChange(this);">构造使用IN子句的动态Transact-SQL方法进行编号查询</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/08/2016 21:18:32<br /><p>构造使用IN子句的动态Transact-SQL方法进行编号查询<br />
+<br />
+--1. 构造使用IN子句的动态Transact-SQL方法进行编号查询<br />
+</p>
+<H2><a id="6b0c6cdf-bc48-47e7-a10a-ce1cb6b9c501.html" href="#" onclick="return MenuChange(this);">查看锁信息</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/08/2016 21:15:43<br /><p>create   table   #t(req_spid   int,obj_name   sysname)   <br />
+<br />
+    <br />
+</p>
+<H2><a id="fb82bc79-e3dd-4d07-be0a-40b9453a4338.html" href="#" onclick="return MenuChange(this);">新建 文本文档</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/08/2016 20:33:28<br /><p>---测试数据---<br />
+if object_id('[tb]') is not null drop table [tb]<br />
+go<br />
+</p>
+<H2><a id="c677f08e-9545-4f27-80fd-5414ce5b0f79.html" href="#" onclick="return MenuChange(this);">批量删除多个表的多个字段</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/08/2016 03:02:33<br /><p>declare @tablename varchar(30)<br />
+DECLARE cur_temp Cursor For <br />
+select b.name from dbo.syscolumns a,dbo.sysobjects b<br />
+</p>
+<H2><a id="93cc9ae7-d145-4bc6-8432-258c1168e996.html" href="#" onclick="return MenuChange(this);">合并列值</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/08/2016 01:38:42<br /><p>合并列值 <br />
+--*******************************************************************************************<br />
+表结构，数据如下： <br />
+</p>
+<H2><a id="24506d47-b697-4844-bd6c-feb236020f2d.html" href="#" onclick="return MenuChange(this);">断号查询</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/07/2016 23:44:28<br /><p>--测试数据<br />
+CREATE TABLE tb(col1 varchar(10),col2 int)<br />
+INSERT tb SELECT 'a',2<br />
+</p>
+<H2><a id="43b9ca90-6488-4b7c-9ebf-e1d7e47c5024.html" href="#" onclick="return MenuChange(this);">Contact</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/07/2016 23:35:51<br /><p>create table tb(id varchar(3) , pid varchar(3) , name varchar(10)) <br />
+insert into tb values('001' , null  , '广东省') <br />
+insert into tb values('002' , '001' , '广州市') <br />
+</p>
+<H2><a id="0c335d09-faee-437c-b2e4-0be2a3b5670a.html" href="#" onclick="return MenuChange(this);">处理表重复记录(查询和删除)</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/07/2016 22:07:01<br /><p>--处理表重复记录(查询和删除)<br />
+/******************************************************************************************************************************************************<br />
+1、Num、Name相同的重复值记录,没有大小关系只保留一条<br />
+</p>
+<H2><a id="168923e0-0cc1-4e71-93e5-05dfd530c7fa.html" href="#" onclick="return MenuChange(this);">各种字符串分函数</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/07/2016 08:19:08<br /><p>--各种字符串分函数<br />
+<br />
+if exists (select * from dbo.sysobjects where id = object_id(N'[dbo].[f_splitSTR]') and xtype in (N'FN', N'IF', N'TF'))<br />
+</p>
+<H2><a id="d84008f8-687d-49f8-aa79-e1495e9eddcd.html" href="#" onclick="return MenuChange(this);">分区表</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/07/2016 01:20:19<br /><p>/*<br />
+本文使对现有的数据库中新建一个表进行分区.暂未发现如何对一个已有数据<br />
+的表进行分区处理的资料.本文事例仅为本人测试用.其中有很多未考虑之处<br />
+</p>
+<H2><a id="30346ddf-893b-4fc5-9bb0-161376fc5354.html" href="#" onclick="return MenuChange(this);">先进先出的一个例子</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/06/2016 14:01:20<br /><p>create table djjx<br />
+(<br />
+djbh varchar(20), --单据编号 key<br />
+</p>
+<H2><a id="0d8ad8d1-5d24-4236-a70c-950f56228087.html" href="#" onclick="return MenuChange(this);">数字转换成EXCEL列名</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/06/2016 13:18:11<br /><p>alter function col_rev(<br />
+ @i_version int, -- Excel 版本号 <br />
+ @i_col int          -- 字段号(数值表示)<br />
+</p>
+<H2><a id="20888d7c-1ec1-4cfb-855c-91a81036d82c.html" href="#" onclick="return MenuChange(this);">行列转换with  rollup的用法</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/06/2016 03:16:33<br /><p>--> 测试数据：[tbl]<br />
+if object_id('[tbl]') is not null drop table [tbl]<br />
+create table [tbl]([xrq] datetime,[rgl] int,[jcmc] varchar(12))<br />
+</p>
+<H2><a id="72f39cf5-80e3-4710-9041-30b8a9524eee.html" href="#" onclick="return MenuChange(this);">计算年龄</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/06/2016 00:53:36<br /><p>SELECT 年龄=case when  datediff(day,dateadd(year,datediff(year,'1982-07-18',getdate()),'1982-07-18'),getdate())>=0<br />
+            then datediff(year,'1982-07-18',getdate())else datediff(YY,'1982-07-18',getdate())-1 end<br />
+</p>
+<H2><a id="b6b121bb-a2e6-464c-a85c-024e81178a88.html" href="#" onclick="return MenuChange(this);">变态的行列转换</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/04/2016 10:09:26<br /><p>--> 测试数据：[tbl]<br />
+go<br />
+if object_id('[tbl]') is not null <br />
+</p>
+<H2><a id="ad2ec0eb-edd2-44fa-9f3f-92988c6f85dd.html" href="#" onclick="return MenuChange(this);">给TEMP减肥</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/04/2016 04:54:52<br /><p>SQL Server会自动创建一个名为tempdb的数据库作为工作空间使用，当您在存储过程中创建一个临时表格时，比如(CREATE TABLE #MyTemp)，无论您正在使用哪个数据库，SQL数据库引擎都会将这个表格创建在tempdb数据库中。<br />
+<br />
+<br />
+</p>
+<H2><a id="372f246f-3a19-47ea-a074-9929ec6bd350.html" href="#" onclick="return MenuChange(this);">SQL Server nested loop join 效率试验 </a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/03/2016 21:55:14<br /><p>从很多网页上都看到,SQL Server有三种Join的算法, <br />
+nested loop join, merge join, hash join. <br />
+其中最常用的就是nested loop join.<br />
+</p>
+<H2><a id="7914bdd9-53b2-47cb-b95f-d11ec29f9190.html" href="#" onclick="return MenuChange(this);">循环数据库压缩日志文件</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/03/2016 21:07:30<br /><p>--循环数据库压缩日志文件(假设日志文件fileid=2)<br />
+create table #db(id int identity(1,1),name varchar(80),dbsize int,mdfsize int,ldfsize int)<br />
+insert into #db<br />
+</p>
+<H2><a id="0cf6bad7-e27f-4a80-ac2d-3237445e19cb.html" href="#" onclick="return MenuChange(this);">SQL邮件操作</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/03/2016 14:17:24<br /><p>SQL Server 并没有内置邮件服务器（Mail Server），它跟我们发送邮件一样，需要用户名和密码通过 SMTP（Simple Message Transfer Protocol）去连接邮件服务器。我们想让 SQL Server 来发送邮件，首先要告诉它用户名称，密码，服务器地址，网络传送协议，邮件服务器的端口。。。等信息。<br />
+　　以下脚本实现了数据库邮件的配置：<br />
+--下面是具体的配置邮件步骤 <br />
+</p>
+<H2><a id="b87f0a0e-5582-44b5-aa37-9dc8558eac2a.html" href="#" onclick="return MenuChange(this);">新建 文本文档 (6)</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/03/2016 12:04:00<br /><p>--1. 错误14114<br />
+--使用下面的代码重新添加当前SQL Server实例的信息，处理完成后，应该重新启动MSSQLSERVER服务使修改生效。<br />
+DECLARE @srvname sysname<br />
+</p>
+<a id="2016.06-1.html" href="#" onclick="return MenuChange(this);">Page1>></a>|<a id="2016.06-2.html" href="#" onclick="return MenuChange(this);">Page2>></a>|<a id="2016.06-3.html" href="#" onclick="return MenuChange(this);">Page3>></a>|<a id="2016.06-4.html" href="#" onclick="return MenuChange(this);">Page4>></a>|<a id="2016.06-5.html" href="#" onclick="return MenuChange(this);">Page5>></a>|<a id="2016.06-6.html" href="#" onclick="return MenuChange(this);">Page6>></a>

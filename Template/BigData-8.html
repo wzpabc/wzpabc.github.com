@@ -1,0 +1,123 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<a id="BigData-1.html" href="#" onclick="return MenuChange(this);">Page1>></a>|<a id="BigData-2.html" href="#" onclick="return MenuChange(this);">Page2>></a>|<a id="BigData-3.html" href="#" onclick="return MenuChange(this);">Page3>></a>|<a id="BigData-4.html" href="#" onclick="return MenuChange(this);">Page4>></a>|<a id="BigData-5.html" href="#" onclick="return MenuChange(this);">Page5>></a>|<a id="BigData-6.html" href="#" onclick="return MenuChange(this);">Page6>></a>|<a id="BigData-7.html" href="#" onclick="return MenuChange(this);">Page7>></a>|<a id="BigData-8.html" href="#" onclick="return MenuChange(this);">Page8>></a>|<a id="BigData-9.html" href="#" onclick="return MenuChange(this);">Page9>></a>|<a id="BigData-10.html" href="#" onclick="return MenuChange(this);">Page10>></a>
+<H2><a id="d860da2f-9b0e-4c0b-875c-b137e19e75a4.html" href="#" onclick="return MenuChange(this);">BOM循环</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 12/10/2012 15:22:25<br /><p>if object_id('[tb]') is not null drop table [tb]<br />
+create table [tb] (id int,name varchar(1),pid int)<br />
+insert into [tb]<br />
+</p>
+<H2><a id="64fe57ee-9da1-4217-8169-2d76b7a19645.html" href="#" onclick="return MenuChange(this);">查每个分组前N条记录</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 12/10/2012 15:13:00<br /><p>---------------------------------<br />
+--  Author: liangCK 小梁<br />
+--  Title : 查每个分组前N条记录<br />
+</p>
+<H2><a id="d914e4db-5f61-4844-bcd9-d6e81ec86dad.html" href="#" onclick="return MenuChange(this);">生成流水号</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 12/07/2012 15:14:52<br /><p>--下面的代码生成长度为8的编号，编号以BH开头，其余6位为流水号。<br />
+--得到新编号的函数<br />
+CREATE FUNCTION f_NextBH()<br />
+</p>
+<H2><a id="d8b0e118-eecc-48e4-bc10-4db5a8022536.html" href="#" onclick="return MenuChange(this);">日志处理</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 11/30/2012 15:16:01<br /><p>1、用BACKUP LOG database WITH NO_LOG清除日志 <br />
+<br />
+把数据库属性中的故障还原模型改为“简单”可以大大减慢日志增长的速度。 <br />
+</p>
+<H2><a id="fd87a636-5ea0-4871-bcbc-5d7ec07be04e.html" href="#" onclick="return MenuChange(this);">数据库笔记4</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 11/27/2012 15:22:32<br /><p>*<br />
+标题：普通行列转换(version 2.0)<br />
+作者：爱新觉罗.毓华(十八年风雨,守得冰山雪莲花开)<br />
+</p>
+<H2><a id="a7f51b15-0c4f-4c07-8e8c-ab4515bdf6b1.html" href="#" onclick="return MenuChange(this);">通过脚本创建JOB</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 11/24/2012 15:22:54<br /><p>通过脚本创建JOB：   <br />
+if   exists   (select   *   from   dbo.sysobjects   where   id   =   object_id(N[dbo].[p_createjob])   and   OBJECTPROPERTY(id,   NIsProcedure)   =   1)   <br />
+  drop   procedure   [dbo].[p_createjob]   <br />
+</p>
+<H2><a id="64b6798c-5ce0-4d03-aabd-fbbace8e022d.html" href="#" onclick="return MenuChange(this);">MSSQL中如何用SQL清除所有表的数据</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 11/24/2012 15:19:15<br /><p>MSSQL中如何用SQL清除所有表的数据？这个需求分三种类型： <br />
+第一：只要数据库中表是空的； <br />
+第二：表是空的，并且自增长列可以从１开始增长。 <br />
+</p>
+<H2><a id="74f0c4dd-5bae-4a82-9272-e56942a4ce0e.html" href="#" onclick="return MenuChange(this);">分区表示例</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 11/05/2012 15:11:41<br /><p>USE master<br />
+GO<br />
+IF DB_ID('Sample_DB') IS NOT NULL <br />
+</p>
+<H2><a id="1c83e627-771c-439d-a5fd-c1c3fff6188d.html" href="#" onclick="return MenuChange(this);">BOM深度广度排序</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 11/03/2012 15:23:05<br /><p>if object_id('[tb]') is not null drop table [tb]<br />
+go<br />
+create table [tb]([modeid] int,modename varchar(20),parentid int)<br />
+</p>
+<H2><a id="481b3724-db6f-4062-a40d-a84d82eeec2d.html" href="#" onclick="return MenuChange(this);">显示索引消耗的磁盘情况</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 10/20/2012 15:15:02<br /><p>--显示索引消耗的磁盘情况<br />
+SELECT  CASE InnerTable.index_id<br />
+          WHEN 0 THEN 'HEAP'<br />
+</p>
+<H2><a id="321adaf5-53c7-4de4-b459-7b8be7ec5ba5.html" href="#" onclick="return MenuChange(this);">去汉字</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 10/19/2012 15:24:48<br /><p>declare @s varchar(50)<br />
+set @s='Level 1-2,Tower E5,Plaza,No.44 East Chang An Ave.  东长安街44号东方广场东5座1-2层'<br />
+while PATINDEX('%[吖-做]%',@s)>0<br />
+</p>
+<H2><a id="a9575a19-7681-4ca6-aa9b-e43dc7e3a6e5.html" href="#" onclick="return MenuChange(this);">sql xml 入门</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 10/18/2012 15:20:37<br /><p>/*<br />
+sql xml 入门:<br />
+    --by jinjazz<br />
+</p>
+<H2><a id="e7ffe59e-471c-4828-b78a-863bee41b14b.html" href="#" onclick="return MenuChange(this);">SQL防注入</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 10/15/2012 15:35:07<br /><p>SQL注入攻击的危害性很大。在讲解其防止办法之前，数据库管理员有必要先了解一下其攻击的原理。这有利于管理员采取有针对性的防治措施。<br />
+<br />
+　　一、 SQL注入攻击的简单示例。<br />
+</p>
+<H2><a id="e0258e9d-a6b4-48db-b69b-ca2893c3e98c.html" href="#" onclick="return MenuChange(this);">表信息查询</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 09/20/2012 15:26:02<br /><p>--查询用户表对象信息<br />
+select  Tab.Name as [表名],Tab.create_date as [创建时间],Tab.modify_date  as [最后修改时间],<br />
+        Col.Name  as [列名] ,Type.name as [数据类型],Col.max_length as [字段长度],<br />
+</p>
+<H2><a id="8802948a-e051-4c8f-b0a5-cf3f6e0131c1.html" href="#" onclick="return MenuChange(this);">BCP DYNAMIC</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 09/17/2012 15:23:57<br /><p> <br />
+ --BCP OUT<br />
+ SELECT <br />
+</p>
+<H2><a id="9a9547ce-d0d8-49e7-b160-50c01f20c4e1.html" href="#" onclick="return MenuChange(this);">表结构信息查询</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 09/14/2012 15:15:43<br /><p>--sql server 2000<br />
+SELECT <br />
+    表名       = case when a.colorder=1 then d.name else '' end,<br />
+</p>
+<H2><a id="46f6bd6b-a204-4c29-bb35-70db96dc1175.html" href="#" onclick="return MenuChange(this);">随机插入汉字</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 09/09/2012 15:24:27<br /><p>declare @t table(col nvarchar(4))<br />
+insert @t select nchar(cast(19968+rand()*20902 as int))<br />
+select * from @t<br />
+</p>
+<H2><a id="d0116019-d697-4959-af27-1798b8fdaa30.html" href="#" onclick="return MenuChange(this);">利用触发器实现标识列连续</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 08/21/2012 15:13:19<br /><p>利用触发器实现标识列连续。(支持批量插入) <br />
+if exists (select * from dbo.sysobjects where id = object_id(N'[dbo].[ttt]') and OBJECTPROPERTY(id, N'IsUserTable') = 1)<br />
+drop table [dbo].[ttt]<br />
+</p>
+<H2><a id="bb83b647-37f2-41a8-9fa6-d1dae5f310a5.html" href="#" onclick="return MenuChange(this);">备份作业</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 08/19/2012 15:10:54<br /><p>/*******************完整备份作业*******************/<br />
+--完整备份,每周一次<br />
+USE Master<br />
+</p>
+<H2><a id="752dadc6-9494-45d8-a86f-21b1a12b706b.html" href="#" onclick="return MenuChange(this);">系统表说明</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 08/13/2012 15:09:08<br /><p>syscolumns<br />
+每个表和视图中的每列在表中占一行，存储过程中的每个参数在表中也占一行。该表位于每个数据库中。<br />
+<br />
+</p>
+<a id="BigData-1.html" href="#" onclick="return MenuChange(this);">Page1>></a>|<a id="BigData-2.html" href="#" onclick="return MenuChange(this);">Page2>></a>|<a id="BigData-3.html" href="#" onclick="return MenuChange(this);">Page3>></a>|<a id="BigData-4.html" href="#" onclick="return MenuChange(this);">Page4>></a>|<a id="BigData-5.html" href="#" onclick="return MenuChange(this);">Page5>></a>|<a id="BigData-6.html" href="#" onclick="return MenuChange(this);">Page6>></a>|<a id="BigData-7.html" href="#" onclick="return MenuChange(this);">Page7>></a>|<a id="BigData-8.html" href="#" onclick="return MenuChange(this);">Page8>></a>|<a id="BigData-9.html" href="#" onclick="return MenuChange(this);">Page9>></a>|<a id="BigData-10.html" href="#" onclick="return MenuChange(this);">Page10>></a>

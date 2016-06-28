@@ -1,0 +1,67 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<H2><a id="b29873df-93b9-4483-8ed3-5ddd81062275.html" href="#" onclick="return MenuChange(this);">提取中文、英文、汉字</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 01/30/2014 15:10:02<br /><p>--提取数字<br />
+IF OBJECT_ID('DBO.GET_NUMBER2') IS NOT NULL<br />
+DROP FUNCTION DBO.GET_NUMBER2<br />
+</p>
+<H2><a id="3aa2b320-4245-4228-b016-392e27739f56.html" href="#" onclick="return MenuChange(this);">BCPALL</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 01/27/2014 15:30:03<br /><p><br />
+IF object_id('usp_insert_PaymentTables') IS NOT NULL<br />
+	   BEGIN <br />
+</p>
+<H2><a id="43b9ca90-6488-4b7c-9ebf-e1d7e47c5024.html" href="#" onclick="return MenuChange(this);">Contact</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 01/26/2014 15:17:16<br /><p>create table tb(id varchar(3) , pid varchar(3) , name varchar(10)) <br />
+insert into tb values('001' , null  , '广东省') <br />
+insert into tb values('002' , '001' , '广州市') <br />
+</p>
+<H2><a id="3e35d11b-c212-4b25-9c04-b2257a9609bc.html" href="#" onclick="return MenuChange(this);">日期函数</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 01/23/2014 15:18:31<br /><p>通常，你需要获得当前日期和计算一些其他的日期，例如，你的程序可能需要判断一个月的第一天或者最后一天。你们大部分人大概都知道怎样把日期进行分割（年、月、日等），然后仅仅用分割出来的年、月、日等放在几个函数中计算出自己所需要的日期！在这篇文章里，我将告诉你如何使用DATEADD和DATEDIFF函数来计算出在你的程序中可能你要用到的一些不同日期。  <br />
+        在使用本文中的例子之前，你必须注意以下的问题。大部分可能不是所有例子在不同的机器上执行的结果可能不一样，这完全由哪一天是一个星期的第一天这个设置决定。第一天（DATEFIRST）设定决定了你的系统使用哪一天作为一周的第一天。所有以下的例子都是以星期天作为一周的第一天来建立，也就是第一天设置为7。假如你的第一天设置不一样，你可能需要调整这些例子，使它和不同的第一天设置相符合。你可以通过@@DATEFIRST函数来检查第一天设置。  <br />
+        为了理解这些例子，我们先复习一下DATEDIFF和DATEADD函数。DATEDIFF函数计算两个日期之间的小时、天、周、月、年等时间间隔总数。DATEADD函数计算一个日期通过给时间间隔加减来获得一个新的日期。要了解更多的DATEDIFF和DATEADD函数以及时间间隔可以阅读微软联机帮助。  <br />
+</p>
+<H2><a id="f95208ba-bbdb-4d21-a1a4-cbac464e9cc6.html" href="#" onclick="return MenuChange(this);">行列互换</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 01/20/2014 15:27:42<br /><p>--行列互转<br />
+--摘自中国风博客，引用请标明内容来源<br />
+--1、行换列<br />
+</p>
+<H2><a id="88e9c3d8-08a7-42bb-8ca6-e095832dafc1.html" href="#" onclick="return MenuChange(this);">已知表名查数据库名</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 01/11/2014 15:18:59<br /><p>declare @Table table(DB sysname,TabName sysname)<br />
+insert @Table<br />
+exec sp_msforeachdb 'select ''?'' as DB,Name as 表名 from [?]..sysobjects where type=''U'' and Name =''表名'''--輸入表名<br />
+</p>
+<H2><a id="7a644cd0-9aba-4324-8879-96dffa942e49.html" href="#" onclick="return MenuChange(this);">清理过大的日志文件</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 01/10/2014 15:35:51<br /><p>方法1、--在查询分析器，选中所要清理日志的数据库，<br />
+执行如下SQLbackup log 数据库名 with no_logDBCC SHRINKFILE ( 日志文件名或日志文件ID,要缩小的目标大小)        <br />
+--在当前数据库下select fileid,groupid,name from sysfiles where groupid=0<br />
+</p>
+<H2><a id="a1934fcd-0a91-4e05-b9d0-e59220190dab.html" href="#" onclick="return MenuChange(this);">动态sql语句基本语法</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 01/09/2014 15:12:01<br /><p>1 :普通SQL语句可以用exec执行 <br />
+<br />
+Select * from tableName <br />
+</p>
+<H2><a id="78cbfc42-a8b9-46cd-a91a-720a9beea944.html" href="#" onclick="return MenuChange(this);">动态sql语句基本语法1</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 01/05/2014 15:18:23<br /><p>1 :普通SQL语句可以用Exec执行 <br />
+<br />
+eg:   Select * from tableName <br />
+</p>
+<H2><a id="7f2e4112-4e7f-4042-aa7b-f3f4642a95bc.html" href="#" onclick="return MenuChange(this);">SQL SERVER 数据库实用SQL语句</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 01/04/2014 15:11:37<br /><p>【SQL SERVER 数据库实用SQL语句】 <br />
+<br />
+<br />
+</p>
+<H2><a id="ad1b3fe7-e740-473d-be88-680ce6dc7e26.html" href="#" onclick="return MenuChange(this);">一个蛋疼的问题</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 01/02/2014 15:24:53<br /><p>go<br />
+if object_id('tbl')is not null<br />
+drop table tbl<br />
+</p>

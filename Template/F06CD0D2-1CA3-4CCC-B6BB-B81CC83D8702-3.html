@@ -1,0 +1,122 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-1.html" href="#" onclick="return MenuChange(this);">Page1>></a>|<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-2.html" href="#" onclick="return MenuChange(this);">Page2>></a>|<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-3.html" href="#" onclick="return MenuChange(this);">Page3>></a>|<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-4.html" href="#" onclick="return MenuChange(this);">Page4>></a>|<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-5.html" href="#" onclick="return MenuChange(this);">Page5>></a>|<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-6.html" href="#" onclick="return MenuChange(this);">Page6>></a>
+<H2><a id="fb82bc79-e3dd-4d07-be0a-40b9453a4338.html" href="#" onclick="return MenuChange(this);">新建 文本文档</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/20/2014 15:27:42<br /><p>---测试数据---<br />
+if object_id('[tb]') is not null drop table [tb]<br />
+go<br />
+</p>
+<H2><a id="b87f0a0e-5582-44b5-aa37-9dc8558eac2a.html" href="#" onclick="return MenuChange(this);">新建 文本文档 (6)</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/15/2014 15:31:42<br /><p>--1. 错误14114<br />
+--使用下面的代码重新添加当前SQL Server实例的信息，处理完成后，应该重新启动MSSQLSERVER服务使修改生效。<br />
+DECLARE @srvname sysname<br />
+</p>
+<H2><a id="ae1ab924-6f94-4f7d-9acf-c49faaa44a27.html" href="#" onclick="return MenuChange(this);">流水号自增</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/06/2014 15:09:37<br /><p>在学习中遇到这个问题 <br />
+数据库里有编号字段 <br />
+BH00001 <br />
+</p>
+<H2><a id="72f39cf5-80e3-4710-9041-30b8a9524eee.html" href="#" onclick="return MenuChange(this);">计算年龄</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/03/2014 15:14:56<br /><p>SELECT 年龄=case when  datediff(day,dateadd(year,datediff(year,'1982-07-18',getdate()),'1982-07-18'),getdate())>=0<br />
+            then datediff(year,'1982-07-18',getdate())else datediff(YY,'1982-07-18',getdate())-1 end<br />
+</p>
+<H2><a id="b6463bc3-550c-45da-a048-9cd63165abc8.html" href="#" onclick="return MenuChange(this);">小小总结</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/01/2014 15:19:47<br /><p>1:replace 函数<br />
+第一个参数你的字符串，第二个参数你想替换的部分，第三个参数你要替换成什么<br />
+select replace('lihan','a','b')<br />
+</p>
+<H2><a id="2638e7ce-f081-4578-b07b-84f1f7ec5688.html" href="#" onclick="return MenuChange(this);">数据库减肥</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 03/13/2014 15:35:57<br /><p>--最好备份日志，以后可通过日志恢复数据。。。<br />
+以下为日志处理方法<br />
+一般不建议做第4,6两步<br />
+</p>
+<H2><a id="f2c20d39-79a1-4b77-963b-f0ce4b4aab48.html" href="#" onclick="return MenuChange(this);">将一列中所有的值一行显示</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 03/13/2014 15:30:17<br /><p>----------------------------------------------------<br />
+/*如何将一列中所有的值一行显示<br />
+数据源<br />
+</p>
+<H2><a id="92081e28-8fe6-414e-b5e5-13839dbbf980.html" href="#" onclick="return MenuChange(this);">索引DMV</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 02/23/2014 15:12:18<br /><p>--查找缺失索引<br />
+<br />
+SELECT  MID.statement AS ObjectName ,<br />
+</p>
+<H2><a id="b76c778d-32c1-4b92-a059-07f12bdbf6bc.html" href="#" onclick="return MenuChange(this);">笔记七</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 02/17/2014 15:31:17<br /><p>--空间数据的一些操作<br />
+<br />
+1.在创建表时定义geometry类型的列<br />
+</p>
+<H2><a id="50d97020-a856-4bbc-9192-bb663d022eaf.html" href="#" onclick="return MenuChange(this);">获取所有的存储过程脚本</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 02/11/2014 15:28:01<br /><p>declare @proc_text varchar(max)  <br />
+DECLARE get_proc_text_cursor CURSOR FOR <br />
+SELECT<br />
+</p>
+<H2><a id="eba9db85-3d8c-43bd-acd9-d0607b0fce3a.html" href="#" onclick="return MenuChange(this);">读写逻辑读执行计划</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 02/10/2014 15:24:11<br /><p>SELECT  DB_NAME(R.database_id) AS DatabaseName ,<br />
+        S.original_login_name AS LoginName ,<br />
+        S.host_name AS ClientMachine ,<br />
+</p>
+<H2><a id="60642c1f-1a4a-4d43-b650-7016fd0e70bb.html" href="#" onclick="return MenuChange(this);">查看存储过程依赖的表</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 02/09/2014 15:12:08<br /><p>DECLARE @procname NVARCHAR(100) = 'dbo.avnewmanubranchsplit_trend'<br />
+ SELECT DISTINCT @procname        procname,SCHEMA_NAME(t.[schema_id]) + '.' <br />
+        + OBJECT_NAME(referenced_major_id) <br />
+</p>
+<H2><a id="4f8cdaf8-892c-4093-8fa5-652ad584fc44.html" href="#" onclick="return MenuChange(this);">阳历转阴历</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 02/07/2014 15:20:16<br /><p>先建一表，放初始化资料<br />
+因为农历的日期，是由天文学家推算出来的，到现在只有到2049年的，以后的有了还可以加入！<br />
+CREATE TABLE SolarData<br />
+</p>
+<H2><a id="dbb24211-87e1-4021-9e35-cd8796e677f8.html" href="#" onclick="return MenuChange(this);">生成三个SQL随机数的方法</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 02/05/2014 15:33:15<br /><p>declare   @maxNumber   int,   --随机数最大值 <br />
+   @minNumber   int,   --随机数最小值 <br />
+                  @rows   int               --要取得的行数   <br />
+</p>
+<H2><a id="b5b15e8e-b229-4918-9a12-360cdccea0f8.html" href="#" onclick="return MenuChange(this);">将表数据生成SQL脚本的存储过程</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 02/03/2014 15:26:33<br /><p>--将表数据生成SQL脚本的存储过程 <br />
+<br />
+CREATE PROCEDURE dbo.UspOutputData <br />
+</p>
+<H2><a id="b29873df-93b9-4483-8ed3-5ddd81062275.html" href="#" onclick="return MenuChange(this);">提取中文、英文、汉字</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 01/30/2014 15:10:02<br /><p>--提取数字<br />
+IF OBJECT_ID('DBO.GET_NUMBER2') IS NOT NULL<br />
+DROP FUNCTION DBO.GET_NUMBER2<br />
+</p>
+<H2><a id="3e35d11b-c212-4b25-9c04-b2257a9609bc.html" href="#" onclick="return MenuChange(this);">日期函数</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 01/23/2014 15:18:31<br /><p>通常，你需要获得当前日期和计算一些其他的日期，例如，你的程序可能需要判断一个月的第一天或者最后一天。你们大部分人大概都知道怎样把日期进行分割（年、月、日等），然后仅仅用分割出来的年、月、日等放在几个函数中计算出自己所需要的日期！在这篇文章里，我将告诉你如何使用DATEADD和DATEDIFF函数来计算出在你的程序中可能你要用到的一些不同日期。  <br />
+        在使用本文中的例子之前，你必须注意以下的问题。大部分可能不是所有例子在不同的机器上执行的结果可能不一样，这完全由哪一天是一个星期的第一天这个设置决定。第一天（DATEFIRST）设定决定了你的系统使用哪一天作为一周的第一天。所有以下的例子都是以星期天作为一周的第一天来建立，也就是第一天设置为7。假如你的第一天设置不一样，你可能需要调整这些例子，使它和不同的第一天设置相符合。你可以通过@@DATEFIRST函数来检查第一天设置。  <br />
+        为了理解这些例子，我们先复习一下DATEDIFF和DATEADD函数。DATEDIFF函数计算两个日期之间的小时、天、周、月、年等时间间隔总数。DATEADD函数计算一个日期通过给时间间隔加减来获得一个新的日期。要了解更多的DATEDIFF和DATEADD函数以及时间间隔可以阅读微软联机帮助。  <br />
+</p>
+<H2><a id="88e9c3d8-08a7-42bb-8ca6-e095832dafc1.html" href="#" onclick="return MenuChange(this);">已知表名查数据库名</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 01/11/2014 15:18:59<br /><p>declare @Table table(DB sysname,TabName sysname)<br />
+insert @Table<br />
+exec sp_msforeachdb 'select ''?'' as DB,Name as 表名 from [?]..sysobjects where type=''U'' and Name =''表名'''--輸入表名<br />
+</p>
+<H2><a id="7a644cd0-9aba-4324-8879-96dffa942e49.html" href="#" onclick="return MenuChange(this);">清理过大的日志文件</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 01/10/2014 15:35:51<br /><p>方法1、--在查询分析器，选中所要清理日志的数据库，<br />
+执行如下SQLbackup log 数据库名 with no_logDBCC SHRINKFILE ( 日志文件名或日志文件ID,要缩小的目标大小)        <br />
+--在当前数据库下select fileid,groupid,name from sysfiles where groupid=0<br />
+</p>
+<H2><a id="da9c4269-6f94-41ed-9678-4029bc6c7b41.html" href="#" onclick="return MenuChange(this);">行列互换</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 12/30/2013 15:12:22<br /><p>--行列互转<br />
+/******************************************************************************************************************************************************<br />
+以学生成绩为例子，比较形象易懂<br />
+</p>
+<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-1.html" href="#" onclick="return MenuChange(this);">Page1>></a>|<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-2.html" href="#" onclick="return MenuChange(this);">Page2>></a>|<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-3.html" href="#" onclick="return MenuChange(this);">Page3>></a>|<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-4.html" href="#" onclick="return MenuChange(this);">Page4>></a>|<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-5.html" href="#" onclick="return MenuChange(this);">Page5>></a>|<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-6.html" href="#" onclick="return MenuChange(this);">Page6>></a>

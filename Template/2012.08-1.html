@@ -1,0 +1,25 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<H2><a id="d0116019-d697-4959-af27-1798b8fdaa30.html" href="#" onclick="return MenuChange(this);">利用触发器实现标识列连续</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 08/21/2012 15:13:19<br /><p>利用触发器实现标识列连续。(支持批量插入) <br />
+if exists (select * from dbo.sysobjects where id = object_id(N'[dbo].[ttt]') and OBJECTPROPERTY(id, N'IsUserTable') = 1)<br />
+drop table [dbo].[ttt]<br />
+</p>
+<H2><a id="bb83b647-37f2-41a8-9fa6-d1dae5f310a5.html" href="#" onclick="return MenuChange(this);">备份作业</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 08/19/2012 15:10:54<br /><p>/*******************完整备份作业*******************/<br />
+--完整备份,每周一次<br />
+USE Master<br />
+</p>
+<H2><a id="cc0d2a0c-2334-4022-96ab-bc05e0e9ac77.html" href="#" onclick="return MenuChange(this);">16进制转10进制</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 08/16/2012 15:22:26<br /><p>CREATE FUNCTION dbo.f_hex_dec(@s varchar(16))<br />
+RETURNS bigint<br />
+AS<br />
+</p>
+<H2><a id="752dadc6-9494-45d8-a86f-21b1a12b706b.html" href="#" onclick="return MenuChange(this);">系统表说明</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 08/13/2012 15:09:08<br /><p>syscolumns<br />
+每个表和视图中的每列在表中占一行，存储过程中的每个参数在表中也占一行。该表位于每个数据库中。<br />
+<br />
+</p>

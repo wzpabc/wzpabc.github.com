@@ -1,5 +1,5 @@
 ﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>去汉字</h2><br /> 
-uploaded by Patrick. 06/14/2016 14:56:23<br />blog>><a  href="https://wzpabc.github.io?page=321adaf5-53c7-4de4-b459-7b8be7ec5ba5" >wzpabc.github.io?page=321adaf5-53c7-4de4-b459-7b8be7ec5ba5</a><p>declare @s varchar(50)<br />
+uploaded by Patrick. 10/19/2012 15:24:48<br />blog>><a  href="https://wzpabc.github.io?page=321adaf5-53c7-4de4-b459-7b8be7ec5ba5" >wzpabc.github.io?page=321adaf5-53c7-4de4-b459-7b8be7ec5ba5</a><p>declare @s varchar(50)<br />
 set @s='Level 1-2,Tower E5,Plaza,No.44 East Chang An Ave.  东长安街44号东方广场东5座1-2层'<br />
 while PATINDEX('%[吖-做]%',@s)>0<br />
     set @s=stuff(@s,PATINDEX('%[吖-做]%',@s),1,'')<br />

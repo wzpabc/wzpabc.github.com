@@ -1,0 +1,117 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-1.html" href="#" onclick="return MenuChange(this);">Page1>></a>|<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-2.html" href="#" onclick="return MenuChange(this);">Page2>></a>|<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-3.html" href="#" onclick="return MenuChange(this);">Page3>></a>|<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-4.html" href="#" onclick="return MenuChange(this);">Page4>></a>|<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-5.html" href="#" onclick="return MenuChange(this);">Page5>></a>|<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-6.html" href="#" onclick="return MenuChange(this);">Page6>></a>
+<H2><a id="f1794ffe-7e96-44c6-acf0-1d0ce9c50794.html" href="#" onclick="return MenuChange(this);">数据汇总</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/09/2016 15:16:09<br /><p>首先创建测试表、添加数据。 <br />
+create table #t(a int,b int,c int,d int,e int) <br />
+insert into #t values(1,2,3,4,5) <br />
+</p>
+<H2><a id="05ea5007-3001-4bb4-8c9c-e84f197aeaef.html" href="#" onclick="return MenuChange(this);">日期算法2</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/24/2016 15:22:51<br /><p>SQL Server 日期算法<br />
+<br />
+一周的第一天<br />
+</p>
+<H2><a id="0bdf8d09-84e4-44d8-9a86-22aff658ab42.html" href="#" onclick="return MenuChange(this);">查看指定spid的脚本当前运行情况和状态</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 02/23/2016 15:11:59<br /><p>USE Master<br />
+GO<br />
+<br />
+</p>
+<H2><a id="99f0466e-6cff-49f7-9afc-3df5b82dc999.html" href="#" onclick="return MenuChange(this);">笔记一</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 02/02/2016 15:13:14<br /><p>---用户定义数据类型<br />
+create type postcode<br />
+from varchar(6) null  --创建用户定义数据类型<br />
+</p>
+<H2><a id="c677f08e-9545-4f27-80fd-5414ce5b0f79.html" href="#" onclick="return MenuChange(this);">批量删除多个表的多个字段</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 01/18/2016 15:25:02<br /><p>declare @tablename varchar(30)<br />
+DECLARE cur_temp Cursor For <br />
+select b.name from dbo.syscolumns a,dbo.sysobjects b<br />
+</p>
+<H2><a id="b297ebcb-c931-44e4-92e6-847430a3773f.html" href="#" onclick="return MenuChange(this);">自动备份数据库</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 01/16/2016 15:24:10<br /><p>有A数据库服务器，B本机； <br />
+<br />
+我现在想通过在B机器上通过代码调用SQL来执行A数据库的备份到B机器上 <br />
+</p>
+<H2><a id="834f2fd2-21d7-4410-b597-7304579cb260.html" href="#" onclick="return MenuChange(this);">服务器登录的一些脚本</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 11/13/2015 15:18:40<br /><p>select loginame, * from master.dbo.sysprocesses<br />
+where spid>50<br />
+order by 1 <br />
+</p>
+<H2><a id="202f3d4e-ec1e-4253-b2c2-037bf3511981.html" href="#" onclick="return MenuChange(this);">深度排序</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 10/08/2015 15:26:33<br /><p>--测试数据   深度排序     <br />
+  DECLARE   @t   TABLE(ID   char(3),PID   char(3),Name   nvarchar(10))   <br />
+  INSERT   @t   SELECT   '001',NULL   ,'山东省'   <br />
+</p>
+<H2><a id="46851b42-bdf4-4a0c-aaef-e56a2240c41b.html" href="#" onclick="return MenuChange(this);">异机备份</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 07/28/2015 15:25:29<br /><p>有A数据库服务器，B本机； <br />
+<br />
+我现在想通过在B机器上通过代码调用SQL来执行A数据库的备份到B机器上 <br />
+</p>
+<H2><a id="ee4646af-374a-43e9-9815-b241d9abe695.html" href="#" onclick="return MenuChange(this);">数据结构比较和表结构比较</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 07/03/2015 15:25:16<br /><p>*--数据结构比较 <br />
+<br />
+比较两个数据库中的视图/存储过程的结构(结构比较,不是功能比较) <br />
+</p>
+<H2><a id="63f115d5-7d15-4265-b182-55ed6768a308.html" href="#" onclick="return MenuChange(this);">查找指定節點下的子結點和父节点</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/19/2015 15:16:02<br /><p>-->Title:Generating test data<br />
+-->Author:wufeng4552<br />
+-->Date :2009-09-30 08:52:38<br />
+</p>
+<H2><a id="189dc10e-b2c1-4ebc-95ac-aa7dc3861014.html" href="#" onclick="return MenuChange(this);">获取拼音字母</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/28/2015 15:24:11<br /><p>Create  function fun_getPY <br />
+ ( <br />
+    @str nvarchar(4000) <br />
+</p>
+<H2><a id="2cd2205d-4bb7-46c5-87d8-3c47968ad5b4.html" href="#" onclick="return MenuChange(this);">拆分、合并、切换分区</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/10/2015 15:29:23<br /><p>USE master<br />
+GO<br />
+<br />
+</p>
+<H2><a id="12aae7da-7a1f-4820-b9a4-a9bf3d444a80.html" href="#" onclick="return MenuChange(this);">新建 文本文档 (3)</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 03/17/2015 15:16:54<br /><p>----------------------------------------------------------------<br />
+-- Author :fredrickhu(小F 向高手学习)<br />
+-- Date   :2009-07-27 10:41:24<br />
+</p>
+<H2><a id="8493bf94-d47d-40d6-9161-faba9c6da7d1.html" href="#" onclick="return MenuChange(this);">日期</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 03/15/2015 15:27:01<br /><p>DECLARE @dt datetime<br />
+SET @dt=GETDATE()<br />
+<br />
+</p>
+<H2><a id="08ac02f6-29b0-4c1a-907d-f9585b9af8e8.html" href="#" onclick="return MenuChange(this);">字符串分拆</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 03/10/2015 15:20:39<br /><p>if object_id('f_split')is not null drop function  f_split<br />
+go<br />
+create function f_split<br />
+</p>
+<H2><a id="1711cbda-ce1d-403b-9f73-cc1812da6042.html" href="#" onclick="return MenuChange(this);">笔记三</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 03/07/2015 15:18:21<br /><p>--结合sys.indexes和sys.index_columns,sys.objects,sys.columns查询索引所属的表或视图的信息<br />
+select<br />
+  o.name as 表名,<br />
+</p>
+<H2><a id="2d11b07d-2ced-4bea-96f9-1cd0ce184e09.html" href="#" onclick="return MenuChange(this);">批量删除表</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 02/28/2015 15:09:11<br /><p>--删除外键约束<br />
+DECLARE c1 cursor for <br />
+    select 'alter table ['+ object_name(parent_obj) + '] drop constraint ['+name+']; '<br />
+</p>
+<H2><a id="a5e32ede-ca58-40b9-a811-707cd429e5e7.html" href="#" onclick="return MenuChange(this);">字母排序</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 02/12/2015 15:34:20<br /><p>--1. 按拼音排序<br />
+DECLARE @t TABLE(col varchar(2))<br />
+INSERT @t SELECT '中'<br />
+</p>
+<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-1.html" href="#" onclick="return MenuChange(this);">Page1>></a>|<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-2.html" href="#" onclick="return MenuChange(this);">Page2>></a>|<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-3.html" href="#" onclick="return MenuChange(this);">Page3>></a>|<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-4.html" href="#" onclick="return MenuChange(this);">Page4>></a>|<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-5.html" href="#" onclick="return MenuChange(this);">Page5>></a>|<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-6.html" href="#" onclick="return MenuChange(this);">Page6>></a>

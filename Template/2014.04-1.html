@@ -1,0 +1,78 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<H2><a id="716b00ec-64ef-418d-9317-dacf355f9bb4.html" href="#" onclick="return MenuChange(this);">配置SQL内存</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/29/2014 15:22:46<br /><p>--设置min server memory配置项<br />
+EXEC SP_configure N'min server memory(MB)',0<br />
+<br />
+</p>
+<H2><a id="772232e9-1cdd-4888-80f8-9e3a357770e8.html" href="#" onclick="return MenuChange(this);">减少TEMP库</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/29/2014 15:07:23<br /><p>SQL Server：收缩 SQL Server Tempdb 大小 <br />
+系统管理员报告说，SQL Server Tempdb 数据库文件占用了大量的磁盘空间。让解决下。 <br />
+<br />
+</p>
+<H2><a id="a7347126-d835-424b-8a3f-cd1c167db88e.html" href="#" onclick="return MenuChange(this);">求排名</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/28/2014 15:20:06<br /><p>--> 测试数据：[TB]<br />
+if object_id('[TB]') is not null drop table [TB]<br />
+create table [TB]([id] int,[point] int,[name] varchar(4))<br />
+</p>
+<H2><a id="0775ca51-73ae-4268-8471-2a67d8e7a2d9.html" href="#" onclick="return MenuChange(this);">递归实现累计求和</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/27/2014 15:25:57<br /><p>--> 测试数据：[tbl]<br />
+go<br />
+if object_id('[tbl]') is not null <br />
+</p>
+<H2><a id="a8976a57-4ae5-44b6-b0bb-ed6be29e4eaa.html" href="#" onclick="return MenuChange(this);">如何截取无规则字符串中的数字</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/23/2014 15:31:28<br /><p>--如何截取无规律的字符串中的数字：<br />
+ <br />
+declare   @str   varchar(100),@str2   varchar(100) <br />
+</p>
+<H2><a id="fb82bc79-e3dd-4d07-be0a-40b9453a4338.html" href="#" onclick="return MenuChange(this);">新建 文本文档</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/20/2014 15:27:42<br /><p>---测试数据---<br />
+if object_id('[tb]') is not null drop table [tb]<br />
+go<br />
+</p>
+<H2><a id="b87f0a0e-5582-44b5-aa37-9dc8558eac2a.html" href="#" onclick="return MenuChange(this);">新建 文本文档 (6)</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/15/2014 15:31:42<br /><p>--1. 错误14114<br />
+--使用下面的代码重新添加当前SQL Server实例的信息，处理完成后，应该重新启动MSSQLSERVER服务使修改生效。<br />
+DECLARE @srvname sysname<br />
+</p>
+<H2><a id="f2b8f1e4-c4bc-4f49-be96-cfeac2d59f5f.html" href="#" onclick="return MenuChange(this);">不同服务器不同服务器数据库之间的数据操作</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/12/2014 15:21:16<br /><p>/*不同服务器数据库之间的数据操作*/<br />
+<br />
+--创建链接服务器 <br />
+</p>
+<H2><a id="82c0d470-eaba-49b3-8f60-843c16fc033f.html" href="#" onclick="return MenuChange(this);">删除系统内所有用户表</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/11/2014 15:11:40<br /><p>--删除所有用户表：<br />
+--select * from sysobjects where xtype='U' and category=0<br />
+use master<br />
+</p>
+<H2><a id="ae1ab924-6f94-4f7d-9acf-c49faaa44a27.html" href="#" onclick="return MenuChange(this);">流水号自增</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/06/2014 15:09:37<br /><p>在学习中遇到这个问题 <br />
+数据库里有编号字段 <br />
+BH00001 <br />
+</p>
+<H2><a id="d84008f8-687d-49f8-aa79-e1495e9eddcd.html" href="#" onclick="return MenuChange(this);">分区表</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/04/2014 15:22:32<br /><p>/*<br />
+本文使对现有的数据库中新建一个表进行分区.暂未发现如何对一个已有数据<br />
+的表进行分区处理的资料.本文事例仅为本人测试用.其中有很多未考虑之处<br />
+</p>
+<H2><a id="72f39cf5-80e3-4710-9041-30b8a9524eee.html" href="#" onclick="return MenuChange(this);">计算年龄</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/03/2014 15:14:56<br /><p>SELECT 年龄=case when  datediff(day,dateadd(year,datediff(year,'1982-07-18',getdate()),'1982-07-18'),getdate())>=0<br />
+            then datediff(year,'1982-07-18',getdate())else datediff(YY,'1982-07-18',getdate())-1 end<br />
+</p>
+<H2><a id="b6463bc3-550c-45da-a048-9cd63165abc8.html" href="#" onclick="return MenuChange(this);">小小总结</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/01/2014 15:19:47<br /><p>1:replace 函数<br />
+第一个参数你的字符串，第二个参数你想替换的部分，第三个参数你要替换成什么<br />
+select replace('lihan','a','b')<br />
+</p>

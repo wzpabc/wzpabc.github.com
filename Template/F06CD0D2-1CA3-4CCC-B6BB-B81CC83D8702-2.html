@@ -1,0 +1,123 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-1.html" href="#" onclick="return MenuChange(this);">Page1>></a>|<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-2.html" href="#" onclick="return MenuChange(this);">Page2>></a>|<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-3.html" href="#" onclick="return MenuChange(this);">Page3>></a>|<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-4.html" href="#" onclick="return MenuChange(this);">Page4>></a>|<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-5.html" href="#" onclick="return MenuChange(this);">Page5>></a>|<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-6.html" href="#" onclick="return MenuChange(this);">Page6>></a>
+<H2><a id="0d8ad8d1-5d24-4236-a70c-950f56228087.html" href="#" onclick="return MenuChange(this);">数字转换成EXCEL列名</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 12/05/2014 15:10:44<br /><p>alter function col_rev(<br />
+ @i_version int, -- Excel 版本号 <br />
+ @i_col int          -- 字段号(数值表示)<br />
+</p>
+<H2><a id="7a28b24b-dfb2-4e7c-94dd-c117d5b63af2.html" href="#" onclick="return MenuChange(this);">找出在2个日期之间的日期</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 11/10/2014 15:20:26<br /><p>declare @sdate datetime <br />
+declare @edate datetime <br />
+set @sdate = '2009-8-30' <br />
+</p>
+<H2><a id="6b0c6cdf-bc48-47e7-a10a-ce1cb6b9c501.html" href="#" onclick="return MenuChange(this);">查看锁信息</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 10/30/2014 15:26:00<br /><p>create   table   #t(req_spid   int,obj_name   sysname)   <br />
+<br />
+    <br />
+</p>
+<H2><a id="930b59d7-fc22-4b31-ac5c-54633f215b9a.html" href="#" onclick="return MenuChange(this);">构造使用IN子句的动态Transact-SQL方法进行编号查询</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 10/27/2014 15:10:15<br /><p>构造使用IN子句的动态Transact-SQL方法进行编号查询<br />
+<br />
+--1. 构造使用IN子句的动态Transact-SQL方法进行编号查询<br />
+</p>
+<H2><a id="6d43ae98-7a44-4f70-82f5-9cd5e064e43b.html" href="#" onclick="return MenuChange(this);">经典代码</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 10/16/2014 15:29:24<br /><p>if object_id('[tb]') is not null drop table [tb] <br />
+go <br />
+create table [tb]([value1] int,[value2] int) <br />
+</p>
+<H2><a id="5ac8becd-81eb-43e5-97b1-e5d04a725744.html" href="#" onclick="return MenuChange(this);">查询指定节点及其所有子节点</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 09/30/2014 15:15:05<br /><p>create table tb(id varchar(3) , pid varchar(3) , name varchar(10)) <br />
+insert into tb values('001' , null  , '广东省') <br />
+insert into tb values('002' , '001' , '广州市') <br />
+</p>
+<H2><a id="0fd076e8-f057-4ade-b315-be187e21f152.html" href="#" onclick="return MenuChange(this);">自增列的处理</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 09/27/2014 15:20:06<br /><p>--创建测试表<br />
+CREATE TABLE t1(ID int IDENTITY,A int)<br />
+GO<br />
+</p>
+<H2><a id="7c199d6a-f7ea-42de-bec8-af144e02db76.html" href="#" onclick="return MenuChange(this);">小计合计的用法</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 09/17/2014 15:21:16<br /><p>create table #t(a int,b int,c int,d int,e int) <br />
+insert into #t values(1,2,3,4,5) <br />
+insert into #t values(1,2,3,4,6) <br />
+</p>
+<H2><a id="453d102d-9336-436a-9973-fafdc71cd57e.html" href="#" onclick="return MenuChange(this);">自动生成测试代码(石头）</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 08/31/2014 15:20:01<br /><p>set nocount on<br />
+go<br />
+--处理当前串中的空格，对时分秒的处理<br />
+</p>
+<H2><a id="70176e8a-1d60-4729-ac49-4a74884b1d8d.html" href="#" onclick="return MenuChange(this);">系统数据库中查询表的所有字段以及描述（2008，2000区分）以及查询表的外键</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 07/13/2014 15:07:26<br /><p>/**************************<br />
+系统数据库中查询表的所有字段以及描述（2008，2000区分）以及查询表的外键<br />
+<br />
+</p>
+<H2><a id="2c604e1a-1f18-4bc5-942b-f84af8baacb7.html" href="#" onclick="return MenuChange(this);">笔记二</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/14/2014 15:09:42<br /><p>---查询索引操作的信息<br />
+select * from sys.dm_db_index_usage_stats<br />
+<br />
+</p>
+<H2><a id="31772079-939f-4a0c-b506-10877ca4fb85.html" href="#" onclick="return MenuChange(this);">行转列</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/13/2014 15:32:45<br /><p>表a <br />
+name    num <br />
+aa      1 <br />
+</p>
+<H2><a id="b28f19dd-bcce-46f2-bf68-9e51929c0fea.html" href="#" onclick="return MenuChange(this);">新建 文本文档 (7)</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/01/2014 15:33:37<br /><p>declare @rarcmd varchar(8000),@rarfile varchar(200),@bakfile varchar(200)<br />
+set @rarfile='d:\aaa.txt'<br />
+set @bakfile='d:\aaa.rar'<br />
+</p>
+<H2><a id="7914bdd9-53b2-47cb-b95f-d11ec29f9190.html" href="#" onclick="return MenuChange(this);">循环数据库压缩日志文件</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/01/2014 15:06:51<br /><p>--循环数据库压缩日志文件(假设日志文件fileid=2)<br />
+create table #db(id int identity(1,1),name varchar(80),dbsize int,mdfsize int,ldfsize int)<br />
+insert into #db<br />
+</p>
+<H2><a id="a22de7c0-c85f-42a2-9cf7-1c2c1a596e7e.html" href="#" onclick="return MenuChange(this);">时间格式转换问题 </a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/21/2014 15:14:05<br /><p> 时间格式转换问题 <br />
+因为新开发的软件需要用一些旧软件生成的一些数据，在时间格式上不统一，只能手工转换，研究了一下午写了三条语句，以前没怎么用过convert函数和case语句，还有"+"操作符在不同上下文环境也会起到不同的作用，把我搞晕了要，不过现在看来是差不多弄好了。 <br />
+<br />
+</p>
+<H2><a id="8fec8598-01e2-45ae-9065-a6f38009402d.html" href="#" onclick="return MenuChange(this);">新建 文本文档 (2)</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/19/2014 15:14:27<br /><p>设置默认值alter table <表名> add <列名> <默认值类型>  default '<默认值>'<br />
+设置主键alter table <表名> add constraint <主键名> primary key(<列名>)<br />
+设置联合主键alter table <表名> add constraint <主键名> primary key(<列名1>，<列名2>，...,<列名N>)<br />
+</p>
+<H2><a id="7ef1f296-c0a4-4e81-bed2-85f489d68eb0.html" href="#" onclick="return MenuChange(this);">导出表视图中的数据为html 文件</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/15/2014 15:27:36<br /><p>IF OBJECT_ID(N'dbo.p_ExportHtml') IS NOT NULL<br />
+<br />
+    DROP PROC dbo.p_ExportHtml;<br />
+</p>
+<H2><a id="f7e30a42-7740-4615-87d5-0c9e92b8c701.html" href="#" onclick="return MenuChange(this);">查找无用的索引</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/10/2014 15:19:53<br /><p><br />
+SELECT  ind.index_id ,<br />
+        obj.name AS TableName ,<br />
+</p>
+<H2><a id="716b00ec-64ef-418d-9317-dacf355f9bb4.html" href="#" onclick="return MenuChange(this);">配置SQL内存</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/29/2014 15:22:46<br /><p>--设置min server memory配置项<br />
+EXEC SP_configure N'min server memory(MB)',0<br />
+<br />
+</p>
+<H2><a id="a7347126-d835-424b-8a3f-cd1c167db88e.html" href="#" onclick="return MenuChange(this);">求排名</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/28/2014 15:20:06<br /><p>--> 测试数据：[TB]<br />
+if object_id('[TB]') is not null drop table [TB]<br />
+create table [TB]([id] int,[point] int,[name] varchar(4))<br />
+</p>
+<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-1.html" href="#" onclick="return MenuChange(this);">Page1>></a>|<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-2.html" href="#" onclick="return MenuChange(this);">Page2>></a>|<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-3.html" href="#" onclick="return MenuChange(this);">Page3>></a>|<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-4.html" href="#" onclick="return MenuChange(this);">Page4>></a>|<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-5.html" href="#" onclick="return MenuChange(this);">Page5>></a>|<a id="F06CD0D2-1CA3-4CCC-B6BB-B81CC83D8702-6.html" href="#" onclick="return MenuChange(this);">Page6>></a>

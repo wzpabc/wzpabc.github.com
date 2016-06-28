@@ -1,0 +1,111 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<a id="2016.05-1.html" href="#" onclick="return MenuChange(this);">Page1>></a>|<a id="2016.05-2.html" href="#" onclick="return MenuChange(this);">Page2>></a>|<a id="2016.05-3.html" href="#" onclick="return MenuChange(this);">Page3>></a>|<a id="2016.05-4.html" href="#" onclick="return MenuChange(this);">Page4>></a>|<a id="2016.05-5.html" href="#" onclick="return MenuChange(this);">Page5>></a>|<a id="2016.05-6.html" href="#" onclick="return MenuChange(this);">Page6>></a>
+<H2><a id="cea69959-6645-42f4-86e4-974e8438d45c.html" href="#" onclick="return MenuChange(this);">如何使用case when 进行排序</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/03/2016 23:46:30<br /><p>-->生成测试数据:<br />
+GO<br />
+IF OBJECT_ID('TBL')IS NOT NULL<br />
+</p>
+<H2><a id="eb1461fd-1ab7-4b73-8345-c6635ddc8947.html" href="#" onclick="return MenuChange(this);">行列转换with  rollup的用法</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/03/2016 21:28:59<br /><p>--> 测试数据：[tbl]<br />
+if object_id('[tbl]') is not null drop table [tbl]<br />
+create table [tbl]([xrq] datetime,[rgl] int,[jcmc] varchar(12))<br />
+</p>
+<H2><a id="07088bfa-4280-474e-b5c7-194cc012ea61.html" href="#" onclick="return MenuChange(this);">笔记六</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/03/2016 18:40:28<br /><p>--SQL 2008使用空间数据<br />
+<br />
+SQL SERVER 2008支持两种空间数据类型，geometry和geography.其中geometry数据类型支持平面或平面球数据,geography可用于存储GPS经度和纬度坐标等椭球体数据。<br />
+</p>
+<H2><a id="2c604e1a-1f18-4bc5-942b-f84af8baacb7.html" href="#" onclick="return MenuChange(this);">笔记二</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/03/2016 15:03:26<br /><p>---查询索引操作的信息<br />
+select * from sys.dm_db_index_usage_stats<br />
+<br />
+</p>
+<H2><a id="98fd6d80-c62d-494b-b7c2-5d6bf9fb210a.html" href="#" onclick="return MenuChange(this);">查询独立的日期</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/03/2016 14:15:24<br /><p>GO<br />
+IF OBJECT_ID('A')IS NOT NULL<br />
+DROP TABLE  A<br />
+</p>
+<H2><a id="b5b15e8e-b229-4918-9a12-360cdccea0f8.html" href="#" onclick="return MenuChange(this);">将表数据生成SQL脚本的存储过程</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/03/2016 04:20:09<br /><p>--将表数据生成SQL脚本的存储过程 <br />
+<br />
+CREATE PROCEDURE dbo.UspOutputData <br />
+</p>
+<H2><a id="0f9991fc-9aaa-4dc9-a51a-c1f3297223ed.html" href="#" onclick="return MenuChange(this);">行列互换</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/02/2016 21:07:02<br /><p>--行列互转<br />
+--摘自中国风博客，引用请标明内容来源<br />
+--1、行换列<br />
+</p>
+<H2><a id="88e9c3d8-08a7-42bb-8ca6-e095832dafc1.html" href="#" onclick="return MenuChange(this);">已知表名查数据库名</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/02/2016 12:00:27<br /><p>declare @Table table(DB sysname,TabName sysname)<br />
+insert @Table<br />
+exec sp_msforeachdb 'select ''?'' as DB,Name as 表名 from [?]..sysobjects where type=''U'' and Name =''表名'''--輸入表名<br />
+</p>
+<H2><a id="3aa2b320-4245-4228-b016-392e27739f56.html" href="#" onclick="return MenuChange(this);">BCPALL</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/01/2016 19:56:32<br /><p><br />
+IF object_id('usp_insert_PaymentTables') IS NOT NULL<br />
+	   BEGIN <br />
+</p>
+<H2><a id="4f490bae-c899-4499-89d2-980092a899d0.html" href="#" onclick="return MenuChange(this);">行列转换一例</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/01/2016 18:53:35<br /><p>GO<br />
+IF OBJECT_ID('TBL')IS NOT NULL<br />
+DROP TABLE TBL<br />
+</p>
+<H2><a id="64fe57ee-9da1-4217-8169-2d76b7a19645.html" href="#" onclick="return MenuChange(this);">查每个分组前N条记录</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/01/2016 16:23:24<br /><p>---------------------------------<br />
+--  Author: liangCK 小梁<br />
+--  Title : 查每个分组前N条记录<br />
+</p>
+<H2><a id="b6463bc3-550c-45da-a048-9cd63165abc8.html" href="#" onclick="return MenuChange(this);">小小总结</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/01/2016 12:54:10<br /><p>1:replace 函数<br />
+第一个参数你的字符串，第二个参数你想替换的部分，第三个参数你要替换成什么<br />
+select replace('lihan','a','b')<br />
+</p>
+<H2><a id="2d11b07d-2ced-4bea-96f9-1cd0ce184e09.html" href="#" onclick="return MenuChange(this);">批量删除表</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/01/2016 12:11:03<br /><p>--删除外键约束<br />
+DECLARE c1 cursor for <br />
+    select 'alter table ['+ object_name(parent_obj) + '] drop constraint ['+name+']; '<br />
+</p>
+<H2><a id="f2ee88ca-0e6b-497b-bd6c-54b1de248bc6.html" href="#" onclick="return MenuChange(this);">2008转到2000</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/01/2016 07:52:34<br /><p>2008转到2000的步骤 <br />
+1. 生成for 2000版本的数据库脚本 <br />
+2008 的manger studio <br />
+</p>
+<H2><a id="81482d3b-a102-491d-8a73-9de59551a413.html" href="#" onclick="return MenuChange(this);">拆分表字段的值</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/01/2016 06:06:01<br /><p>--分拆列值<br />
+--原著：邹建<br />
+--改编：爱新觉罗.毓华(十八年风雨,守得冰山雪莲花开)  2007-12-16  广东深圳<br />
+</p>
+<H2><a id="6b813c0f-622c-466e-8828-d7fb917a9166.html" href="#" onclick="return MenuChange(this);">sp_sql</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/01/2016 04:22:05<br /><p>SET QUOTED_IDENTIFIER ON<br />
+SET ANSI_NULLS ON<br />
+GO<br />
+</p>
+<H2><a id="202f3d4e-ec1e-4253-b2c2-037bf3511981.html" href="#" onclick="return MenuChange(this);">深度排序</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/01/2016 04:00:17<br /><p>--测试数据   深度排序     <br />
+  DECLARE   @t   TABLE(ID   char(3),PID   char(3),Name   nvarchar(10))   <br />
+  INSERT   @t   SELECT   '001',NULL   ,'山东省'   <br />
+</p>
+<H2><a id="d7b26551-adbf-4708-890d-d55a84c3bd30.html" href="#" onclick="return MenuChange(this);">SQL事务日志还原</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/01/2016 02:15:51<br /><p>SQL事务日志还原实例 收藏 <br />
+USE master<br />
+GO<br />
+</p>
+<a id="2016.05-1.html" href="#" onclick="return MenuChange(this);">Page1>></a>|<a id="2016.05-2.html" href="#" onclick="return MenuChange(this);">Page2>></a>|<a id="2016.05-3.html" href="#" onclick="return MenuChange(this);">Page3>></a>|<a id="2016.05-4.html" href="#" onclick="return MenuChange(this);">Page4>></a>|<a id="2016.05-5.html" href="#" onclick="return MenuChange(this);">Page5>></a>|<a id="2016.05-6.html" href="#" onclick="return MenuChange(this);">Page6>></a>

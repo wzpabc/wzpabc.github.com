@@ -1,0 +1,123 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<a id="2016.05-1.html" href="#" onclick="return MenuChange(this);">Page1>></a>|<a id="2016.05-2.html" href="#" onclick="return MenuChange(this);">Page2>></a>|<a id="2016.05-3.html" href="#" onclick="return MenuChange(this);">Page3>></a>|<a id="2016.05-4.html" href="#" onclick="return MenuChange(this);">Page4>></a>|<a id="2016.05-5.html" href="#" onclick="return MenuChange(this);">Page5>></a>|<a id="2016.05-6.html" href="#" onclick="return MenuChange(this);">Page6>></a>
+<H2><a id="d0116019-d697-4959-af27-1798b8fdaa30.html" href="#" onclick="return MenuChange(this);">利用触发器实现标识列连续</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/28/2016 07:32:00<br /><p>利用触发器实现标识列连续。(支持批量插入) <br />
+if exists (select * from dbo.sysobjects where id = object_id(N'[dbo].[ttt]') and OBJECTPROPERTY(id, N'IsUserTable') = 1)<br />
+drop table [dbo].[ttt]<br />
+</p>
+<H2><a id="0775ca51-73ae-4268-8471-2a67d8e7a2d9.html" href="#" onclick="return MenuChange(this);">递归实现累计求和</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/27/2016 15:27:13<br /><p>--> 测试数据：[tbl]<br />
+go<br />
+if object_id('[tbl]') is not null <br />
+</p>
+<H2><a id="4fb394f9-0978-45fb-a59e-a388020a71d7.html" href="#" onclick="return MenuChange(this);">SQL Select语句完整的执行顺序</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/27/2016 06:33:51<br /><p>SQL Select语句完整的执行顺序： <br />
+<br />
+1、from子句组装来自不同数据源的数据； <br />
+</p>
+<H2><a id="f1794ffe-7e96-44c6-acf0-1d0ce9c50794.html" href="#" onclick="return MenuChange(this);">数据汇总</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/26/2016 10:40:10<br /><p>首先创建测试表、添加数据。 <br />
+create table #t(a int,b int,c int,d int,e int) <br />
+insert into #t values(1,2,3,4,5) <br />
+</p>
+<H2><a id="450d25bd-6275-4dab-a09d-ca9f64ab3dfd.html" href="#" onclick="return MenuChange(this);">查看指定spid的脚本当前运行情况和状态</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/26/2016 03:48:38<br /><p>USE Master<br />
+GO<br />
+<br />
+</p>
+<H2><a id="fd46d90d-b19c-47f5-85bd-6530eb797431.html" href="#" onclick="return MenuChange(this);">拆分表字段的值</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/25/2016 17:15:41<br /><p>--分拆列值<br />
+--原著：邹建<br />
+--改编：爱新觉罗.毓华(十八年风雨,守得冰山雪莲花开)  2007-12-16  广东深圳<br />
+</p>
+<H2><a id="f93a6d9a-a873-421a-819d-a3ebf9ab4473.html" href="#" onclick="return MenuChange(this);">如何利用日志还原</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/25/2016 02:33:27<br /><p>/*--说明：<br />
+下面的代码演示了如何利用日志还原功能，将主数据库中的数据变化及时反馈到备用数据库中<br />
+备用数据库的数据可以随时用于查询，但不能被更新（备用数据库只读）。<br />
+</p>
+<H2><a id="7e0f00e7-59aa-4672-83b9-b349e15ca728.html" href="#" onclick="return MenuChange(this);">经典递归问题</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/24/2016 21:45:10<br /><p>--> 测试数据：[tbl]<br />
+go<br />
+if object_id('[tbl]') is not null <br />
+</p>
+<H2><a id="12aae7da-7a1f-4820-b9a4-a9bf3d444a80.html" href="#" onclick="return MenuChange(this);">新建 文本文档 (3)</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/24/2016 21:05:51<br /><p>----------------------------------------------------------------<br />
+-- Author :fredrickhu(小F 向高手学习)<br />
+-- Date   :2009-07-27 10:41:24<br />
+</p>
+<H2><a id="e42c35fb-efcb-47b1-8d37-c883ff9dd7ce.html" href="#" onclick="return MenuChange(this);">动态查询</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/24/2016 18:48:29<br /><p>--1. 构造使用IN子句的动态Transact-SQL方法进行编号查询<br />
+<br />
+--a. 要查询的字段类型是数字型<br />
+</p>
+<H2><a id="e0258e9d-a6b4-48db-b69b-ca2893c3e98c.html" href="#" onclick="return MenuChange(this);">表信息查询</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/24/2016 09:18:54<br /><p>--查询用户表对象信息<br />
+select  Tab.Name as [表名],Tab.create_date as [创建时间],Tab.modify_date  as [最后修改时间],<br />
+        Col.Name  as [列名] ,Type.name as [数据类型],Col.max_length as [字段长度],<br />
+</p>
+<H2><a id="b297ebcb-c931-44e4-92e6-847430a3773f.html" href="#" onclick="return MenuChange(this);">自动备份数据库</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/24/2016 05:12:46<br /><p>有A数据库服务器，B本机； <br />
+<br />
+我现在想通过在B机器上通过代码调用SQL来执行A数据库的备份到B机器上 <br />
+</p>
+<H2><a id="4f6daf49-e3e8-4b15-a6ec-66cb02fb582f.html" href="#" onclick="return MenuChange(this);">取n到m行的值</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/23/2016 00:49:21<br /><p>取n到m行<br />
+<br />
+1. <br />
+</p>
+<H2><a id="8aa58b1c-8bce-44a2-aee3-e55e23e44675.html" href="#" onclick="return MenuChange(this);">sql之left join、right join、inner join的区别</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/22/2016 21:53:27<br /><p>left join(左联接) 返回包括左表中的所有记录和右表中联结字段相等的记录 <br />
+right join(右联接) 返回包括右表中的所有记录和左表中联结字段相等的记录<br />
+inner join(等值连接) 只返回两个表中联结字段相等的行<br />
+</p>
+<H2><a id="1711cbda-ce1d-403b-9f73-cc1812da6042.html" href="#" onclick="return MenuChange(this);">笔记三</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/22/2016 21:02:01<br /><p>--结合sys.indexes和sys.index_columns,sys.objects,sys.columns查询索引所属的表或视图的信息<br />
+select<br />
+  o.name as 表名,<br />
+</p>
+<H2><a id="75c5f4d3-cf30-4262-921d-e3baa8cd4835.html" href="#" onclick="return MenuChange(this);">数据库学习笔记</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/22/2016 15:03:07<br /><p>固定列数的行列转换 <br />
+如 <br />
+student subject grade <br />
+</p>
+<H2><a id="50153fcb-1ad6-4196-8301-5dc3daa68d6b.html" href="#" onclick="return MenuChange(this);">经典递归问题</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/22/2016 07:43:19<br /><p>--> 测试数据：[tbl]<br />
+go<br />
+if object_id('[tbl]') is not null <br />
+</p>
+<H2><a id="5f0905cf-e953-4071-a733-dcdcdd4e82c2.html" href="#" onclick="return MenuChange(this);">笔记五</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/22/2016 01:08:29<br /><p>服务器配置选项<br />
+--启动AWE<br />
+sp_configure 'show advanced options',1<br />
+</p>
+<H2><a id="a214408c-6b26-4ab2-ad36-e719790646e2.html" href="#" onclick="return MenuChange(this);">合并拆分表</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/21/2016 11:34:16<br /><p>/****************************************************************************************************************************************************** <br />
+合并分拆表数据 <br />
+<br />
+</p>
+<H2><a id="73a63d7e-9003-4a8b-8c74-aff94b791b79.html" href="#" onclick="return MenuChange(this);">BOM循环</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/21/2016 11:32:55<br /><p>if object_id('[tb]') is not null drop table [tb]<br />
+create table [tb] (id int,name varchar(1),pid int)<br />
+insert into [tb]<br />
+</p>
+<a id="2016.05-1.html" href="#" onclick="return MenuChange(this);">Page1>></a>|<a id="2016.05-2.html" href="#" onclick="return MenuChange(this);">Page2>></a>|<a id="2016.05-3.html" href="#" onclick="return MenuChange(this);">Page3>></a>|<a id="2016.05-4.html" href="#" onclick="return MenuChange(this);">Page4>></a>|<a id="2016.05-5.html" href="#" onclick="return MenuChange(this);">Page5>></a>|<a id="2016.05-6.html" href="#" onclick="return MenuChange(this);">Page6>></a>

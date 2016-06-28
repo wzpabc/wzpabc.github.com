@@ -1,5 +1,5 @@
 ﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>批量删除多个表的多个字段</h2><br /> 
-uploaded by Patrick. 06/08/2016 03:02:33<br />blog>><a  href="https://wzpabc.github.io?page=c677f08e-9545-4f27-80fd-5414ce5b0f79" >wzpabc.github.io?page=c677f08e-9545-4f27-80fd-5414ce5b0f79</a><p>declare @tablename varchar(30)<br />
+uploaded by Patrick. 01/18/2016 15:25:02<br />blog>><a  href="https://wzpabc.github.io?page=c677f08e-9545-4f27-80fd-5414ce5b0f79" >wzpabc.github.io?page=c677f08e-9545-4f27-80fd-5414ce5b0f79</a><p>declare @tablename varchar(30)<br />
 DECLARE cur_temp Cursor For <br />
 select b.name from dbo.syscolumns a,dbo.sysobjects b<br />
 where a.name = colname --要删的字段<br />

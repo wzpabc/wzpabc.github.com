@@ -1,0 +1,123 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<a id="BigData-1.html" href="#" onclick="return MenuChange(this);">Page1>></a>|<a id="BigData-2.html" href="#" onclick="return MenuChange(this);">Page2>></a>|<a id="BigData-3.html" href="#" onclick="return MenuChange(this);">Page3>></a>|<a id="BigData-4.html" href="#" onclick="return MenuChange(this);">Page4>></a>|<a id="BigData-5.html" href="#" onclick="return MenuChange(this);">Page5>></a>|<a id="BigData-6.html" href="#" onclick="return MenuChange(this);">Page6>></a>|<a id="BigData-7.html" href="#" onclick="return MenuChange(this);">Page7>></a>|<a id="BigData-8.html" href="#" onclick="return MenuChange(this);">Page8>></a>|<a id="BigData-9.html" href="#" onclick="return MenuChange(this);">Page9>></a>|<a id="BigData-10.html" href="#" onclick="return MenuChange(this);">Page10>></a>
+<H2><a id="e8314b7e-603b-4db9-bae7-7005ea90cb29.html" href="#" onclick="return MenuChange(this);">bcp1</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 02/18/2014 15:23:07<br /><p>/******* 导出到excel */<br />
+EXEC master..xp_cmdshell 'bcp SettleDB.dbo.shanghu out c:\temp1.xls -c -q -S"GNETDATA/GNETDATA" -U"sa" -P""' <br />
+<br />
+</p>
+<H2><a id="b76c778d-32c1-4b92-a059-07f12bdbf6bc.html" href="#" onclick="return MenuChange(this);">笔记七</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 02/17/2014 15:31:17<br /><p>--空间数据的一些操作<br />
+<br />
+1.在创建表时定义geometry类型的列<br />
+</p>
+<H2><a id="50d97020-a856-4bbc-9192-bb663d022eaf.html" href="#" onclick="return MenuChange(this);">获取所有的存储过程脚本</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 02/11/2014 15:28:01<br /><p>declare @proc_text varchar(max)  <br />
+DECLARE get_proc_text_cursor CURSOR FOR <br />
+SELECT<br />
+</p>
+<H2><a id="eba9db85-3d8c-43bd-acd9-d0607b0fce3a.html" href="#" onclick="return MenuChange(this);">读写逻辑读执行计划</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 02/10/2014 15:24:11<br /><p>SELECT  DB_NAME(R.database_id) AS DatabaseName ,<br />
+        S.original_login_name AS LoginName ,<br />
+        S.host_name AS ClientMachine ,<br />
+</p>
+<H2><a id="60642c1f-1a4a-4d43-b650-7016fd0e70bb.html" href="#" onclick="return MenuChange(this);">查看存储过程依赖的表</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 02/09/2014 15:12:08<br /><p>DECLARE @procname NVARCHAR(100) = 'dbo.avnewmanubranchsplit_trend'<br />
+ SELECT DISTINCT @procname        procname,SCHEMA_NAME(t.[schema_id]) + '.' <br />
+        + OBJECT_NAME(referenced_major_id) <br />
+</p>
+<H2><a id="4f8cdaf8-892c-4093-8fa5-652ad584fc44.html" href="#" onclick="return MenuChange(this);">阳历转阴历</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 02/07/2014 15:20:16<br /><p>先建一表，放初始化资料<br />
+因为农历的日期，是由天文学家推算出来的，到现在只有到2049年的，以后的有了还可以加入！<br />
+CREATE TABLE SolarData<br />
+</p>
+<H2><a id="dbb24211-87e1-4021-9e35-cd8796e677f8.html" href="#" onclick="return MenuChange(this);">生成三个SQL随机数的方法</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 02/05/2014 15:33:15<br /><p>declare   @maxNumber   int,   --随机数最大值 <br />
+   @minNumber   int,   --随机数最小值 <br />
+                  @rows   int               --要取得的行数   <br />
+</p>
+<H2><a id="b5b15e8e-b229-4918-9a12-360cdccea0f8.html" href="#" onclick="return MenuChange(this);">将表数据生成SQL脚本的存储过程</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 02/03/2014 15:26:33<br /><p>--将表数据生成SQL脚本的存储过程 <br />
+<br />
+CREATE PROCEDURE dbo.UspOutputData <br />
+</p>
+<H2><a id="b29873df-93b9-4483-8ed3-5ddd81062275.html" href="#" onclick="return MenuChange(this);">提取中文、英文、汉字</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 01/30/2014 15:10:02<br /><p>--提取数字<br />
+IF OBJECT_ID('DBO.GET_NUMBER2') IS NOT NULL<br />
+DROP FUNCTION DBO.GET_NUMBER2<br />
+</p>
+<H2><a id="3aa2b320-4245-4228-b016-392e27739f56.html" href="#" onclick="return MenuChange(this);">BCPALL</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 01/27/2014 15:30:03<br /><p><br />
+IF object_id('usp_insert_PaymentTables') IS NOT NULL<br />
+	   BEGIN <br />
+</p>
+<H2><a id="3e35d11b-c212-4b25-9c04-b2257a9609bc.html" href="#" onclick="return MenuChange(this);">日期函数</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 01/23/2014 15:18:31<br /><p>通常，你需要获得当前日期和计算一些其他的日期，例如，你的程序可能需要判断一个月的第一天或者最后一天。你们大部分人大概都知道怎样把日期进行分割（年、月、日等），然后仅仅用分割出来的年、月、日等放在几个函数中计算出自己所需要的日期！在这篇文章里，我将告诉你如何使用DATEADD和DATEDIFF函数来计算出在你的程序中可能你要用到的一些不同日期。  <br />
+        在使用本文中的例子之前，你必须注意以下的问题。大部分可能不是所有例子在不同的机器上执行的结果可能不一样，这完全由哪一天是一个星期的第一天这个设置决定。第一天（DATEFIRST）设定决定了你的系统使用哪一天作为一周的第一天。所有以下的例子都是以星期天作为一周的第一天来建立，也就是第一天设置为7。假如你的第一天设置不一样，你可能需要调整这些例子，使它和不同的第一天设置相符合。你可以通过@@DATEFIRST函数来检查第一天设置。  <br />
+        为了理解这些例子，我们先复习一下DATEDIFF和DATEADD函数。DATEDIFF函数计算两个日期之间的小时、天、周、月、年等时间间隔总数。DATEADD函数计算一个日期通过给时间间隔加减来获得一个新的日期。要了解更多的DATEDIFF和DATEADD函数以及时间间隔可以阅读微软联机帮助。  <br />
+</p>
+<H2><a id="88e9c3d8-08a7-42bb-8ca6-e095832dafc1.html" href="#" onclick="return MenuChange(this);">已知表名查数据库名</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 01/11/2014 15:18:59<br /><p>declare @Table table(DB sysname,TabName sysname)<br />
+insert @Table<br />
+exec sp_msforeachdb 'select ''?'' as DB,Name as 表名 from [?]..sysobjects where type=''U'' and Name =''表名'''--輸入表名<br />
+</p>
+<H2><a id="7a644cd0-9aba-4324-8879-96dffa942e49.html" href="#" onclick="return MenuChange(this);">清理过大的日志文件</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 01/10/2014 15:35:51<br /><p>方法1、--在查询分析器，选中所要清理日志的数据库，<br />
+执行如下SQLbackup log 数据库名 with no_logDBCC SHRINKFILE ( 日志文件名或日志文件ID,要缩小的目标大小)        <br />
+--在当前数据库下select fileid,groupid,name from sysfiles where groupid=0<br />
+</p>
+<H2><a id="a1934fcd-0a91-4e05-b9d0-e59220190dab.html" href="#" onclick="return MenuChange(this);">动态sql语句基本语法</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 01/09/2014 15:12:01<br /><p>1 :普通SQL语句可以用exec执行 <br />
+<br />
+Select * from tableName <br />
+</p>
+<H2><a id="78cbfc42-a8b9-46cd-a91a-720a9beea944.html" href="#" onclick="return MenuChange(this);">动态sql语句基本语法1</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 01/05/2014 15:18:23<br /><p>1 :普通SQL语句可以用Exec执行 <br />
+<br />
+eg:   Select * from tableName <br />
+</p>
+<H2><a id="da9c4269-6f94-41ed-9678-4029bc6c7b41.html" href="#" onclick="return MenuChange(this);">行列互换</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 12/30/2013 15:12:22<br /><p>--行列互转<br />
+/******************************************************************************************************************************************************<br />
+以学生成绩为例子，比较形象易懂<br />
+</p>
+<H2><a id="47b72355-c892-4536-a1b6-77c9e9f6a452.html" href="#" onclick="return MenuChange(this);">全角半角转换</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 12/02/2013 15:18:16<br /><p>if   exists   (select   *   from   dbo.sysobjects   where   id   =   object_id(N'[dbo].[f_convert]')   and   xtype   in   (N'FN',   N'IF',   N'TF'))   <br />
+  drop   function   [dbo].[f_convert]   <br />
+  GO   <br />
+</p>
+<H2><a id="fd7f2077-fd72-4871-9289-f7d8e986353c.html" href="#" onclick="return MenuChange(this);">数据库笔记3</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 12/01/2013 15:29:19<br /><p>/*<br />
+功能：2000当中绘画日历 <br />
+*/<br />
+</p>
+<H2><a id="ebefbeaa-d3de-44a2-ad05-cd9f21021c7f.html" href="#" onclick="return MenuChange(this);">新建 文本文档 (8)</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 11/28/2013 15:13:44<br /><p>SQL语句练习题参考答案 <br />
+1、 select Sname,Ssex,Class from Student;<br />
+2、 select distinct depart from teacher;<br />
+</p>
+<H2><a id="32f3bb96-039b-4124-9756-3c52ae4586b9.html" href="#" onclick="return MenuChange(this);">同步两个数据库的示例</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 11/16/2013 15:17:58<br /><p>--参考: <br />
+/* <br />
+作者:邹建 <br />
+</p>
+<a id="BigData-1.html" href="#" onclick="return MenuChange(this);">Page1>></a>|<a id="BigData-2.html" href="#" onclick="return MenuChange(this);">Page2>></a>|<a id="BigData-3.html" href="#" onclick="return MenuChange(this);">Page3>></a>|<a id="BigData-4.html" href="#" onclick="return MenuChange(this);">Page4>></a>|<a id="BigData-5.html" href="#" onclick="return MenuChange(this);">Page5>></a>|<a id="BigData-6.html" href="#" onclick="return MenuChange(this);">Page6>></a>|<a id="BigData-7.html" href="#" onclick="return MenuChange(this);">Page7>></a>|<a id="BigData-8.html" href="#" onclick="return MenuChange(this);">Page8>></a>|<a id="BigData-9.html" href="#" onclick="return MenuChange(this);">Page9>></a>|<a id="BigData-10.html" href="#" onclick="return MenuChange(this);">Page10>></a>

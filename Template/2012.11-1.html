@@ -1,0 +1,49 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<H2><a id="d8b0e118-eecc-48e4-bc10-4db5a8022536.html" href="#" onclick="return MenuChange(this);">日志处理</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 11/30/2012 15:16:01<br /><p>1、用BACKUP LOG database WITH NO_LOG清除日志 <br />
+<br />
+把数据库属性中的故障还原模型改为“简单”可以大大减慢日志增长的速度。 <br />
+</p>
+<H2><a id="fd87a636-5ea0-4871-bcbc-5d7ec07be04e.html" href="#" onclick="return MenuChange(this);">数据库笔记4</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 11/27/2012 15:22:32<br /><p>*<br />
+标题：普通行列转换(version 2.0)<br />
+作者：爱新觉罗.毓华(十八年风雨,守得冰山雪莲花开)<br />
+</p>
+<H2><a id="a7f51b15-0c4f-4c07-8e8c-ab4515bdf6b1.html" href="#" onclick="return MenuChange(this);">通过脚本创建JOB</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 11/24/2012 15:22:54<br /><p>通过脚本创建JOB：   <br />
+if   exists   (select   *   from   dbo.sysobjects   where   id   =   object_id(N[dbo].[p_createjob])   and   OBJECTPROPERTY(id,   NIsProcedure)   =   1)   <br />
+  drop   procedure   [dbo].[p_createjob]   <br />
+</p>
+<H2><a id="64b6798c-5ce0-4d03-aabd-fbbace8e022d.html" href="#" onclick="return MenuChange(this);">MSSQL中如何用SQL清除所有表的数据</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 11/24/2012 15:19:15<br /><p>MSSQL中如何用SQL清除所有表的数据？这个需求分三种类型： <br />
+第一：只要数据库中表是空的； <br />
+第二：表是空的，并且自增长列可以从１开始增长。 <br />
+</p>
+<H2><a id="f63b3847-7509-4481-b7ca-dffe9b5ec819.html" href="#" onclick="return MenuChange(this);">Backup</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 11/24/2012 15:19:07<br /><p>*<br />
+标题：查询各节点的父路径函数<br />
+作者：爱新觉罗·毓华(十八年风雨,守得冰山雪莲花开)  <br />
+</p>
+<H2><a id="74f0c4dd-5bae-4a82-9272-e56942a4ce0e.html" href="#" onclick="return MenuChange(this);">分区表示例</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 11/05/2012 15:11:41<br /><p>USE master<br />
+GO<br />
+IF DB_ID('Sample_DB') IS NOT NULL <br />
+</p>
+<H2><a id="4f490bae-c899-4499-89d2-980092a899d0.html" href="#" onclick="return MenuChange(this);">行列转换一例</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 11/05/2012 15:08:51<br /><p>GO<br />
+IF OBJECT_ID('TBL')IS NOT NULL<br />
+DROP TABLE TBL<br />
+</p>
+<H2><a id="1c83e627-771c-439d-a5fd-c1c3fff6188d.html" href="#" onclick="return MenuChange(this);">BOM深度广度排序</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 11/03/2012 15:23:05<br /><p>if object_id('[tb]') is not null drop table [tb]<br />
+go<br />
+create table [tb]([modeid] int,modename varchar(20),parentid int)<br />
+</p>

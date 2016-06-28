@@ -1,5 +1,5 @@
 ﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>如何用SQL语句在两个数据库间复制存储过程</h2><br /> 
-uploaded by Patrick. 06/22/2016 05:58:28<br />blog>><a  href="https://wzpabc.github.io?page=075b0095-a103-4989-b26c-3be550b7bf7d" >wzpabc.github.io?page=075b0095-a103-4989-b26c-3be550b7bf7d</a><p>--1.在目标服务器上建立如下对象(被同步的服务器)   <br />
+uploaded by Patrick. 06/17/2013 15:24:50<br />blog>><a  href="https://wzpabc.github.io?page=075b0095-a103-4989-b26c-3be550b7bf7d" >wzpabc.github.io?page=075b0095-a103-4989-b26c-3be550b7bf7d</a><p>--1.在目标服务器上建立如下对象(被同步的服务器)   <br />
     <br />
   if   exists   (select   *   from   dbo.sysobjects   where   id   =   object_id(N'[sys_syscomments_bak]')   and   OBJECTPROPERTY(id,   N'IsUserTable')   =   1)   <br />
   drop   table   [sys_syscomments_bak]   <br />

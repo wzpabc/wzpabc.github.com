@@ -1,0 +1,123 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<a id="2016.05-1.html" href="#" onclick="return MenuChange(this);">Page1>></a>|<a id="2016.05-2.html" href="#" onclick="return MenuChange(this);">Page2>></a>|<a id="2016.05-3.html" href="#" onclick="return MenuChange(this);">Page3>></a>|<a id="2016.05-4.html" href="#" onclick="return MenuChange(this);">Page4>></a>|<a id="2016.05-5.html" href="#" onclick="return MenuChange(this);">Page5>></a>|<a id="2016.05-6.html" href="#" onclick="return MenuChange(this);">Page6>></a>
+<H2><a id="b29873df-93b9-4483-8ed3-5ddd81062275.html" href="#" onclick="return MenuChange(this);">提取中文、英文、汉字</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/20/2016 10:47:06<br /><p>--提取数字<br />
+IF OBJECT_ID('DBO.GET_NUMBER2') IS NOT NULL<br />
+DROP FUNCTION DBO.GET_NUMBER2<br />
+</p>
+<H2><a id="5147ba69-8834-482b-8276-59fac212fd6f.html" href="#" onclick="return MenuChange(this);">DBA30问</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/20/2016 01:25:22<br /><p>很多开发人员都想成为一名数据库管理员，也有很多人一开始就把自己定位成为一名DBA，DBA究竟需要掌握些什么知识和技能呢?以下是我<br />
+<br />
+  做DBA工作和面试DBA时，整理的一些DBA方面的三十个问题，三十个大问题中还有许多小的问题，涵括了SQL Server 2008 R2培训比较多的技术知识点，与大家分享下，希望给有志做DBA的朋友们一些帮助：<br />
+</p>
+<H2><a id="bb83b647-37f2-41a8-9fa6-d1dae5f310a5.html" href="#" onclick="return MenuChange(this);">备份作业</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/19/2016 16:11:32<br /><p>/*******************完整备份作业*******************/<br />
+--完整备份,每周一次<br />
+USE Master<br />
+</p>
+<H2><a id="82cb2c30-72df-47a5-9ff9-67301ccf27cb.html" href="#" onclick="return MenuChange(this);">分段截取函数</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/19/2016 08:46:02<br /><p>--轉老大<br />
+if exists (select * from dbo.sysobjects where id = object_id(N'[dbo].[f_GetStr]') and xtype in (N'FN', N'IF', N'TF'))<br />
+drop function [dbo].[f_GetStr]<br />
+</p>
+<H2><a id="507d1e07-dfba-4917-9c8f-2b55e7030c48.html" href="#" onclick="return MenuChange(this);">BOM1</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/18/2016 19:33:07<br /><p>--bom结构，查找节点下所有子节点：<br />
+<br />
+create table os(id int,parentid int,desn varchar(10))<br />
+</p>
+<H2><a id="98eb12d9-2cd4-4370-bfb2-25e0a4504021.html" href="#" onclick="return MenuChange(this);">分解字符串包含的信息值后然后合并到另外一表的信息</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/18/2016 06:01:29<br /><p>分解字符串包含的信息值后然后合并到另外一表的信息<br />
+(爱新觉罗.毓华(十八年风雨,守得冰山雪莲花开)  2007-12-23  广东深圳)<br />
+<br />
+</p>
+<H2><a id="46f6bd6b-a204-4c29-bb35-70db96dc1175.html" href="#" onclick="return MenuChange(this);">随机插入汉字</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/18/2016 04:44:47<br /><p>declare @t table(col nvarchar(4))<br />
+insert @t select nchar(cast(19968+rand()*20902 as int))<br />
+select * from @t<br />
+</p>
+<H2><a id="b0395f2e-60de-461b-ab0c-d792ce1fd4e5.html" href="#" onclick="return MenuChange(this);">获取汉字首字母</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/18/2016 02:12:25<br /><p>--返回汉字首字母 <br />
+<br />
+create  function [dbo].[chinese_firstletter] <br />
+</p>
+<H2><a id="eba9db85-3d8c-43bd-acd9-d0607b0fce3a.html" href="#" onclick="return MenuChange(this);">读写逻辑读执行计划</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/17/2016 20:33:48<br /><p>SELECT  DB_NAME(R.database_id) AS DatabaseName ,<br />
+        S.original_login_name AS LoginName ,<br />
+        S.host_name AS ClientMachine ,<br />
+</p>
+<H2><a id="5750d746-7558-4fbf-a345-0ce7c7482159.html" href="#" onclick="return MenuChange(this);">检查给定串是否存在于由区间及点集的给合内</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/17/2016 19:26:58<br /><p>------------------------------------<br />
+<br />
+-- Author: happyflystone   <br />
+</p>
+<H2><a id="50d97020-a856-4bbc-9192-bb663d022eaf.html" href="#" onclick="return MenuChange(this);">获取所有的存储过程脚本</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/17/2016 15:20:37<br /><p>declare @proc_text varchar(max)  <br />
+DECLARE get_proc_text_cursor CURSOR FOR <br />
+SELECT<br />
+</p>
+<H2><a id="36048d20-d909-48e1-b066-230dead0ef61.html" href="#" onclick="return MenuChange(this);">BOM循环</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/17/2016 08:12:21<br /><p>if object_id('[tb]') is not null drop table [tb]<br />
+create table [tb] (id int,name varchar(1),pid int)<br />
+insert into [tb]<br />
+</p>
+<H2><a id="b31bb5d6-f875-487b-82ec-b3519926f009.html" href="#" onclick="return MenuChange(this);">PerfTuningWithSQLServerDMVs_DavidsonFord_scripts</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/16/2016 10:48:10<br /><p>/* Complete Code Listing for "Performance Tuning with<br />
+SQL Server DMVs" by Tim Ford and Louis Davidson<br />
+<br />
+</p>
+<H2><a id="cccae6fe-a79e-4854-a8d3-99a8f3ded70b.html" href="#" onclick="return MenuChange(this);">递归实现累计求和</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/16/2016 10:18:22<br /><p>--> 测试数据：[tbl]<br />
+go<br />
+if object_id('[tbl]') is not null <br />
+</p>
+<H2><a id="0a5471f9-a690-44b9-b7d3-8c91ed9ae60f.html" href="#" onclick="return MenuChange(this);">一个蛋疼的问题</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/16/2016 08:35:59<br /><p>go<br />
+if object_id('tbl')is not null<br />
+drop table tbl<br />
+</p>
+<H2><a id="a7f51b15-0c4f-4c07-8e8c-ab4515bdf6b1.html" href="#" onclick="return MenuChange(this);">通过脚本创建JOB</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/15/2016 03:06:49<br /><p>通过脚本创建JOB：   <br />
+if   exists   (select   *   from   dbo.sysobjects   where   id   =   object_id(N[dbo].[p_createjob])   and   OBJECTPROPERTY(id,   NIsProcedure)   =   1)   <br />
+  drop   procedure   [dbo].[p_createjob]   <br />
+</p>
+<H2><a id="74f0c4dd-5bae-4a82-9272-e56942a4ce0e.html" href="#" onclick="return MenuChange(this);">分区表示例</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/14/2016 22:36:49<br /><p>USE master<br />
+GO<br />
+IF DB_ID('Sample_DB') IS NOT NULL <br />
+</p>
+<H2><a id="bdcdc8b8-3b9b-42b4-86fa-77729e85d709.html" href="#" onclick="return MenuChange(this);">分区视图和树型的实现</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/14/2016 17:00:58<br /><p>分区视图 <br />
+分区视图是提高查询性能的一个很好的办法 <br />
+<br />
+</p>
+<H2><a id="08641834-24b0-426f-9977-3f7c00065a7c.html" href="#" onclick="return MenuChange(this);">单个语句快于存储过程的原因分析</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/13/2016 18:49:46<br /><p>SQL Server中存储过程比直接运行SQL语句慢的原因 <br />
+ 在很多的资料中都描述说SQLSERVER的存储过程较普通的SQL语句有以下优点： <br />
+1.       存储过程只在创造时进行编译即可，以后每次执行存储过程都不需再重新编译，而我们通常使用的SQL语句每执行一次就编译一次,所以使用存储过程可提高数据库执行速度。 <br />
+</p>
+<H2><a id="0fd076e8-f057-4ade-b315-be187e21f152.html" href="#" onclick="return MenuChange(this);">自增列的处理</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/12/2016 15:13:49<br /><p>--创建测试表<br />
+CREATE TABLE t1(ID int IDENTITY,A int)<br />
+GO<br />
+</p>
+<a id="2016.05-1.html" href="#" onclick="return MenuChange(this);">Page1>></a>|<a id="2016.05-2.html" href="#" onclick="return MenuChange(this);">Page2>></a>|<a id="2016.05-3.html" href="#" onclick="return MenuChange(this);">Page3>></a>|<a id="2016.05-4.html" href="#" onclick="return MenuChange(this);">Page4>></a>|<a id="2016.05-5.html" href="#" onclick="return MenuChange(this);">Page5>></a>|<a id="2016.05-6.html" href="#" onclick="return MenuChange(this);">Page6>></a>

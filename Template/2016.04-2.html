@@ -1,0 +1,123 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<a id="2016.04-1.html" href="#" onclick="return MenuChange(this);">Page1>></a>|<a id="2016.04-2.html" href="#" onclick="return MenuChange(this);">Page2>></a>|<a id="2016.04-3.html" href="#" onclick="return MenuChange(this);">Page3>></a>
+<H2><a id="6e5ac8e0-3be9-4634-9e02-b6955bce18c5.html" href="#" onclick="return MenuChange(this);">重建重组索引的方法</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/27/2016 12:35:31<br /><p> --使用联机方式重建索引idx_refno <br />
+ALTER INDEX [idx_refno] ON [ordDemo] REBUILD WITH (FILLFACTOR=80,ONLINE =ON)<br />
+GO<br />
+</p>
+<H2><a id="8802948a-e051-4c8f-b0a5-cf3f6e0131c1.html" href="#" onclick="return MenuChange(this);">BCP DYNAMIC</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/27/2016 07:58:24<br /><p> <br />
+ --BCP OUT<br />
+ SELECT <br />
+</p>
+<H2><a id="0715f3ff-5263-4e1e-ad8b-5209c72097d8.html" href="#" onclick="return MenuChange(this);">先进先出的一个例子</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/26/2016 14:56:13<br /><p>create table djjx<br />
+(<br />
+djbh varchar(20), --单据编号 key<br />
+</p>
+<H2><a id="99f0466e-6cff-49f7-9afc-3df5b82dc999.html" href="#" onclick="return MenuChange(this);">笔记一</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/26/2016 11:49:54<br /><p>---用户定义数据类型<br />
+create type postcode<br />
+from varchar(6) null  --创建用户定义数据类型<br />
+</p>
+<H2><a id="df3696ac-90c3-4129-9a60-b3cb7a247b6b.html" href="#" onclick="return MenuChange(this);">查每个分组前N条记录</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/26/2016 07:23:25<br /><p>---------------------------------<br />
+--  Author: liangCK 小梁<br />
+--  Title : 查每个分组前N条记录<br />
+</p>
+<H2><a id="752dadc6-9494-45d8-a86f-21b1a12b706b.html" href="#" onclick="return MenuChange(this);">系统表说明</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/25/2016 21:43:55<br /><p>syscolumns<br />
+每个表和视图中的每列在表中占一行，存储过程中的每个参数在表中也占一行。该表位于每个数据库中。<br />
+<br />
+</p>
+<H2><a id="c8305b69-b849-47af-be8b-b1442dbf70c6.html" href="#" onclick="return MenuChange(this);">SQL断电的处理方法</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/25/2016 09:53:29<br /><p>USE MASTER<br />
+GO<br />
+sp_dboption ‘databaseName’, ’single user’, ‘true’<br />
+</p>
+<H2><a id="6766a17f-20ca-46b1-9394-d9878ae6a43d.html" href="#" onclick="return MenuChange(this);">经典算法</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/25/2016 09:38:39<br /><p>--> 测试数据：[tbla]<br />
+go<br />
+if object_id('[tbla]') is not null <br />
+</p>
+<H2><a id="7773cf76-f443-44fe-a501-dded9d2a94c0.html" href="#" onclick="return MenuChange(this);">变态的行列转换</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/25/2016 03:58:02<br /><p>--> 测试数据：[tbl]<br />
+go<br />
+if object_id('[tbl]') is not null <br />
+</p>
+<H2><a id="b1013cb7-407c-41aa-8236-e94dda2c9c4a.html" href="#" onclick="return MenuChange(this);">Transact-SQL语句导入导出</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/25/2016 01:14:07<br /><p>Transact-SQL语句进行导入导出：<br />
+<br />
+1.在SQL SERVER里查询access数据:<br />
+</p>
+<H2><a id="b4ea6cb4-b0b0-46ed-a3ac-6761e2c694ef.html" href="#" onclick="return MenuChange(this);">Home</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/24/2016 18:47:59<br /><p>构造使用IN子句的动态Transact-SQL方法进行编号查询<br />
+<br />
+--1. 构造使用IN子句的动态Transact-SQL方法进行编号查询<br />
+</p>
+<H2><a id="772232e9-1cdd-4888-80f8-9e3a357770e8.html" href="#" onclick="return MenuChange(this);">减少TEMP库</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/23/2016 23:47:03<br /><p>SQL Server：收缩 SQL Server Tempdb 大小 <br />
+系统管理员报告说，SQL Server Tempdb 数据库文件占用了大量的磁盘空间。让解决下。 <br />
+<br />
+</p>
+<H2><a id="05ea5007-3001-4bb4-8c9c-e84f197aeaef.html" href="#" onclick="return MenuChange(this);">日期算法2</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/23/2016 17:45:15<br /><p>SQL Server 日期算法<br />
+<br />
+一周的第一天<br />
+</p>
+<H2><a id="a843191d-7989-4573-9627-138e4debf8c5.html" href="#" onclick="return MenuChange(this);">2008转到2000</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/23/2016 14:24:30<br /><p>2008转到2000的步骤 <br />
+1. 生成for 2000版本的数据库脚本 <br />
+2008 的manger studio <br />
+</p>
+<H2><a id="a7347126-d835-424b-8a3f-cd1c167db88e.html" href="#" onclick="return MenuChange(this);">求排名</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/23/2016 03:15:34<br /><p>--> 测试数据：[TB]<br />
+if object_id('[TB]') is not null drop table [TB]<br />
+create table [TB]([id] int,[point] int,[name] varchar(4))<br />
+</p>
+<H2><a id="440d6799-7f3c-4622-b0d0-3dbb1ab146d0.html" href="#" onclick="return MenuChange(this);">SQL转EXCEL</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/22/2016 18:12:32<br /><p>SQL SERVER 和EXCEL的数据导入导出<br />
+1、在SQL SERVER里查询Excel数据:<br />
+-- ======================================================<br />
+</p>
+<H2><a id="4b67481b-8c72-453b-bfb4-a15b9661d7c9.html" href="#" onclick="return MenuChange(this);">BOM循环</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/22/2016 11:07:56<br /><p>if object_id('[tb]') is not null drop table [tb]<br />
+create table [tb] (id int,name varchar(1),pid int)<br />
+insert into [tb]<br />
+</p>
+<H2><a id="7f90f74a-6518-4a1f-bef3-20ac5fed343e.html" href="#" onclick="return MenuChange(this);">如何向一个自增字段插值？</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/22/2016 06:13:45<br /><p>--1、create table tablename(id int identity(1,1))go<br />
+insert into tablename default values<br />
+go<br />
+</p>
+<H2><a id="31772079-939f-4a0c-b506-10877ca4fb85.html" href="#" onclick="return MenuChange(this);">行转列</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/22/2016 04:19:45<br /><p>表a <br />
+name    num <br />
+aa      1 <br />
+</p>
+<H2><a id="d02e76ec-6534-40ad-930a-7ea30d5af2d4.html" href="#" onclick="return MenuChange(this);">行列转换一例</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/21/2016 23:28:39<br /><p>GO<br />
+IF OBJECT_ID('TBL')IS NOT NULL<br />
+DROP TABLE TBL<br />
+</p>
+<a id="2016.04-1.html" href="#" onclick="return MenuChange(this);">Page1>></a>|<a id="2016.04-2.html" href="#" onclick="return MenuChange(this);">Page2>></a>|<a id="2016.04-3.html" href="#" onclick="return MenuChange(this);">Page3>></a>

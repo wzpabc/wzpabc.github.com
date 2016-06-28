@@ -1,0 +1,19 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<H2><a id="2d11b07d-2ced-4bea-96f9-1cd0ce184e09.html" href="#" onclick="return MenuChange(this);">批量删除表</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 02/28/2015 15:09:11<br /><p>--删除外键约束<br />
+DECLARE c1 cursor for <br />
+    select 'alter table ['+ object_name(parent_obj) + '] drop constraint ['+name+']; '<br />
+</p>
+<H2><a id="96756e30-8633-4b5c-8736-d3bdfe5a25ad.html" href="#" onclick="return MenuChange(this);">查询独立的日期</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 02/13/2015 15:24:58<br /><p>GO<br />
+IF OBJECT_ID('A')IS NOT NULL<br />
+DROP TABLE  A<br />
+</p>
+<H2><a id="a5e32ede-ca58-40b9-a811-707cd429e5e7.html" href="#" onclick="return MenuChange(this);">字母排序</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 02/12/2015 15:34:20<br /><p>--1. 按拼音排序<br />
+DECLARE @t TABLE(col varchar(2))<br />
+INSERT @t SELECT '中'<br />
+</p>

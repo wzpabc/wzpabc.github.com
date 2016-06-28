@@ -1,0 +1,49 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<H2><a id="08626705-2ee2-43b3-a066-bfd0281cf52c.html" href="#" onclick="return MenuChange(this);">如何使用“最小缺失数”实现日期的自动补全</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/28/2013 15:31:42<br /><p>--如何用"最小缺失数"实现日期的自动补全<br />
+-->生成测试数据:<br />
+GO<br />
+</p>
+<H2><a id="24558145-13b6-4694-abb4-a6ede554b83d.html" href="#" onclick="return MenuChange(this);">全文索引1</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/24/2013 15:22:18<br /><p>create   table   testIndex <br />
+( <br />
+          id   int   identity(1,1)   primary   key, <br />
+</p>
+<H2><a id="16833211-0076-445a-aa30-b46609e0985c.html" href="#" onclick="return MenuChange(this);">自动生成存储过程格式</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/21/2013 15:26:37<br /><p>SET QUOTED_IDENTIFIER ON<br />
+SET ANSI_NULLS ON<br />
+GO<br />
+</p>
+<H2><a id="075b0095-a103-4989-b26c-3be550b7bf7d.html" href="#" onclick="return MenuChange(this);">如何用SQL语句在两个数据库间复制存储过程</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/17/2013 15:24:50<br /><p>--1.在目标服务器上建立如下对象(被同步的服务器)   <br />
+    <br />
+  if   exists   (select   *   from   dbo.sysobjects   where   id   =   object_id(N'[sys_syscomments_bak]')   and   OBJECTPROPERTY(id,   N'IsUserTable')   =   1)   <br />
+</p>
+<H2><a id="73a63d7e-9003-4a8b-8c74-aff94b791b79.html" href="#" onclick="return MenuChange(this);">BOM循环</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/16/2013 15:26:25<br /><p>if object_id('[tb]') is not null drop table [tb]<br />
+create table [tb] (id int,name varchar(1),pid int)<br />
+insert into [tb]<br />
+</p>
+<H2><a id="d02e76ec-6534-40ad-930a-7ea30d5af2d4.html" href="#" onclick="return MenuChange(this);">行列转换一例</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/14/2013 15:15:40<br /><p>GO<br />
+IF OBJECT_ID('TBL')IS NOT NULL<br />
+DROP TABLE TBL<br />
+</p>
+<H2><a id="6b813c0f-622c-466e-8828-d7fb917a9166.html" href="#" onclick="return MenuChange(this);">sp_sql</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/11/2013 15:23:09<br /><p>SET QUOTED_IDENTIFIER ON<br />
+SET ANSI_NULLS ON<br />
+GO<br />
+</p>
+<H2><a id="45ba38c0-b391-4cf7-8c41-3bda713db53a.html" href="#" onclick="return MenuChange(this);">间断和孤岛问题</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/09/2013 15:20:39<br /><p>--确实范围和现有范围（也称间断和孤岛问题）<br />
+--1、缺失范围（间断）<br />
+/*<br />
+</p>

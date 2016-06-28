@@ -1,0 +1,37 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<H2><a id="e0258e9d-a6b4-48db-b69b-ca2893c3e98c.html" href="#" onclick="return MenuChange(this);">表信息查询</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 09/20/2012 15:26:02<br /><p>--查询用户表对象信息<br />
+select  Tab.Name as [表名],Tab.create_date as [创建时间],Tab.modify_date  as [最后修改时间],<br />
+        Col.Name  as [列名] ,Type.name as [数据类型],Col.max_length as [字段长度],<br />
+</p>
+<H2><a id="8802948a-e051-4c8f-b0a5-cf3f6e0131c1.html" href="#" onclick="return MenuChange(this);">BCP DYNAMIC</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 09/17/2012 15:23:57<br /><p> <br />
+ --BCP OUT<br />
+ SELECT <br />
+</p>
+<H2><a id="9a9547ce-d0d8-49e7-b160-50c01f20c4e1.html" href="#" onclick="return MenuChange(this);">表结构信息查询</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 09/14/2012 15:15:43<br /><p>--sql server 2000<br />
+SELECT <br />
+    表名       = case when a.colorder=1 then d.name else '' end,<br />
+</p>
+<H2><a id="5de0f60b-c0e1-4438-961b-ea15241bca0f.html" href="#" onclick="return MenuChange(this);">DBA30问</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 09/10/2012 15:06:15<br /><p>很多开发人员都想成为一名数据库管理员，也有很多人一开始就把自己定位成为一名DBA，DBA究竟需要掌握些什么知识和技能呢?以下是我<br />
+<br />
+  做DBA工作和面试DBA时，整理的一些DBA方面的三十个问题，三十个大问题中还有许多小的问题，涵括了SQL Server 2008 R2培训比较多的技术知识点，与大家分享下，希望给有志做DBA的朋友们一些帮助：<br />
+</p>
+<H2><a id="46f6bd6b-a204-4c29-bb35-70db96dc1175.html" href="#" onclick="return MenuChange(this);">随机插入汉字</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 09/09/2012 15:24:27<br /><p>declare @t table(col nvarchar(4))<br />
+insert @t select nchar(cast(19968+rand()*20902 as int))<br />
+select * from @t<br />
+</p>
+<H2><a id="5a09748d-6f82-4d83-9b29-1fd284d2a43f.html" href="#" onclick="return MenuChange(this);">累计求差</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 09/07/2012 15:14:43<br /><p>create table #aa (id int,cp varchar(10),qty int,totalqty int)<br />
+insert into #aa values(1,'a',100,130)<br />
+insert into #aa values(2,'a',20,130)<br />
+</p>

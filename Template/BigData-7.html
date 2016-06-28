@@ -1,0 +1,123 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<a id="BigData-1.html" href="#" onclick="return MenuChange(this);">Page1>></a>|<a id="BigData-2.html" href="#" onclick="return MenuChange(this);">Page2>></a>|<a id="BigData-3.html" href="#" onclick="return MenuChange(this);">Page3>></a>|<a id="BigData-4.html" href="#" onclick="return MenuChange(this);">Page4>></a>|<a id="BigData-5.html" href="#" onclick="return MenuChange(this);">Page5>></a>|<a id="BigData-6.html" href="#" onclick="return MenuChange(this);">Page6>></a>|<a id="BigData-7.html" href="#" onclick="return MenuChange(this);">Page7>></a>|<a id="BigData-8.html" href="#" onclick="return MenuChange(this);">Page8>></a>|<a id="BigData-9.html" href="#" onclick="return MenuChange(this);">Page9>></a>|<a id="BigData-10.html" href="#" onclick="return MenuChange(this);">Page10>></a>
+<H2><a id="6b813c0f-622c-466e-8828-d7fb917a9166.html" href="#" onclick="return MenuChange(this);">sp_sql</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 06/11/2013 15:23:09<br /><p>SET QUOTED_IDENTIFIER ON<br />
+SET ANSI_NULLS ON<br />
+GO<br />
+</p>
+<H2><a id="f173f843-8624-49cb-9e64-b71b6de80c66.html" href="#" onclick="return MenuChange(this);">如何写出性能优良的SQL</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/13/2013 15:27:06<br /><p>如何写出性能优良的SQL<br />
+（1） 选择最有效率的表名顺序(只在基于规则的优化器中有效)： <br />
+ORACLE的解析器按照从右到左的顺序处理FROM子句中的表名，FROM子句中写在最后的表(基础表 driving table)将被最先处理，在FROM子句中包含多个表的情况下,你必须选择记录条数最少的表作为基础表。如果有3个以上的表连接查询, 那就需要选择交叉表(intersection table)作为基础表, 交叉表是指那个被其他表所引用的表. <br />
+</p>
+<H2><a id="f2ee88ca-0e6b-497b-bd6c-54b1de248bc6.html" href="#" onclick="return MenuChange(this);">2008转到2000</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 05/09/2013 15:18:42<br /><p>2008转到2000的步骤 <br />
+1. 生成for 2000版本的数据库脚本 <br />
+2008 的manger studio <br />
+</p>
+<H2><a id="82cb2c30-72df-47a5-9ff9-67301ccf27cb.html" href="#" onclick="return MenuChange(this);">分段截取函数</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/08/2013 15:31:04<br /><p>--轉老大<br />
+if exists (select * from dbo.sysobjects where id = object_id(N'[dbo].[f_GetStr]') and xtype in (N'FN', N'IF', N'TF'))<br />
+drop function [dbo].[f_GetStr]<br />
+</p>
+<H2><a id="ed70f8ba-d2e1-49c3-bd80-f1eb2e6e8399.html" href="#" onclick="return MenuChange(this);">搜索指定数据在那个对象中存在</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/02/2013 15:10:51<br /><p>CREATE PROC sp_ValueSearch<br />
+@value sql_variant,  --要搜索的数据<br />
+@precision bit=1     --1=仅根据sql_variant中的数据类型查找对应类型的数据列.<>1,查询兼容的所有列,字符数据使用like匹配<br />
+</p>
+<H2><a id="58c7de25-4a6f-46df-8df2-35085ea3e1d5.html" href="#" onclick="return MenuChange(this);">小写转大写金额</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 04/01/2013 15:23:19<br /><p>Create Function F_LowerToUpper(@LowerMoney Decimal(38,4)) <br />
+Returns Varchar(200)    --返回的大写金额的字符 <br />
+As <br />
+</p>
+<H2><a id="24506d47-b697-4844-bd6c-feb236020f2d.html" href="#" onclick="return MenuChange(this);">断号查询</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 03/23/2013 15:16:58<br /><p>--测试数据<br />
+CREATE TABLE tb(col1 varchar(10),col2 int)<br />
+INSERT tb SELECT 'a',2<br />
+</p>
+<H2><a id="98eb12d9-2cd4-4370-bfb2-25e0a4504021.html" href="#" onclick="return MenuChange(this);">分解字符串包含的信息值后然后合并到另外一表的信息</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 03/20/2013 15:09:32<br /><p>分解字符串包含的信息值后然后合并到另外一表的信息<br />
+(爱新觉罗.毓华(十八年风雨,守得冰山雪莲花开)  2007-12-23  广东深圳)<br />
+<br />
+</p>
+<H2><a id="77301e40-e5c4-43ba-b40f-f4a725ef5c53.html" href="#" onclick="return MenuChange(this);">BOM按节点排序应用实例</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 03/12/2013 15:23:26<br /><p>BOM按节点排序应用实例 <br />
+--------------------------------------------------------------------------<br />
+<br />
+</p>
+<H2><a id="e85dc8e0-d770-4f62-b9ce-71e97ddd21e0.html" href="#" onclick="return MenuChange(this);">新建 文本文档 (5)</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 03/06/2013 15:10:25<br /><p>http://id.91cool.net/sign/?name=%CE%DE%D3%C7&say=%B2%C5%B8%DF%C6%DF%B0%CB%B6%B7,%D1%A7%B8%BB%CE%E5%C1%F9%B3%B5,%B8%C4%D0%D0%C8%FD%CB%C4%B4%CE,%D4%C2%C8%EB%D2%BB%B6%FE%C7%A7! <br />
+<br />
+显示IP<br />
+</p>
+<H2><a id="2d3d51ac-06ac-4422-b968-d46b39e3bc3a.html" href="#" onclick="return MenuChange(this);">化解字符串不能超过8000的方法</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 02/19/2013 15:19:19<br /><p>/*--化解字符串不能超过8000的方法 <br />
+<br />
+经常有人提到,用动态生成SQL语句的方法处理数据时,处理语句超长,无法处理的问题 <br />
+</p>
+<H2><a id="0b27bca5-7668-4474-8c4f-b94f9251163e.html" href="#" onclick="return MenuChange(this);">SQL SERVER数据库置疑后恢复步骤</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 01/26/2013 15:18:36<br /><p>--常规SQL SERVER数据库置疑后恢复步骤   <br />
+--1． 恢复步骤：   <br />
+--a.将smlog_log.ldf文件备份到其它目录下；   <br />
+</p>
+<H2><a id="4f6daf49-e3e8-4b15-a6ec-66cb02fb582f.html" href="#" onclick="return MenuChange(this);">取n到m行的值</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 01/17/2013 15:15:02<br /><p>取n到m行<br />
+<br />
+1. <br />
+</p>
+<H2><a id="677af428-b7fc-4d52-a0d3-ac1a79049d00.html" href="#" onclick="return MenuChange(this);">新建 文本文档 (4)</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 01/13/2013 15:27:52<br /><p><br />
+declare @name nvarchar(100)<br />
+declare cur cursor for select name from sysobjects where type = 'U'<br />
+</p>
+<H2><a id="9f4183f9-6e92-4f18-84a6-ebffbc6a62b3.html" href="#" onclick="return MenuChange(this);">Bulk Insert</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 01/12/2013 15:17:38<br /><p>/************************************************************************************************<br />
+                          乌龟代码<br />
+*************************************************************************************************/<br />
+</p>
+<H2><a id="d357c8f1-19d2-4bd7-9985-43acf87156ef.html" href="#" onclick="return MenuChange(this);">将表查询存储为标准的XML文件</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 12/29/2012 15:25:52<br /><p>/*--存为XML<br />
+ 将表/查询存储为标准的XML文件<br />
+--邹建 2003.12(引用请保留此信息)--*/<br />
+</p>
+<H2><a id="5afbad19-8046-408e-b98a-b5f6fa9959e2.html" href="#" onclick="return MenuChange(this);">将表数据旋转90度</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 12/28/2012 15:19:15<br /><p>/*<br />
+将表数据旋转90度(2007-11-19于海南三亚)<br />
+<br />
+</p>
+<H2><a id="6d13552d-55a3-4c5e-8bd3-cc5883820ed2.html" href="#" onclick="return MenuChange(this);">标识列的处理</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 12/27/2012 15:26:44<br /><p>引用邹建的：  <br />
+  --创建测试表  <br />
+  CREATE  TABLE  t1(ID  int  IDENTITY,A  int)  <br />
+</p>
+<H2><a id="168923e0-0cc1-4e71-93e5-05dfd530c7fa.html" href="#" onclick="return MenuChange(this);">各种字符串分函数</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 12/22/2012 15:21:54<br /><p>--各种字符串分函数<br />
+<br />
+if exists (select * from dbo.sysobjects where id = object_id(N'[dbo].[f_splitSTR]') and xtype in (N'FN', N'IF', N'TF'))<br />
+</p>
+<H2><a id="402b73a5-0bba-4a10-858f-8d0d4208bc9d.html" href="#" onclick="return MenuChange(this);">复制表结构的通用存储过程</a></H2>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+uploaded by Patrick. 12/15/2012 15:18:49<br /><p>复制表结构的通用存储过程 <br />
+<br />
+-- Transfer对象的重要属性 <br />
+</p>
+<a id="BigData-1.html" href="#" onclick="return MenuChange(this);">Page1>></a>|<a id="BigData-2.html" href="#" onclick="return MenuChange(this);">Page2>></a>|<a id="BigData-3.html" href="#" onclick="return MenuChange(this);">Page3>></a>|<a id="BigData-4.html" href="#" onclick="return MenuChange(this);">Page4>></a>|<a id="BigData-5.html" href="#" onclick="return MenuChange(this);">Page5>></a>|<a id="BigData-6.html" href="#" onclick="return MenuChange(this);">Page6>></a>|<a id="BigData-7.html" href="#" onclick="return MenuChange(this);">Page7>></a>|<a id="BigData-8.html" href="#" onclick="return MenuChange(this);">Page8>></a>|<a id="BigData-9.html" href="#" onclick="return MenuChange(this);">Page9>></a>|<a id="BigData-10.html" href="#" onclick="return MenuChange(this);">Page10>></a>
