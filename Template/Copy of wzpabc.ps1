@@ -135,7 +135,7 @@ foreach($r in $tmpset){
     IF($pages.count -GT 0){
      0..$($pages.count-1)|%{
        $row= $pages[$($_)]
-       $strindex=$strindex+ "<a id=`"$($row.cid).html`" href=`"#`" onclick=`"return MenuChange(this);`">Page$($_+1)>></a>|"
+       $strindex=$strindex+ "<a id=`"$($row.cid).html`" href=`"#`" onclick=`"return MenuChange(this);`">$($_+1)</a>|"
         }
         $pageindex["$($r.desc)"]=$strindex.Substring(0,$strindex.Length-1)
     }
