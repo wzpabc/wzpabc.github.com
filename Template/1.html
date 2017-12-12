@@ -1,0 +1,137 @@
+﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<link type="text/css" rel="stylesheet" href="../syntaxhighlighter/styles/shCore.css">
+<script type="text/javascript" src="../syntaxhighlighter/scripts/shCore.js"></script>
+<script type="text/javascript" src="../syntaxhighlighter/scripts/shBrushSql.js"></script>
+<script type="text/ecmascript" src="../syntaxhighlighter/scripts/shBrushXml.js"></script> 
+<link type="text/css" rel="stylesheet" href="../syntaxhighlighter/styles/shThemeDefault.css">
+<script type="text/javascript">SyntaxHighlighter.all();</script>
+<pre name="code" class="brush:sql">
+USE [TUPDW]
+GO
+
+/****** Object:  StoredProcedure [dbo].[job_release_keyKPIreport_F0010_F0012_F0020]    Script Date: 2017/12/12 15:34:29 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+
+-- exec [job_release_keyKPIreport_F0010_F0012_F0020] 2016 ,2
+ CREATE  PROCEDURE [dbo].[job_release_keyKPIreport_F0010_F0012_F0020] (@yearint INT=NULL ,@monthint INT=NULL)
+ AS 
+ -- =============================================  
+ --    Created By: upw023  
+ --  Created Date: 2/24/2017 3:07:50 PM 
+ --   Description: dbo.job_release_keyKPIreport_F0010_F0012_F0020  
+ --   Modified By:  
+ -- Modified Date:  
+ --      Comments:  在月报生成后运行，不用重新运行基础数据
+ -- =============================================  
+ --exec [job_release_keyKPIreport_F0010_F0012_F0020] 2017,2
+ BEGIN 
+ 	SET NOCOUNT ON;    
+ 	/*BEGIN TRY*/ 
+ 	BEGIN TRY  
+ 		 
+ 		DECLARE @year INT,@month int ,@week int
+ 	    IF @monthint  IS NULL OR @yearint IS NULL
+ 		BEGIN
+ 			SELECT @year=财务年,@month=财务月 FROM t_Datetimes WHERE [日期]=convert(date,GETDATE()-7)
+ 		END
+ 	    ELSE
+ 	    BEGIN
+ 	    	SELECT @year=@yearint,@month=@monthint
+ 	    END  	
+ 	    
+ 	     SELECT @week=[week] FROM t_datetime_week tdw WHERE getdate() BETWEEN tdw.date_begin AND tdw.date_end
+ 	   
+ 	       
+ 	        --更新一次性基础数据 
+ 		EXEC [dbo].[job_update_common_basedata_once] 
+ 	 
+ 	    EXEC  [DBO].[JOB_UPDATE_COMMON_BASEDATA_WEEKLY] @YEAR,@WEEK 
+ 		--更新月报基础数据
+ 		EXEC [dbo].[job_update_common_basedata_monthly]  @year   ,@month 
+ 		
+ 	    --发布kpi达标简报
+		EXEC [dbo].[up_update_kpi_brief_monthly]    @year,@month
+		--发布dm月报
+		EXEC [dbo].[up_update_kpi_dm_monthly]       @year,@month
+		--发布fs月报
+		EXEC [dbo].[up_update_kpi_fs_monthly]       @year,@month
+		--发布领导地图
+		EXEC [dbo].up_update_t_mgmt_map_monthly     @year,@month
+		
+		EXEC [dbo].[up_update_kpi_val_monthly]  @year,@month
+		
+ 		 /*CATCHING @@ERROR*/ 
+ 		IF @@ERROR>0 
+ 			 RAISERROR ('Error raised in TRY block.1', 16, 1 );/*[0-10]:CONTINUE;[11-19]:jump to catch*/ 
+ 			   
+ 	END TRY 
+ 	/*END TRY*/ 
+ 	BEGIN CATCH 
+ 		/*DECLARE*/  
+ 		DECLARE @ErrorMessage        NVARCHAR(4000), 
+ 		        @ErrorSeverity       NVARCHAR(5), 
+ 		        @ErrorState          NVARCHAR(5), 
+ 		        @ERROR_NUMBER        NVARCHAR(5), 
+ 		        @ERROR_LINE          NVARCHAR(5), 
+ 		        @ERROR_PROCEDURE     NVARCHAR(100)	 
+ 		/*SET VALUES*/	 
+ 		SELECT @ErrorMessage = ERROR_MESSAGE(), 
+ 		       @ErrorSeverity       = ERROR_SEVERITY(), 
+ 		       @ErrorState          = ERROR_STATE(), 
+ 		       @ERROR_NUMBER        = ERROR_NUMBER(), 
+ 		       @ERROR_LINE          = ERROR_LINE(), 
+ 		       @ERROR_PROCEDURE     = CASE ISNULL(ERROR_PROCEDURE(), '') WHEN '' THEN '' ELSE  'Error occur when running procedure: ['  + ERROR_PROCEDURE() + '];'   END; 
+ 		/*FORMATING MSG*/	 
+ 		SET @ErrorMessage = @ERROR_PROCEDURE + CHAR(10) 
+  		    + 'Msg:' + @ErrorMessage + ' Line:' +CAST(@ERROR_LINE AS NVARCHAR)   + ' Number:' +CAST( @ERROR_NUMBER AS NVARCHAR) 
+  		    + CHAR(10) 
+  		    + 'Date:' + CONVERT(NVARCHAR(30), GETDATE(), 120)  
+ 		/*RAISERROR*/	     
+ 		RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState); 
+ 	END CATCH; 
+ 	RETURN 0 
+ END 
+
+
+
+GO
+
+
+
+        </pre>
+<h2>字符串分拆</h2><br /> 
+uploaded by Patrick. 03/10/2015 15:20:39<br />blog>><a  href="https://wzpabc.github.io?page=08ac02f6-29b0-4c1a-907d-f9585b9af8e8" >wzpabc.github.io?page=08ac02f6-29b0-4c1a-907d-f9585b9af8e8</a>
+<p>if object_id('f_split')is not null drop function  f_split<br />
+go<br />
+create function f_split<br />
+(<br />
+@s     varchar(8000),  --待分拆的字符串<br />
+@split varchar(10)     --数据分隔符<br />
+)returns table<br />
+as<br />
+ return<br />
+ (<br />
+  select substring(@s,number,charindex(@split,@s+@split,number)-number)as col<br />
+  from master..spt_values<br />
+  where type='p' and number<=len(@s+'a') <br />
+  and charindex(@split,@split+@s,number)=number<br />
+  )<br />
+go<br />
+select * from dbo.f_split('11,2,3',',')<br />
+/*<br />
+col<br />
+----<br />
+11<br />
+2<br />
+3<br />
+(3 個資料列受到影響)<br />
+*/<br />
+</p><br />
+source>><a  href="https://wzpabc.github.io/Template/08ac02f6-29b0-4c1a-907d-f9585b9af8e8.html" >https://wzpabc.github.io/Template/08ac02f6-29b0-4c1a-907d-f9585b9af8e8.html</a>

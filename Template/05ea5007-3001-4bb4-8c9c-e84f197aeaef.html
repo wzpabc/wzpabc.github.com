@@ -1,4 +1,11 @@
 ﻿<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><h2>日期算法2</h2><br /> 
+<link type="text/css" rel="stylesheet" href="../syntaxhighlighter/styles/shCore.css">
+<script type="text/javascript" src="../syntaxhighlighter/scripts/shCore.js"></script>
+<script type="text/javascript" src="../syntaxhighlighter/scripts/shBrushSql.js"></script>
+<script type="text/ecmascript" src="../syntaxhighlighter/scripts/shBrushXml.js"></script> 
+<link type="text/css" rel="stylesheet" href="../syntaxhighlighter/styles/shThemeDefault.css">
+<script type="text/javascript">SyntaxHighlighter.all();</script>
+<pre name="code" class="brush:sql">
 uploaded by Patrick. 04/24/2016 15:22:51<br />blog>><a  href="https://wzpabc.github.io?page=05ea5007-3001-4bb4-8c9c-e84f197aeaef" >wzpabc.github.io?page=05ea5007-3001-4bb4-8c9c-e84f197aeaef</a><p>SQL Server 日期算法<br />
 <br />
 一周的第一天<br />
@@ -46,5 +53,6 @@ select  @m=case  when  @m  between  1  and  3  then  1  <br />
                        else  10  end  <br />
 select  @time=datename(year,getdate())+'-'+convert(varchar(10),@m)+'-01'  <br />
 select  datediff(day,@time,dateadd(mm,3,@time)) <br />
-</p><br />
+
+        </pre><br />
 source>><a  href="https://wzpabc.github.io/Template/05ea5007-3001-4bb4-8c9c-e84f197aeaef.html" >https://wzpabc.github.io/Template/05ea5007-3001-4bb4-8c9c-e84f197aeaef.html</a>

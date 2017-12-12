@@ -1,6 +1,11 @@
 <!DOCTYPE HTML>
 <html>
-
+<link type="text/css" rel="stylesheet" href="./syntaxhighlighter/styles/shCore.css">
+<script type="text/javascript" src="./syntaxhighlighter/scripts/shCore.js"></script>
+<script type="text/javascript" src="./syntaxhighlighter/scripts/shBrushSql.js"></script>
+<script type="text/ecmascript" src="./syntaxhighlighter/scripts/shBrushXml.js"></script> 
+<link type="text/css" rel="stylesheet" href="./syntaxhighlighter/styles/shThemeDefault.css">
+<script type="text/javascript">SyntaxHighlighter.all();</script>
 <head>
 <title>Patrick's Page building!</title>
 <meta name="description" content="website description" />
@@ -52,7 +57,8 @@
 				
 				<div class="sidebar">
 					<h2><a id="Category" href="#" onclick="return atoggle1(this);" >Category</a></h2>
-					<p>Both working and lift are important:</p>                        
+					<p>Both working and lift are important:</p>  
+					                    
 					<div style="overflow-y:auto; overflow-x:hide; width:400px; height:210px;"  id="sidebartop"></div>
 					<h2><br /><a id="Archive" href="#" onclick="return atoggle(this);" >Archive</a></h2>
 					<div style="overflow-y:auto; overflow-x:hide; width:400px; height:210px;" id="sidebartop1"></div>
@@ -65,9 +71,12 @@
 						<li><a href="http://blog.csdn.net/wangzhpwang">csdn</a></li>
 					</ul>
 				</div>
+			</div> 
+		<div id="content">
+			
 			</div>
-
-			<div id="content"></div>
+ 
+	
 		</div>
 		<footer> </footer>
 	</div>
